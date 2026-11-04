@@ -1,0 +1,95 @@
+# Aegis default policy bundle.
+# Every change to this file (or through PUT /admin/policies) must pass the regression gate:
+#   make regression
+base:
+  name: acme-default
+  description: Default policy for the acme tenant. Tokenize contact data and cards, redact secrets,
+    block private keys, route confidential context to the local model.
+
+  # Per-entity handling. `label` is the data sensitivity of the raw value (reported, and used by
+  # the bulk rule); routing is driven by the residual context once entities are tokenized.
+  entities:
+    PERSON_NAME: {action: tokenize, min_confidence: 0.6, label: CONFIDENTIAL}
+    ORG:         {action: tokenize, min_confidence: 0.7, label: INTERNAL}
+    EMAIL:       {action: tokenize, min_confidence: 0.5, label: CONFIDENTIAL}
+    PHONE:       {action: tokenize, min_confidence: 0.6, label: CONFIDENTIAL}
+    CREDIT_CARD: {action: tokenize, min_confidence: 0.5, label: RESTRICTED}
+    SSN:         {action: tokenize, min_confidence: 0.6, label: RESTRICTED}
+    API_KEY:     {action: redact,   min_confidence: 0.6, label: RESTRICTED}
+    PASSWORD:    {action: redact,   min_confidence: 0.6, label: RESTRICTED}
+    PRIVATE_KEY: {action: block,    min_confidence: 0.5, label: RESTRICTED}
+
+  # Public names that NER mislabels as PERSON/ORG in technical questions. Applies to NER
+  # findings only; never to emails, cards, or secrets.
+  allowlist_terms: [
+    OpenAI, ChatGPT, GPT, Anthropic, Claude, Google, Gemini, Microsoft, Azure, AWS, Amazon, Lambda,
+    S3, EC2, Cloud Run, Google Cloud, Kubernetes, Docker, Kafka, Redis, Postgres, PostgreSQL, MySQL,
+    SQL, NoSQL, MongoDB, Python, Java, JavaScript, TypeScript, Rust, Go, Golang, Linux, GitHub,
+    GitLab, Terraform, Ansible, Jenkins, Grafana, Prometheus, Datadog, Splunk, Slack, Jira,
+    Confluence, Salesforce, Snowflake, Databricks, Spark, Hadoop, Airflow, FastAPI, Django, Flask,
+    React, Node, NumPy, Pandas, PyTorch, TensorFlow, Hugging Face, LangChain, Llama, Mistral,
+    Ollama, vLLM, Nginx, Apache, CAP, REST, API, HTTP, HTTPS, JSON, YAML, OAuth, OIDC, SAML,
+    SSO, RBAC, Okta, Entra, Stripe, Visa, Mastercard, PCI, GDPR, HIPAA, SOC, ISO, NIST, OWASP,
+    Excel, PowerPoint, Word, Outlook, Teams, Zoom, Agile, Scrum, Kanban, CI, CD
+  ]
+
+  # Deterministic label floors. The classifier can raise the label above these, never lower it.
+  context_markers:
+    - {id: M-001, pattern: "attorney[- ]client privilege", label: RESTRICTED, description: "privileged legal advice"}
+    - {id: M-002, pattern: "\\bmaterial non-?public\\b|\\bMNPI\\b", label: RESTRICTED, description: "insider information"}
+    - {id: M-003, pattern: "\\bboard[- ]only\\b|\\bboard eyes only\\b", label: RESTRICTED, description: "board materials"}
+    - {id: M-004, pattern: "\\b(do not|don't) (share|forward|distribute)\\b", label: CONFIDENTIAL, description: "explicit handling instruction"}
+    - {id: M-005, pattern: "\\b(not yet|un)announced\\b", label: CONFIDENTIAL, description: "unannounced plans"}
+    - {id: M-006, pattern: "\\bunder (an )?NDA\\b", label: CONFIDENTIAL, description: "NDA-covered"}
+    - {id: M-007, pattern: "\\b(strictly|company|highly) confidential\\b|\\bconfidential\\s*[:\\]–-]|\\[confidential\\]", label: CONFIDENTIAL, description: "explicit marking"}
+
+  classifier:
+    enabled: true
+    # Below this confidence the label is escalated to the more sensitive of the top two.
+    min_confidence: 0.55
+
+  routing:
+    PUBLIC: allow
+    INTERNAL: redact_and_continue
+    CONFIDENTIAL: local_only
+    RESTRICTED: block
+
+  # A prompt with many restricted values (cards, SSNs) looks like a data dump.
+  bulk:
+    max_restricted_entities: 5
+    action: require_approval
+
+  tools:
+    allowed_email_domains: [acme.example]
+    blocked_email_domains: [gmail.com, googlemail.com, yahoo.com, outlook.com, hotmail.com, live.com,
+                            icloud.com, me.com, aol.com, proton.me, protonmail.com, gmx.com, mail.com]
+    allowed_url_domains: [wiki.acme.example, docs.acme.example, api.acme.example, cdn.acme.example]
+    risk:
+      lookup_customer: low
+      search_wiki: low
+      read_wiki: low
+      http_get: medium
+      render_image: medium
+      send_email: high
+      share_document: high
+      post_webhook: high
+    default_risk: high
+    approval_ttl_seconds: 600
+    # Internal recipients see these values restored; cards stay masked.
+    detokenize_for_internal: [PERSON_NAME, EMAIL, PHONE, ORG]
+    block_risky_tools_when_tainted: true
+
+  injection:
+    threshold: 0.6
+    on_detect: flag_and_taint
+
+  audit:
+    # Prompts labelled above this are stored as a keyed fingerprint + length only.
+    store_content_up_to: INTERNAL
+
+tenant_overrides: {}
+
+# Example of a per-user override: a legal-team service account never uses external models.
+user_overrides:
+  acme/u-legal-bot:
+    routing: {INTERNAL: local_only}
