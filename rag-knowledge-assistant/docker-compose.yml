@@ -3,10 +3,12 @@ name: rag-knowledge-assistant
 services:
   db:
     image: pgvector/pgvector:pg16
+    # The superuser password comes only from .env (required; see .env.example) - nothing in this file.
+    env_file:
+      - path: .env
+        required: true
     environment:
       POSTGRES_USER: rag
-      # required: set in .env (no default, so no credential lives in the repo)
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env - see .env.example}
       POSTGRES_DB: rag
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
@@ -34,9 +36,11 @@ services:
     user: "${APP_UID:-10001}:${APP_GID:-10001}"
     env_file:
       - path: .env
-        required: false
+        required: true
     environment:
-      DATABASE_URL: postgresql://rag:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/rag
+      # the app assembles its connection from POSTGRES_* (password from .env)
+      POSTGRES_HOST: db
+      DATABASE_URL: ""
       REDIS_URL: redis://redis:6379/0
     ports: ["8000:8000"]
     volumes:

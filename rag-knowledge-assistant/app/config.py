@@ -5,7 +5,7 @@ No secrets have defaults; provider keys are read from the environment only.
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,9 +15,14 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- infrastructure
-    # No credential default: set DATABASE_URL (see .env.example). Without a password in the URL,
-    # libpq falls back to PGPASSWORD / ~/.pgpass.
-    database_url: str = "postgresql://rag@localhost:5432/rag"
+    # Connection parts; the password has no default and is read only from the environment / .env.
+    postgres_host: str = "localhost"
+    postgres_port: int = 5432
+    postgres_user: str = "rag"
+    postgres_db: str = "rag"
+    postgres_password: SecretStr | None = None
+    # Optional full libpq URL/conninfo; when unset it is assembled from the POSTGRES_* parts above.
+    database_url: str | None = None
     redis_url: str = "redis://localhost:6379/0"
     users_file: Path = ROOT / "config" / "users.yaml"
     docs_dir: Path = ROOT / "data" / "sample_docs"
@@ -93,6 +98,19 @@ class Settings(BaseSettings):
     admin_role: str = "kb_admin"
 
     default_profile: str = Field(default="full")
+
+
+    @model_validator(mode="after")
+    def _assemble_database_url(self) -> "Settings":
+        if not self.database_url:
+            from psycopg.conninfo import make_conninfo
+
+            parts = {"host": self.postgres_host, "port": self.postgres_port,
+                     "user": self.postgres_user, "dbname": self.postgres_db}
+            if self.postgres_password is not None:
+                parts["password"] = self.postgres_password.get_secret_value()
+            self.database_url = make_conninfo(**parts)
+        return self
 
 
 @lru_cache

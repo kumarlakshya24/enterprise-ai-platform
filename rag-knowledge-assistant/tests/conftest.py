@@ -19,15 +19,14 @@ sys.path.insert(0, str(ROOT))
 
 from app.config import Settings  # noqa: E402
 
-_PW = os.environ.get("POSTGRES_PASSWORD", "")
-BASE_DB = os.environ.get("TEST_DATABASE_URL",
-                         os.environ.get("DATABASE_URL", f"postgresql://rag:{_PW}@localhost:5432/rag"))
+BASE_DB = os.environ.get("TEST_DATABASE_URL") or Settings().database_url
 REDIS_URL = os.environ.get("TEST_REDIS_URL", os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
 
 
 def _test_db_url() -> str:
-    head, _, _ = BASE_DB.rpartition("/")
-    return f"{head}/rag_test"
+    from psycopg.conninfo import make_conninfo
+
+    return make_conninfo(BASE_DB, dbname="rag_test")
 
 
 def _services_up() -> bool:
