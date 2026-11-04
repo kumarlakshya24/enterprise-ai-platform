@@ -75,13 +75,15 @@ def test_probabilities_sum_to_one_and_deterministic() -> None:
     assert sum(a.probabilities.values()) == pytest.approx(1.0)
 
 
-def test_low_confidence_escalates_to_the_more_sensitive_label() -> None:
+def test_low_confidence_escalates_one_level_only() -> None:
+    from aegis.classifier.model import ESCALATION_MASS
+
     text = "Summarize the notes."
     base = clf.classify(text)
     forced = clf.classify(text, min_confidence=0.999)
-    ranked = sorted(base.probabilities, key=lambda k: base.probabilities[k], reverse=True)
-    if Label[ranked[1]] > Label[ranked[0]]:
-        assert forced.escalated_from is Label[ranked[0]] and forced.label is Label[ranked[1]]
+    above = sum(p for k, p in base.probabilities.items() if Label[k] > base.label)
+    if above >= ESCALATION_MASS and base.label < Label.RESTRICTED:
+        assert forced.escalated_from is base.label and forced.label == base.label + 1
     else:
         assert forced.escalated_from is None and forced.label is base.label
 

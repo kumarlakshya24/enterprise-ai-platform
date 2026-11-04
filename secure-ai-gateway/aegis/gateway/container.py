@@ -8,13 +8,19 @@ from typing import Any
 
 from sqlalchemy import Engine
 
+from aegis.agent.runner import AgentRunner, RunStore
+from aegis.agent.tools import Sandbox
 from aegis.audit.store import AuditStore
 from aegis.auth.oidc import KeyResolver, TokenVerifier, jwks_resolver
 from aegis.auth.ratelimit import RateLimiter
+from aegis.classifier.model import load_default_classifier
 from aegis.classifier.types import SensitivityClassifier
 from aegis.config import Settings
 from aegis.db import init_db, make_engine
 from aegis.dlp.engine import DLPEngine
+from aegis.guard.approvals import ApprovalService
+from aegis.guard.injection import InjectionDetector
+from aegis.guard.interceptor import ToolGuard
 from aegis.guard.output import OutputSanitizer
 from aegis.llm.base import LLMProvider
 from aegis.llm.providers import MockProvider, OpenAICompatibleProvider
@@ -42,7 +48,16 @@ class Container:
     external_llm: LLMProvider
     local_llm: LLMProvider
     sanitizer: OutputSanitizer
+    sandbox: Sandbox
+    injection: InjectionDetector
+    guard: ToolGuard
+    approvals: ApprovalService
+    runs: RunStore
     extras: dict[str, Any]
+
+    @property
+    def agent(self) -> AgentRunner:
+        return AgentRunner(self)
 
     def health(self) -> dict[str, Any]:
         return {
@@ -68,11 +83,7 @@ def _build_provider(
     return MockProvider(name, location, model=model)  # type: ignore[arg-type]
 
 
-def load_classifier() -> SensitivityClassifier | None:
-    try:
-        from aegis.classifier.model import load_default_classifier
-    except ImportError:
-        return None
+def load_classifier() -> SensitivityClassifier:
     return load_default_classifier()
 
 
@@ -117,20 +128,27 @@ def build_container(
         "",
         settings.llm_timeout_seconds,
     )
+    dlp = dlp or DLPEngine.default(settings.ner_backend)
+    audit = AuditStore(engine, settings.audit_hmac_key)
     return Container(
         settings=settings,
         engine=engine,
         kv=kv,
         vault=vault,
         cipher=cipher,
-        dlp=dlp or DLPEngine.default(settings.ner_backend),
+        dlp=dlp,
         classifier=load_classifier() if classifier == "default" else classifier,  # type: ignore[arg-type]
         policies=policies,
-        audit=AuditStore(engine, settings.audit_hmac_key),
+        audit=audit,
         verifier=verifier,
         rate_limiter=RateLimiter(kv, settings.rate_limit_per_minute),
         external_llm=external_llm,
         local_llm=local_llm,
         sanitizer=OutputSanitizer(),
+        sandbox=Sandbox(),
+        injection=InjectionDetector(),
+        guard=ToolGuard(vault, dlp),
+        approvals=ApprovalService(engine, cipher, audit),
+        runs=RunStore(engine),
         extras={},
     )

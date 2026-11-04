@@ -14,6 +14,7 @@ from typing import Any
 from sqlalchemy import Engine, insert, select, update
 
 from aegis.db import GENESIS_HASH, audit_events, audit_head
+from aegis.dlp.base import Detector
 from aegis.dlp.regex_detectors import (
     CreditCardDetector,
     EmailDetector,
@@ -49,7 +50,7 @@ class AuditScrubber:
     )
 
     def __init__(self) -> None:
-        self._detectors = [
+        self._detectors: list[Detector] = [
             EmailDetector(),
             CreditCardDetector(),
             SSNDetector(),

@@ -20,6 +20,7 @@ from aegis.types import Label
 MODEL_PATH = Path(__file__).with_name("sensitivity_model.json")
 TOKEN_PATTERN = r"(?u)\b\w\w+\b"  # noqa: S105 - a regex, not a secret
 LABEL_ORDER = [label.name for label in Label]
+ESCALATION_MASS = 0.3
 
 
 class ModelIntegrityError(RuntimeError):
@@ -78,12 +79,14 @@ class TfidfLogRegClassifier:
         total = sum(exps)
         probs = [e / total for e in exps]
         ranked = sorted(range(len(probs)), key=lambda k: probs[k], reverse=True)
-        top, second = ranked[0], ranked[1]
+        top = ranked[0]
         label = self.labels[top]
         escalated_from: Label | None = None
-        if probs[top] < min_confidence and self.labels[second] > label:
-            escalated_from, label = label, self.labels[second]
-            top = second
+        # Fail safe on uncertainty: one level up, and only if real probability mass sits above.
+        mass_above = sum(probs[k] for k in range(len(probs)) if self.labels[k] > label)
+        if probs[top] < min_confidence and mass_above >= ESCALATION_MASS and label < Label.RESTRICTED:
+            escalated_from, label = label, Label(label + 1)
+            top = self.labels.index(label)
         contributions = sorted(
             ((g, v * self.vocab[g][1][top]) for g, v in x.items()), key=lambda gv: gv[1], reverse=True
         )

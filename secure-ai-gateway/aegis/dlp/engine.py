@@ -55,7 +55,7 @@ class ScanResult:
         return [f.public_dict() for f in self.findings + self.discarded]
 
 
-def _canonical(etype: EntityType, normalized_value: str) -> str:
+def canonical_value(etype: EntityType, normalized_value: str) -> str:
     """Canonical form used to give the same value the same placeholder."""
     if etype in (EntityType.CREDIT_CARD, EntityType.PHONE, EntityType.SSN):
         return re.sub(r"\D", "", normalized_value)
@@ -98,7 +98,7 @@ class DLPEngine:
             timings[det.name] = (time.perf_counter() - t0) * 1000
             for f in found:
                 n_start, n_end = f.start, f.end
-                f.canonical = _canonical(f.entity_type, norm.text[n_start:n_end])
+                f.canonical = canonical_value(f.entity_type, norm.text[n_start:n_end])
                 f.start, f.end = norm.to_original_span(n_start, n_end)
                 f.value = text[f.start : f.end]
                 candidates.append(f)

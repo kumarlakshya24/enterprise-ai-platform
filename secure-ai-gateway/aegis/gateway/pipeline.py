@@ -16,10 +16,11 @@ from aegis.auth.oidc import Principal
 from aegis.classifier.types import Classification
 from aegis.dlp.engine import ScanResult
 from aegis.gateway.container import Container
+from aegis.guard.approvals import ApprovalError
 from aegis.llm.base import ChatMessage, LLMProvider, ProviderError
 from aegis.policy.engine import Decision, decide
 from aegis.policy.schema import Policy
-from aegis.types import Route
+from aegis.types import Label, Route
 from aegis.vault.vault import STRICT_PLACEHOLDER_RE, VaultContext
 
 CHAT_SYSTEM_PROMPT = (
@@ -223,11 +224,29 @@ class Pipeline:
             return self._finish(response, p, t_start)
 
         if d.route is Route.REQUIRE_APPROVAL:
-            approvals = self.c.extras.get("approvals")
-            if approvals is None:
-                response.update(status="blocked", answer="Approval workflow unavailable; request blocked.")
-                return self._finish(response, p, t_start)
-            approval = approvals.create_chat_approval(p, principal)
+            approval = self.c.approvals.create(
+                kind="chat",
+                principal=principal,
+                summary={
+                    "rule_id": d.rule_id,
+                    "reasons": d.reasons,
+                    "entity_counts": p.scan.entity_counts(),
+                    "context_label": d.context_label.name,
+                    "prompt_chars": len(text),
+                },
+                payload={
+                    "tokenized": p.tokenized,
+                    "ctx": {
+                        "tenant_id": p.ctx.tenant_id,
+                        "user_id": p.ctx.user_id,
+                        "session_id": p.ctx.session_id,
+                        "purpose": p.ctx.purpose,
+                    },
+                },
+                ttl_seconds=p.policy.tools.approval_ttl_seconds,
+                session_id=p.ctx.session_id,
+                policy_version=p.policy_version,
+            )
             p.audit_ids.append(approval["audit_event_id"])
             response.update(
                 status="pending_approval",
@@ -241,6 +260,40 @@ class Pipeline:
         if provider is None:  # pragma: no cover - every non-block route has a provider
             raise RuntimeError(f"no provider for route {d.route}")
         return self._call_and_respond(provider, p, principal, response, t_start, base_audit)
+
+    def resume_chat(self, approval_id: str, principal: Principal) -> dict[str, Any]:
+        """After a second person approves a held chat request, the requester resumes it."""
+        rec = self.c.approvals.get(approval_id, principal.tenant_id)
+        if rec.kind != "chat" or rec.requester_id != principal.sub:
+            raise ApprovalError(404, "not_found", "approval not found")
+        if rec.status != "approved":
+            raise ApprovalError(409, "not_approved", f"approval is {rec.status}")
+        payload = self.c.approvals.payload(approval_id, principal.tenant_id)
+        ctx = VaultContext(**payload["ctx"])
+        policy, version = self.c.policies.effective(principal.tenant_id, principal.sub)
+        scan = self.c.dlp.scan("", policy)
+        decision = Decision(
+            Route.REDACT, Label.INTERNAL, None, "R-APPROVED", [f"approved by {rec.decided_by}"], version
+        )
+        p = Prepared(uuid.uuid4().hex[:16], ctx, policy, version, scan, payload["tokenized"], None, decision)
+        base_audit = {
+            "tenant_id": principal.tenant_id,
+            "user_id": principal.sub,
+            "session_id": ctx.session_id,
+            "request_id": p.request_id,
+            "policy_version": version,
+        }
+        response: dict[str, Any] = {
+            "request_id": p.request_id,
+            "session_id": ctx.session_id,
+            "decision": decision.public(),
+            "approval_id": approval_id,
+        }
+        out = self._call_and_respond(
+            self.c.external_llm, p, principal, response, time.perf_counter(), base_audit
+        )
+        self.c.approvals.mark_executed(approval_id, principal.tenant_id, {"executed": True, "kind": "chat"})
+        return out
 
     def _call_and_respond(
         self,

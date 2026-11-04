@@ -101,6 +101,7 @@ def gateway_factory(issuer: TokenIssuer, dlp_engine: DLPEngine) -> Iterator[Call
             local_llm=local,
             dlp=dlp_engine,
         )
+        container.extras["token_issuer"] = issuer  # demo login without a separate IdP process
         client = TestClient(create_app(container))
         created.append(client)
         return Gateway(client, container, issuer, external, local, kv)

@@ -124,6 +124,14 @@ SLOTS: dict[str, list[str]] = {
         "the billing database",
         "the SSO gateway",
     ],
+    "cid": ["C-1042", "C-2077", "C-3310", "C-4821", "C-5096"],
+    "agent_action": [
+        "email a summary to [EMAIL]",
+        "tell me which refund timeline applies",
+        "summarize the complaint",
+        "send the summary to my team lead",
+        "check the shipping status",
+    ],
     "condition": ["diabetes", "a cancer diagnosis", "HIV status", "a psychiatric condition", "pregnancy"],
 }
 
@@ -191,6 +199,11 @@ FRAMES: dict[str, list[str]] = {
         "Write a short internal survey about the new laptop setup process.",
         "Respond to [PERSON_NAME] who called [PHONE] asking about {issue}.",
         "Summarize this thread between support and engineering about {issue}.",
+        "Look up customer {cid} and summarize the open issue.",
+        "Look up customer {cid} and {agent_action}.",
+        "Check the CRM record for {cid} and tell me the status.",
+        "Find customer {cid}, check the wiki, and {agent_action}.",
+        "Pull the account for {cid} and draft a reply about {issue}.",
     ],
     "CONFIDENTIAL": [
         "We will discontinue {product} in {quarter} and raise prices {pct}; draft the internal plan.",

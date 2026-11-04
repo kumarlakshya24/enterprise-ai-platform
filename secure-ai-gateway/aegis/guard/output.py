@@ -15,7 +15,7 @@ from aegis.vault.vault import PLACEHOLDER_RE
 _MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
 _HTML_IMG = re.compile(r"<img\b[^>]*\bsrc\s*=\s*[\"']?([^\"'\s>]+)[^>]*>", re.IGNORECASE)
 _MD_LINK = re.compile(r"(?<!!)\[([^\]]+)\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
-_BARE_URL = re.compile(r"https?://[^\s<>\"')\]]+(?:\[[A-Z_]+_\d+\][^\s<>\"')]*)*", re.IGNORECASE)
+_BARE_URL = re.compile(r"https?://[^\s<>\"'()\[\]]+(?:\[[A-Z_]+_\d+\][^\s<>\"'()\[\]]*)*", re.IGNORECASE)
 _RAW_DATA = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|(?:\d[ -]?){12,18}\d")
 
 
