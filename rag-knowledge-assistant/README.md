@@ -176,7 +176,7 @@ end-to-end correctness is identical (89.1% in `full`), p95 is **939 ms (fp32) vs
 Requirements: Docker with Compose v2, about 2 GB of disk. No API key is needed for the default offline mode.
 
 ```bash
-cp .env.example .env                 # optional: set LLM_PROVIDER / keys here, never in code
+cp .env.example .env                 # then set POSTGRES_PASSWORD (required); LLM_PROVIDER / keys also go here, never in code
 python3 -m pip install onnx onnxruntime  # only for the int8 conversion step below
 python3 scripts/fetch_models.py      # downloads + sha256-verifies ONNX models, builds the int8 re-ranker
 make up                              # Postgres+pgvector, Redis 8, API on :8000 (indexes sample docs on first start)

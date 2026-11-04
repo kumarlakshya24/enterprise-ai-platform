@@ -5,7 +5,8 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: rag
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rag}
+      # required: set in .env (no default, so no credential lives in the repo)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env - see .env.example}
       POSTGRES_DB: rag
     ports: ["5432:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
@@ -35,7 +36,7 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: postgresql://rag:${POSTGRES_PASSWORD:-rag}@db:5432/rag
+      DATABASE_URL: postgresql://rag:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/rag
       REDIS_URL: redis://redis:6379/0
     ports: ["8000:8000"]
     volumes:

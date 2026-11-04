@@ -15,7 +15,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- infrastructure
-    database_url: str = "postgresql://rag:rag@localhost:5432/rag"
+    # No credential default: set DATABASE_URL (see .env.example). Without a password in the URL,
+    # libpq falls back to PGPASSWORD / ~/.pgpass.
+    database_url: str = "postgresql://rag@localhost:5432/rag"
     redis_url: str = "redis://localhost:6379/0"
     users_file: Path = ROOT / "config" / "users.yaml"
     docs_dir: Path = ROOT / "data" / "sample_docs"

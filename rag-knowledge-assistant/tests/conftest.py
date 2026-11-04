@@ -19,7 +19,9 @@ sys.path.insert(0, str(ROOT))
 
 from app.config import Settings  # noqa: E402
 
-BASE_DB = os.environ.get("TEST_DATABASE_URL", os.environ.get("DATABASE_URL", "postgresql://rag:rag@localhost:5432/rag"))
+_PW = os.environ.get("POSTGRES_PASSWORD", "")
+BASE_DB = os.environ.get("TEST_DATABASE_URL",
+                         os.environ.get("DATABASE_URL", f"postgresql://rag:{_PW}@localhost:5432/rag"))
 REDIS_URL = os.environ.get("TEST_REDIS_URL", os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
 
 
