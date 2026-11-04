@@ -38,7 +38,10 @@ class ContextMarker(BaseModel):
     @field_validator("pattern")
     @classmethod
     def _compiles(cls, v: str) -> str:
-        re.compile(v, re.IGNORECASE)
+        try:
+            re.compile(v, re.IGNORECASE)
+        except re.error as exc:
+            raise ValueError(f"invalid regex: {exc}") from exc
         return v
 
 

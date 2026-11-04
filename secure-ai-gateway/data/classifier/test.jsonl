@@ -1,0 +1,100 @@
+{"text": "How do I configure retries with exponential backoff in a Python requests session?", "label": "PUBLIC"}
+{"text": "What's the best way to learn linear algebra for machine learning?", "label": "PUBLIC"}
+{"text": "Write a limerick about a cat who loves coffee.", "label": "PUBLIC"}
+{"text": "Explain what a hash map is and when to use one.", "label": "PUBLIC"}
+{"text": "Why does my Docker container exit immediately after starting?", "label": "PUBLIC"}
+{"text": "Summarize the main causes of the French Revolution.", "label": "PUBLIC"}
+{"text": "Give me a 20 minute bodyweight workout.", "label": "PUBLIC"}
+{"text": "How do I center a div with CSS grid?", "label": "PUBLIC"}
+{"text": "What is eventual consistency in distributed databases?", "label": "PUBLIC"}
+{"text": "Suggest five names for a hiking club.", "label": "PUBLIC"}
+{"text": "Explain the difference between a process and a thread.", "label": "PUBLIC"}
+{"text": "Write a JavaScript debounce function with comments.", "label": "PUBLIC"}
+{"text": "What are the health benefits of drinking water?", "label": "PUBLIC"}
+{"text": "How does public key cryptography work, in plain English?", "label": "PUBLIC"}
+{"text": "Draft a thank-you note for a friend who helped me move.", "label": "PUBLIC"}
+{"text": "What is the difference between precision and recall?", "label": "PUBLIC"}
+{"text": "Recommend a good structure for a personal portfolio website.", "label": "PUBLIC"}
+{"text": "Explain Big O notation with examples.", "label": "PUBLIC"}
+{"text": "How do I write a good commit message?", "label": "PUBLIC"}
+{"text": "List the planets in order from the sun.", "label": "PUBLIC"}
+{"text": "Write a bash one-liner that counts lines in all .py files.", "label": "PUBLIC"}
+{"text": "What should I consider when choosing between SQL and NoSQL databases?", "label": "PUBLIC"}
+{"text": "Help me plan a three day trip to Lisbon.", "label": "PUBLIC"}
+{"text": "Explain what a large language model is to my grandmother.", "label": "PUBLIC"}
+{"text": "How can I improve my public speaking skills?", "label": "PUBLIC"}
+{"text": "Customer complaint, please draft a reply: Hi, my name is [PERSON_NAME]. I was charged twice for my March order and I'm furious. The card is [CREDIT_CARD]. Please refund the duplicate charge and confirm by email at [EMAIL].", "label": "INTERNAL"}
+{"text": "Turn my notes from the support huddle into a short summary for the team channel.", "label": "INTERNAL"}
+{"text": "Draft a friendly reminder that the quarterly security training is due next week.", "label": "INTERNAL"}
+{"text": "Write a reply to [PERSON_NAME] telling them their replacement order shipped today.", "label": "INTERNAL"}
+{"text": "Summarize the bug report: export to CSV times out for large workspaces.", "label": "INTERNAL"}
+{"text": "Create a checklist for the new support hire's first week.", "label": "INTERNAL"}
+{"text": "Polish this message to the warehouse team about the late pallet delivery.", "label": "INTERNAL"}
+{"text": "Write an internal how-to for requesting a new monitor through IT.", "label": "INTERNAL"}
+{"text": "Draft minutes for today's design review of the settings page.", "label": "INTERNAL"}
+{"text": "Reply to the customer at [EMAIL] who cannot reset their password.", "label": "INTERNAL"}
+{"text": "Write a ticket describing the flaky checkout test in CI.", "label": "INTERNAL"}
+{"text": "Summarize the customer call: they asked about SSO setup and invoice dates.", "label": "INTERNAL"}
+{"text": "Draft a message to [PERSON_NAME] apologizing for the broken coupon code.", "label": "INTERNAL"}
+{"text": "Make an agenda for the Thursday planning meeting with support and QA.", "label": "INTERNAL"}
+{"text": "Write a short update for my manager: finished the refund queue, 12 tickets left.", "label": "INTERNAL"}
+{"text": "Convert these bullet points into a knowledge base article about shipping times.", "label": "INTERNAL"}
+{"text": "Help me answer [PERSON_NAME], who wants to change the email on their account.", "label": "INTERNAL"}
+{"text": "Draft a team announcement about the new ticket tagging convention.", "label": "INTERNAL"}
+{"text": "Write the handoff note for the night shift about two escalations.", "label": "INTERNAL"}
+{"text": "Summarize feedback from our internal hackathon demos.", "label": "INTERNAL"}
+{"text": "Draft a response to a customer asking why their package arrived damaged.", "label": "INTERNAL"}
+{"text": "Write a reply to [PERSON_NAME] at [PHONE] confirming the callback time.", "label": "INTERNAL"}
+{"text": "Prepare a short training outline for using the new helpdesk macros.", "label": "INTERNAL"}
+{"text": "Rewrite this apology to [PERSON_NAME] so it sounds less robotic.", "label": "INTERNAL"}
+{"text": "Summarize the sprint demo for people who missed it.", "label": "INTERNAL"}
+{"text": "Internal planning note: we will discontinue the Starter tier in Q3 and raise Enterprise prices 18%. The acquisition talks with our main competitor are still unannounced. Turn this into talking points for the sales kickoff.", "label": "CONFIDENTIAL"}
+{"text": "Next month we're cutting 10% of the support org; help me write what managers should say.", "label": "CONFIDENTIAL"}
+{"text": "Our biggest account told us privately they'll leave if the outage happens again, and that's 2 million a year.", "label": "CONFIDENTIAL"}
+{"text": "Prepare speaking notes on why we're quietly shutting down the Berlin office.", "label": "CONFIDENTIAL"}
+{"text": "The CFO says we'll miss the revenue target by a wide margin this quarter; draft the leadership explanation.", "label": "CONFIDENTIAL"}
+{"text": "Write the rationale for giving the two staff engineers a retention bonus while freezing everyone else's pay.", "label": "CONFIDENTIAL"}
+{"text": "Help me plan how to tell the team we're being folded into the platform org after the reorg.", "label": "CONFIDENTIAL"}
+{"text": "Summarize our private pricing strategy for undercutting the competitor's launch.", "label": "CONFIDENTIAL"}
+{"text": "Draft a performance warning for an engineer on my team who has missed every deadline.", "label": "CONFIDENTIAL"}
+{"text": "We plan to sunset the legacy app next spring and haven't told customers; outline the plan.", "label": "CONFIDENTIAL"}
+{"text": "Turn this into slides: runway is 11 months and we're raising again before summer.", "label": "CONFIDENTIAL"}
+{"text": "Our churn doubled in the UK and leadership wants an internal analysis before the board meeting.", "label": "CONFIDENTIAL"}
+{"text": "Draft the internal memo on the hiring freeze that starts in January.", "label": "CONFIDENTIAL"}
+{"text": "We're renegotiating the cloud contract and our maximum acceptable price is lower than their quote.", "label": "CONFIDENTIAL"}
+{"text": "Write the plan for moving the QA team to a contractor in another country.", "label": "CONFIDENTIAL"}
+{"text": "Summarize the employee relations case against the sales manager.", "label": "CONFIDENTIAL"}
+{"text": "Outline the confidential partnership with a larger competitor that launches in the fall.", "label": "CONFIDENTIAL"}
+{"text": "Prepare the internal FAQ about the coming price increase before we announce it.", "label": "CONFIDENTIAL"}
+{"text": "List the top accounts at risk this quarter and how much revenue each represents.", "label": "CONFIDENTIAL"}
+{"text": "Draft the offer: we can go up to a 25% discount for this strategic deal, but don't tell sales ops.", "label": "CONFIDENTIAL"}
+{"text": "Write a summary of the unreleased product roadmap for the next two quarters.", "label": "CONFIDENTIAL"}
+{"text": "Help me word the termination conversation with the regional director.", "label": "CONFIDENTIAL"}
+{"text": "We had a data incident on Tuesday we haven't disclosed; summarize the timeline for leadership.", "label": "CONFIDENTIAL"}
+{"text": "Explain to my staff why bonuses are being cut this year.", "label": "CONFIDENTIAL"}
+{"text": "Our gross margin fell because of discounts; draft the exec-only explanation.", "label": "CONFIDENTIAL"}
+{"text": "This is attorney-client privileged: summarize our counsel's view on the antitrust exposure.", "label": "RESTRICTED"}
+{"text": "Merger terms are final at 41 dollars a share and close next quarter; draft the internal deal summary.", "label": "RESTRICTED"}
+{"text": "For the board only: the CEO will step down and the CFO takes over in March.", "label": "RESTRICTED"}
+{"text": "Document the steps to exploit the unpatched authentication bypass in our admin portal.", "label": "RESTRICTED"}
+{"text": "Compile the list of employees on medical leave and their diagnoses.", "label": "RESTRICTED"}
+{"text": "Our lawyers think we breached the export rules; help draft the privileged response to them.", "label": "RESTRICTED"}
+{"text": "Earnings will beat estimates by a lot; write remarks before the public release.", "label": "RESTRICTED"}
+{"text": "Summarize the deposition preparation notes for the SEC investigation.", "label": "RESTRICTED"}
+{"text": "Write up the zero-day in our payments API with a working proof of concept.", "label": "RESTRICTED"}
+{"text": "Prepare the settlement strategy memo for the class action, privileged and confidential.", "label": "RESTRICTED"}
+{"text": "These are the production root credentials and MFA recovery codes; organize them in a table.", "label": "RESTRICTED"}
+{"text": "Board session notes: approve the write-down and the departure packages for three executives.", "label": "RESTRICTED"}
+{"text": "Draft the disclosure for the acquisition before it is announced to the market.", "label": "RESTRICTED"}
+{"text": "Summarize counsel's attorney work product on the whistleblower complaint.", "label": "RESTRICTED"}
+{"text": "List staff with HIV status from the benefits claims for the cost review.", "label": "RESTRICTED"}
+{"text": "Penetration test results with working payloads for the SSO gateway, please format them.", "label": "RESTRICTED"}
+{"text": "Respond to the regulator's privileged inquiry about how many records were exposed in the breach.", "label": "RESTRICTED"}
+{"text": "The tender offer price is set and only the deal team knows; draft the integration plan.", "label": "RESTRICTED"}
+{"text": "Insider info: we will announce the merger Monday, prepare the employee FAQ now.", "label": "RESTRICTED"}
+{"text": "Legal hold memo on the fraud investigation, privileged.", "label": "RESTRICTED"}
+{"text": "Write the patient summary for the employee who disclosed a cancer diagnosis.", "label": "RESTRICTED"}
+{"text": "Material non-public: guidance raise next week; draft the investor relations script.", "label": "RESTRICTED"}
+{"text": "Draft the confidential board resolution approving the sale of the company.", "label": "RESTRICTED"}
+{"text": "Outline how an attacker could chain the SSRF in our billing service to reach the metadata server.", "label": "RESTRICTED"}
+{"text": "Counsel advises we likely face a recall; prepare the privileged board briefing.", "label": "RESTRICTED"}
