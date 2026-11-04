@@ -1,0 +1,31 @@
+# Render Blueprint: one-click hosted demo of the Aegis gateway (secure-ai-gateway/).
+# Deploy: https://render.com/deploy?repo=https://github.com/kumarlakshya24/personal-projects
+#
+# Single container in embedded demo mode: the mock IdP and mock models run inside the gateway, with
+# SQLite and an in-memory token vault. Synthetic data only; no API keys; nothing leaves the container.
+# State (audit log, policy edits) resets whenever the service restarts or wakes from sleep.
+# See secure-ai-gateway/docs/deploy.md for what this mode does and does not demonstrate.
+services:
+  - type: web
+    name: aegis-gateway-demo
+    runtime: docker
+    plan: free
+    rootDir: secure-ai-gateway
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: AEGIS_ENV
+        value: demo
+      - key: AEGIS_EMBEDDED_DEMO
+        value: "true"
+      - key: DATABASE_URL
+        value: sqlite:////tmp/aegis.db
+      - key: OIDC_ISSUER
+        value: aegis-embedded-idp
+      - key: LLM_MODEL
+        value: mock-gpt
+      - key: AEGIS_RATE_LIMIT_PER_MINUTE
+        value: "120"
+      - key: AEGIS_LOG_LEVEL
+        value: INFO

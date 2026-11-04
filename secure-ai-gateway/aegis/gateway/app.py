@@ -13,7 +13,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from aegis.audit.store import AuditWriteError
 from aegis.config import Settings
 from aegis.dlp.engine import DetectorFailure
-from aegis.gateway.container import Container, build_container
+from aegis.gateway.container import Container, build_container, build_embedded_demo_container
 from aegis.gateway.routes_admin import router as admin_router
 from aegis.gateway.routes_agent import router as agent_router
 from aegis.gateway.routes_core import router as core_router
@@ -83,7 +83,9 @@ def create_app(container: Container | None = None, settings: Settings | None = N
     if container is None:
         settings = settings or Settings.from_env()
         logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-        container = build_container(settings)
+        container = (
+            build_embedded_demo_container(settings) if settings.embedded_demo else build_container(settings)
+        )
     app = FastAPI(
         title="Aegis Secure AI Gateway",
         version="0.1.0",

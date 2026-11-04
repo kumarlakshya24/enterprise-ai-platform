@@ -21,4 +21,5 @@ RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin aegis
 USER 10001
 
 EXPOSE 8080
-CMD ["uvicorn", "--factory", "aegis.gateway.app:app_factory", "--host", "0.0.0.0", "--port", "8080", "--no-server-header"]
+# Honors $PORT (Render, Cloud Run, Railway set it); defaults to 8080 for compose and docker run.
+CMD ["sh", "-c", "exec uvicorn --factory aegis.gateway.app:app_factory --host 0.0.0.0 --port \"${PORT:-8080}\" --no-server-header"]

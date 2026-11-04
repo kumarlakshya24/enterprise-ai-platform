@@ -56,6 +56,8 @@ def parse_keyring(raw: str) -> dict[str, bytes]:
 class Settings:
     env: str = "demo"  # demo | dev | prod
     demo_mode: bool = True
+    # Single process for a hosted demo: in-process mock IdP and mock models. Never in prod.
+    embedded_demo: bool = False
 
     database_url: str = "sqlite:///./aegis.db"
     redis_url: str = ""  # empty -> in-memory backends (single process only)
@@ -95,6 +97,7 @@ class Settings:
         s = cls(
             env=env,
             demo_mode=_env_bool("AEGIS_DEMO_MODE", env != "prod"),
+            embedded_demo=_env_bool("AEGIS_EMBEDDED_DEMO", False),
             database_url=_env("DATABASE_URL", "sqlite:///./aegis.db"),
             redis_url=_env("REDIS_URL"),
             vault_ttl_seconds=_env_int("AEGIS_VAULT_TTL_SECONDS", 900),
@@ -127,6 +130,10 @@ class Settings:
                 raise ConfigError("AEGIS_VAULT_ACTIVE_KID is not in AEGIS_VAULT_KEYS")
         if raw_audit:
             s.audit_hmac_key = base64.b64decode(raw_audit)
+        if s.embedded_demo and s.env == "prod":
+            raise ConfigError(
+                "AEGIS_EMBEDDED_DEMO collapses the IdP and models into the gateway; not allowed in prod"
+            )
         s.ensure_keys()
         if s.llm_provider == "openai_compatible" and not s.llm_base_url:
             raise ConfigError("LLM_PROVIDER=openai_compatible requires LLM_BASE_URL")

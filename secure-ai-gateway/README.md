@@ -40,6 +40,15 @@ The classifier's holdout is blind, so its number is the unbiased one.
 
 ---
 
+## Hosted demo
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kumarlakshya24/personal-projects)
+
+One click deploys a single-container version of the demo (free plan, no secrets, synthetic data,
+mock models). It runs every control, with the identity provider and models in-process instead of
+in separate containers. Free-plan latency, cold start, and the shared-state caveats are in
+[`docs/deploy.md`](docs/deploy.md).
+
 ## 60-second demo
 
 ![Scenario 1: the same complaint through a personal ChatGPT tab and through the gateway](docs/img/scenario-1-direct-paste.png)
@@ -213,6 +222,7 @@ secure-ai-gateway/
 ## More
 
 * [`docs/demo-script.md`](docs/demo-script.md): what to say and click, step by step
+* [`docs/deploy.md`](docs/deploy.md): hosting the demo on Render or any container host
 * [`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md): what this does not solve
 * [`docs/cost-and-scaling.md`](docs/cost-and-scaling.md): cost per 1,000 requests, horizontal scaling
 * [`docs/security-checklist.md`](docs/security-checklist.md): each control and the test that proves it

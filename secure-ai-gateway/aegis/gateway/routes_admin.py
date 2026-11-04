@@ -16,6 +16,7 @@ from aegis.gateway.pipeline import classifier_view
 from aegis.policy.engine import decide
 from aegis.policy.regression import BASELINE, CASES_DIR, Evaluator, gate, load_baseline, load_cases
 from aegis.policy.schema import PolicyBundle
+from aegis.policy.store import load_bundle_file
 from aegis.vault.backends import MemoryBackend
 from aegis.vault.crypto import VaultCipher
 from aegis.vault.vault import TokenVault, VaultContext
@@ -75,6 +76,14 @@ def get_bundle(
         "bundle": active.bundle.model_dump(mode="json"),
         "history": c.policies.history(),
     }
+
+
+@router.get("/policies/default")
+def default_bundle(
+    principal: Principal = Depends(require("policy:write")), c: Container = Depends(get_container)
+) -> dict[str, Any]:
+    """The bundled default policy. The demo UI uses it to restore a shared demo after edits."""
+    return {"bundle": load_bundle_file(c.settings.policy_path or None).model_dump(mode="json")}
 
 
 @router.put("/policies")

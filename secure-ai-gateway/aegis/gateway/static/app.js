@@ -26,10 +26,15 @@ async function token(user) {
   return state.tokens[user];
 }
 
-async function api(path, { method = "GET", body, user = state.user } = {}) {
+async function api(path, { method = "GET", body, user = state.user, retried = false } = {}) {
   const headers = { authorization: `Bearer ${await token(user)}` };
   if (body !== undefined) headers["content-type"] = "application/json";
   const r = await fetch(path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (r.status === 401 && !retried) {
+    // The hosted demo restarts after sleeping and its in-process IdP gets a new key: sign in again once.
+    delete state.tokens[user];
+    return api(path, { method, body, user, retried: true });
+  }
   let data = null;
   try { data = await r.json(); } catch { data = null; }
   return { ok: r.ok, status: r.status, data };
@@ -252,6 +257,14 @@ async function loadPolicy() {
   $("pol-version").textContent = `active ${res.data.policy_version} · ${res.data.history.length} revisions`;
 }
 
+async function restoreDefaultPolicy() {
+  const def = await api("/admin/policies/default");
+  if (!def.ok) { $("pol-result").textContent = `${errText(def)} (switch to Sam)`; return; }
+  const res = await api("/admin/policies", { method: "PUT", body: { bundle: def.data.bundle, note: "restore default policy" } });
+  if (res.ok) await loadPolicy();  // refresh the form first: loadPolicy clears the result box
+  $("pol-result").textContent = res.ok ? `RESTORED default policy as ${res.data.policy_version}` : errText(res);
+}
+
 async function applyPolicy() {
   if (!state.bundle) { $("pol-result").textContent = "Load the policy as Sam first."; return; }
   const bundle = JSON.parse(JSON.stringify(state.bundle));
@@ -266,9 +279,9 @@ async function applyPolicy() {
   $("pol-result").textContent = "Running the regression gate…";
   const res = await api("/admin/policies", { method: "PUT", body: { bundle, note: $("pol-note").value || "demo console" } });
   if (res.ok) {
+    await loadPolicy();  // refresh the form first: loadPolicy clears the result box
     $("pol-result").textContent = `ACTIVATED ${res.data.policy_version}\nscopes checked: ${res.data.gate.scopes_checked.join(", ")}\n` +
       `protection regressions: 0 · utility warnings: ${res.data.gate.utility_regressions.length}`;
-    await loadPolicy();
   } else if (res.status === 409) {
     const rep = res.data.detail.report;
     $("pol-result").textContent = `REFUSED: ${res.data.detail.message}\n\n` + rep.protection_regressions.slice(0, 15)
@@ -328,9 +341,17 @@ async function main() {
   $("approvals-refresh").addEventListener("click", loadApprovals);
   $("pol-apply").addEventListener("click", applyPolicy);
   $("pol-reload").addEventListener("click", loadPolicy);
+  $("pol-restore").addEventListener("click", restoreDefaultPolicy);
   $("audit-refresh").addEventListener("click", loadAudit);
   $("audit-verify").addEventListener("click", verifyAudit);
   await loadUsers();
+  try {
+    const h = await (await fetch("/healthz")).json();
+    if (h.mode === "embedded-demo") {
+      $("hosted-note").textContent = "Hosted demo: shared by every visitor, synthetic data, mock models. State resets when " +
+        "the service sleeps. If a previous visitor changed the policy, use Policy console → Restore default policy.";
+    }
+  } catch { /* health is informational */ }
 }
 
 main();

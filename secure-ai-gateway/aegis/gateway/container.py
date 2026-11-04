@@ -11,11 +11,11 @@ from sqlalchemy import Engine
 from aegis.agent.runner import AgentRunner, RunStore
 from aegis.agent.tools import Sandbox
 from aegis.audit.store import AuditStore
-from aegis.auth.oidc import KeyResolver, TokenVerifier, jwks_resolver
+from aegis.auth.oidc import KeyResolver, TokenVerifier, jwks_resolver, static_resolver
 from aegis.auth.ratelimit import RateLimiter
 from aegis.classifier.model import load_default_classifier
 from aegis.classifier.types import SensitivityClassifier
-from aegis.config import Settings
+from aegis.config import ConfigError, Settings
 from aegis.db import init_db, make_engine
 from aegis.dlp.engine import DLPEngine
 from aegis.guard.approvals import ApprovalService
@@ -71,6 +71,7 @@ class Container:
             "external_llm": {"name": self.external_llm.name, "model": self.external_llm.model},
             "local_llm": {"name": self.local_llm.name, "model": self.local_llm.model},
             "ephemeral_keys": self.settings.ephemeral_keys,
+            "mode": "embedded-demo" if self.settings.embedded_demo else "services",
             "policy_version": self.policies.active().version,
         }
 
@@ -152,3 +153,19 @@ def build_container(
         runs=RunStore(engine),
         extras={},
     )
+
+
+def build_embedded_demo_container(settings: Settings) -> Container:
+    """One process for a hosted demo: the mock IdP and mock models run inside the gateway.
+
+    Trust boundaries that the compose deployment keeps separate (IdP, provider, local model) are
+    collapsed here on purpose, so a free single-container host can serve the demo. Refused in prod.
+    """
+    if settings.env == "prod":
+        raise ConfigError("embedded demo mode is not allowed in prod")
+    from aegis.idp.issuer import TokenIssuer
+
+    issuer = TokenIssuer(settings.oidc_issuer, settings.oidc_audience)
+    container = build_container(settings, key_resolver=static_resolver(issuer.public_key()))
+    container.extras["token_issuer"] = issuer
+    return container
