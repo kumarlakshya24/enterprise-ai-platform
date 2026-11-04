@@ -35,7 +35,17 @@ def fake_high_entropy() -> str:
     return "Zx9" + "Qw7Er5Ty3Ui1Op8As6Df4Gh2Jk0Lz9Xc7Vb"
 
 
+def fake_password() -> str:
+    return "Wint" + "er2026" + "!x"
+
+
+def fake_db_password() -> str:
+    return "Pr0d" + "Passw0rd" + "!"
+
+
 TEMPLATE_VALUES = {
+    "FAKE_PASSWORD": fake_password,
+    "FAKE_DB_PASSWORD": fake_db_password,
     "FAKE_OPENAI_KEY": fake_openai_key,
     "FAKE_AWS_KEY_ID": fake_aws_key_id,
     "FAKE_GITHUB_TOKEN": fake_github_token,
