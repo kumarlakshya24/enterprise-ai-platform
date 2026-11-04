@@ -1,0 +1,120 @@
+# One command: `make up` (creates .env with random keys, then `docker compose up --build`).
+#
+# Network design: only the gateway sits on both networks. Postgres, Redis, the IdP and the local
+# model live on an internal network with no route out; the "third-party" LLM is reachable only
+# through the gateway.
+name: aegis
+
+x-app: &app
+  image: aegis-gateway:local
+  restart: unless-stopped
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aegis
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run `make env` first}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aegis -d aegis"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    # Vault cache: never persisted to disk; evicts the soonest-expiring keys first.
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - volatile-ttl
+      - --requirepass
+      - ${REDIS_PASSWORD:?run `make env` first}
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  idp:
+    <<: *app
+    build: .
+    command: ["uvicorn", "aegis.idp.app:app", "--host", "0.0.0.0", "--port", "9000", "--no-server-header"]
+    environment:
+      IDP_ISSUER: http://idp:9000
+      OIDC_AUDIENCE: aegis-gateway
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/healthz', timeout=2)"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  local-llm:
+    <<: *app
+    command: ["uvicorn", "aegis.mock_llm.app:app", "--host", "0.0.0.0", "--port", "8091", "--no-server-header"]
+    environment:
+      MOCK_LLM_PERSONA: local
+    networks: [internal]
+    depends_on:
+      idp: {condition: service_healthy}  # the idp service builds the shared image
+
+  mock-llm:
+    <<: *app
+    command: ["uvicorn", "aegis.mock_llm.app:app", "--host", "0.0.0.0", "--port", "8090", "--no-server-header"]
+    environment:
+      MOCK_LLM_PERSONA: external
+    networks: [egress]
+    ports: ["8090:8090"]  # read the third party's log: curl localhost:8090/_evidence/received
+    depends_on:
+      idp: {condition: service_healthy}
+
+  gateway:
+    <<: *app
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql+psycopg://aegis:${POSTGRES_PASSWORD}@postgres:5432/aegis
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      OIDC_ISSUER: http://idp:9000
+      OIDC_AUDIENCE: aegis-gateway
+      OIDC_JWKS_URL: http://idp:9000/.well-known/jwks.json
+      IDP_TOKEN_URL: http://idp:9000/token
+      LLM_PROVIDER: openai_compatible
+      LOCAL_LLM_PROVIDER: openai_compatible
+      LOCAL_LLM_BASE_URL: http://local-llm:8091/v1
+      AEGIS_EVAL_DIR: /app/eval
+    ports: ["8080:8080"]
+    networks: [internal, egress]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      idp: {condition: service_healthy}
+      mock-llm: {condition: service_started}
+      local-llm: {condition: service_started}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+networks:
+  internal:
+    internal: true
+  egress: {}
+
+volumes:
+  pgdata: {}

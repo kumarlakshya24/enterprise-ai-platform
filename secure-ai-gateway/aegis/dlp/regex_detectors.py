@@ -177,7 +177,8 @@ class CreditCardDetector:
         out: list[Finding] = []
         for m in self._re.finditer(text):
             raw = m.group(0)
-            digits = re.sub(r"\D", "", raw)
+            # \d also matches non-ASCII digits (e.g. fullwidth); convert to ASCII before Luhn.
+            digits = "".join(str(int(ch)) for ch in raw if ch.isdigit())
             if not 13 <= len(digits) <= 19 or not luhn_valid(digits):
                 continue
             if len(set(digits)) == 1:
@@ -319,6 +320,8 @@ class SecretDetector:
                     )
                 )
         for m in _URL_CREDENTIALS.finditer(text):
+            if _NOT_A_SECRET.match(m.group(1)):
+                continue  # ${POSTGRES_PASSWORD} and friends are references, not secrets
             out.append(
                 Finding(
                     EntityType.PASSWORD,

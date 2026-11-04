@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aegis Gateway Demo</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <strong>Aegis</strong> <span class="muted">secure AI agent gateway</span>
+  </div>
+  <div class="who">
+    <label for="user">Signed in as</label>
+    <select id="user"></select>
+    <span id="whoami" class="muted small"></span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="chat" role="tab">1 · 2 · 5 Chat side by side</button>
+  <button class="tab" data-tab="agent" role="tab">3 · 4 Agent side by side</button>
+  <button class="tab" data-tab="approvals" role="tab">Approvals</button>
+  <button class="tab" data-tab="policy" role="tab">Policy console</button>
+  <button class="tab" data-tab="audit" role="tab">Audit log</button>
+</nav>
+
+<main>
+  <!-- ============================================================ CHAT -->
+  <section id="tab-chat" class="panel active">
+    <div class="controls">
+      <select id="chat-scenario"></select>
+      <button id="chat-run" class="primary">Run both paths</button>
+      <button id="reset" class="ghost">Clear demo evidence</button>
+    </div>
+    <textarea id="chat-input" rows="4" spellcheck="false"></textarea>
+    <p id="chat-expect" class="muted small"></p>
+    <div class="split">
+      <article class="pane danger">
+        <h2>Unprotected <span class="muted">personal ChatGPT tab</span></h2>
+        <h3>What the third party received</h3>
+        <pre id="u-sent" class="box"></pre>
+        <h3>Answer</h3>
+        <pre id="u-answer" class="box"></pre>
+        <p class="muted small">No controls, no audit. The gateway never sees this traffic, which is why egress controls must
+          force AI traffic through it.</p>
+      </article>
+      <article class="pane safe">
+        <h2>Protected <span class="muted">company gateway</span></h2>
+        <div id="p-badges" class="badges"></div>
+        <h3>Sent to the model</h3>
+        <pre id="p-sent" class="box"></pre>
+        <h3>Answer shown to you (restored for your role)</h3>
+        <pre id="p-answer" class="box"></pre>
+        <h3>Why: policy decision</h3>
+        <ul id="p-reasons" class="reasons"></ul>
+        <div id="p-classifier" class="small"></div>
+        <h3>Entities</h3>
+        <table class="grid"><thead><tr><th>Type</th><th>Placeholder</th><th>Detector</th><th>Conf.</th><th>Action</th></tr></thead>
+          <tbody id="p-entities"></tbody></table>
+        <h3>Audit entries for this request</h3>
+        <ul id="p-audit" class="mono small"></ul>
+        <p id="p-latency" class="muted small"></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================ AGENT -->
+  <section id="tab-agent" class="panel">
+    <div class="controls">
+      <select id="agent-scenario"></select>
+      <button id="agent-run" class="primary">Run both paths</button>
+    </div>
+    <textarea id="agent-input" rows="3" spellcheck="false"></textarea>
+    <p id="agent-expect" class="muted small"></p>
+    <div class="split">
+      <article class="pane danger">
+        <h2>Unprotected agent</h2>
+        <ol id="ua-steps" class="steps"></ol>
+        <h3>What left the company (sandbox)</h3>
+        <pre id="ua-evidence" class="box"></pre>
+      </article>
+      <article class="pane safe">
+        <h2>Protected agent</h2>
+        <div id="pa-badges" class="badges"></div>
+        <h3>Task sent to the model</h3>
+        <pre id="pa-task" class="box"></pre>
+        <ol id="pa-steps" class="steps"></ol>
+        <h3>Result</h3>
+        <pre id="pa-final" class="box"></pre>
+        <h3>What left the company (sandbox)</h3>
+        <pre id="pa-evidence" class="box"></pre>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============================================================ APPROVALS -->
+  <section id="tab-approvals" class="panel">
+    <div class="controls">
+      <button id="approvals-refresh" class="primary">Refresh</button>
+      <span class="muted small">Approvers (Morgan) see the queue. Requesters cannot approve their own requests.</span>
+    </div>
+    <div id="approvals-list"></div>
+    <h3>Sandbox outbox</h3>
+    <pre id="outbox" class="box"></pre>
+  </section>
+
+  <!-- ============================================================ POLICY -->
+  <section id="tab-policy" class="panel">
+    <p class="muted small">Security admin (Sam) only. Every change is replayed against the regression corpus before it is
+      activated. Try weakening the card rule: the gateway refuses it.</p>
+    <div class="form">
+      <label>CONFIDENTIAL context route <select id="pol-conf"></select></label>
+      <label>RESTRICTED context route <select id="pol-restr"></select></label>
+      <label>INTERNAL context route <select id="pol-int"></select></label>
+      <label>CREDIT_CARD action <select id="pol-card"></select></label>
+      <label>ORG action <select id="pol-org"></select></label>
+      <label>Classifier enabled <input type="checkbox" id="pol-clf"></label>
+      <label>Injection threshold <input type="number" id="pol-inj" min="0.05" max="1" step="0.05"></label>
+      <label class="wide">Allowed email domains <input type="text" id="pol-allow"></label>
+      <label class="wide">Blocked personal email domains <input type="text" id="pol-block"></label>
+      <label class="wide">Change note <input type="text" id="pol-note" placeholder="why are you changing this?"></label>
+    </div>
+    <div class="controls">
+      <button id="pol-apply" class="primary">Apply through regression gate</button>
+      <button id="pol-reload" class="ghost">Reload active policy</button>
+      <span id="pol-version" class="muted small"></span>
+    </div>
+    <pre id="pol-result" class="box"></pre>
+  </section>
+
+  <!-- ============================================================ AUDIT -->
+  <section id="tab-audit" class="panel">
+    <div class="controls">
+      <button id="audit-refresh" class="primary">Refresh</button>
+      <button id="audit-verify" class="ghost">Verify hash chain</button>
+      <span id="audit-verify-result" class="small"></span>
+    </div>
+    <table class="grid"><thead><tr><th>#</th><th>Time</th><th>User</th><th>Event</th><th>Route / outcome</th><th>Details</th></tr></thead>
+      <tbody id="audit-rows"></tbody></table>
+  </section>
+</main>
+<footer class="muted small">Synthetic data only. Mock IdP, mock LLMs, sandboxed tools. Nothing leaves this machine.</footer>
+</body>
+</html>

@@ -117,7 +117,7 @@ database cannot reach the "third party" at all.
 | Classifier | `aegis/classifier/` | Label residual context (after tokenization) as PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED. Pure-Python inference over an exported TF-IDF + logistic regression model (no pickle). Explain with top weighted features. | Closed: low confidence escalates the label |
 | Policy engine | `aegis/policy/` | Combine entity findings, classifier label, and deterministic context markers into one decision: `allow`, `redact_and_continue`, `local_only`, `require_approval`, or `block`. Apply tenant and user overrides. Versioned. | Closed: invalid policy is rejected at write time |
 | Regression gate | `aegis/policy/regression.py` | Replays the regression corpus against a candidate policy. Refuses to activate a policy that loses protection on any case the baseline protected. Runs in CI and in the admin API. | Closed |
-| Router | `aegis/gateway/pipeline.py` | Send placeholders-only text to the external provider, or full text to the local provider, or nothing. | Closed |
+| Router | `aegis/gateway/pipeline.py` | Send placeholders-only text to the external provider or to the local provider (data minimization), or nothing. | Closed |
 | Agent runner | `aegis/agent/runner.py` | Bounded tool-use loop (max steps). Every tool call goes through the tool guard; every tool output goes through DLP and the injection detector before the model sees it. | Closed: a block ends the run |
 | Tool guard | `aegis/guard/interceptor.py` | Resolve placeholder recipients, enforce email domain allowlist and personal-domain blocklist, enforce URL allowlist, decode URLs (percent, base64, hex) and scan for raw or tokenized data, block risky tools in sessions tainted by injection, queue risky calls for approval. | Closed |
 | Approvals | `aegis/guard/approvals.py` | Pending queue with expiry, four-eyes rule (requester cannot approve), same-tenant approver with `tool:approve`. Payload encrypted at rest. | Closed: expired = never executes |
@@ -157,7 +157,7 @@ sequenceDiagram
         G->>X: tokenized prompt only
         X-->>G: answer with placeholders
     else route = local_only
-        G->>L: original prompt (never leaves boundary)
+        G->>L: tokenized prompt (never leaves the boundary)
         L-->>G: answer
     else route = block / require_approval
         G-->>U: safe error or approval id
@@ -171,7 +171,8 @@ sequenceDiagram
 ### 4.2 `POST /agent/run`
 
 1. The task goes through the same DLP, tokenization, classification, and routing as chat.
-   The route picks the model for the whole run.
+   The route picks the model for the whole run. Local models also receive tokenized text (data
+   minimization); the user still gets restored values.
 2. Loop (max 6 steps): the model proposes a tool call.
 3. Tool guard checks it. `allow` executes in the sandbox. `require_approval` stores an
    encrypted pending call and stops the run. `block` stops the run with a safe error.

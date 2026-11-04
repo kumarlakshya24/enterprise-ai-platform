@@ -67,7 +67,9 @@ def test_corporate_recipient_needs_approval(setup, default_policy: Policy) -> No
 
 def test_one_bad_recipient_in_a_list_blocks(setup, default_policy: Policy) -> None:  # type: ignore[no-untyped-def]
     guard, _ = setup
-    r = check(guard, default_policy, "send_email", to="a@acme.example, b@outlook.com", subject="s", body="b")
+    r = check(
+        guard, default_policy, "send_email", to="a@acme.example, not..real@outlook.com", subject="s", body="b"
+    )
     assert r.verdict is Verdict.BLOCK and "R-TOOL-PERSONAL-DOMAIN" in rules(r)
 
 

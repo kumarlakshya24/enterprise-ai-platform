@@ -23,6 +23,21 @@ LABEL_ORDER = [label.name for label in Label]
 ESCALATION_MASS = 0.3
 
 
+_STOPWORDS = frozenset(
+    """
+    a an the and or but if of to in on at for from by with about as is are was were be been being it
+    its this that these those we our us you your they their them he she his her i me my do does did
+    have has had will would can could should may might must not no so than then there here what
+    which who when where how all any some more most such into over under up down out just also very
+    please
+    """.split()  # noqa: SIM905 - readable word list
+)
+
+
+def _all_stopwords(gram: str) -> bool:
+    return all(tok in _STOPWORDS for tok in gram.split())
+
+
 class ModelIntegrityError(RuntimeError):
     pass
 
@@ -90,7 +105,9 @@ class TfidfLogRegClassifier:
         contributions = sorted(
             ((g, v * self.vocab[g][1][top]) for g, v in x.items()), key=lambda gv: gv[1], reverse=True
         )
-        top_features = [(g, w) for g, w in contributions[:5] if w > 0]
+        # Explanations skip pure-stopword n-grams ("the", "we will"): they carry score but no meaning
+        # for a reviewer. Scores and probabilities are unaffected.
+        top_features = [(g, w) for g, w in contributions if w > 0 and not _all_stopwords(g)][:5]
         return Classification(
             label=label,
             confidence=probs[top],

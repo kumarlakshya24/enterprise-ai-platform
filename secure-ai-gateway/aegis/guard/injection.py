@@ -180,7 +180,7 @@ class InjectionDetector:
                 signals.append(
                     {
                         "id": "encoded_instructions",
-                        "weight": 0.5,
+                        "weight": 0.7,  # decodes to an override or exfil instruction: never benign
                         "why": "base64 text that decodes to injected instructions",
                         "snippet": "",
                     }

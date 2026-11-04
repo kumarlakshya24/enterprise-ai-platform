@@ -14,7 +14,10 @@ from aegis.audit.store import AuditWriteError
 from aegis.config import Settings
 from aegis.dlp.engine import DetectorFailure
 from aegis.gateway.container import Container, build_container
+from aegis.gateway.routes_admin import router as admin_router
+from aegis.gateway.routes_agent import router as agent_router
 from aegis.gateway.routes_core import router as core_router
+from aegis.gateway.routes_demo import mount_demo
 from aegis.vault.backends import BackendUnavailable
 from aegis.vault.vault import SessionOwnershipError
 
@@ -128,31 +131,11 @@ def create_app(container: Container | None = None, settings: Settings | None = N
         )
 
     app.include_router(core_router)
-    _include_optional_routers(app, container)
-    return app
-
-
-def _include_optional_routers(app: FastAPI, container: Container) -> None:
-    """Routers added in later phases; imported here to keep create_app readable."""
-    try:
-        from aegis.gateway.routes_agent import router as agent_router
-
-        app.include_router(agent_router)
-    except ImportError:
-        pass
-    try:
-        from aegis.gateway.routes_admin import router as admin_router
-
-        app.include_router(admin_router)
-    except ImportError:
-        pass
+    app.include_router(agent_router)
+    app.include_router(admin_router)
     if container.settings.demo_mode:
-        try:
-            from aegis.gateway.routes_demo import mount_demo
-
-            mount_demo(app, STATIC_DIR)
-        except ImportError:
-            pass
+        mount_demo(app, STATIC_DIR)
+    return app
 
 
 def app_factory() -> FastAPI:
