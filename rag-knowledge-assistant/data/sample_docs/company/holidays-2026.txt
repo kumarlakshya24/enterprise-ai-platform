@@ -1,0 +1,25 @@
+---
+doc_id: company-holidays-2026
+title: Company Holidays 2026
+team: hr
+doc_type: reference
+version: "1.0"
+updated: 2025-12-01
+visibility: public
+audience: [all]
+---
+COMPANY HOLIDAYS 2026
+
+The following days are paid company holidays for all US employees:
+
+New Year's Day - January 1
+Martin Luther King Jr. Day - January 19
+Memorial Day - May 25
+Founders' Day - June 12
+Independence Day - July 3 (observed)
+Labor Day - September 7
+Thanksgiving - November 26 and 27
+Winter Break - December 24 to December 31
+
+FLOATING HOLIDAYS
+Each employee also receives 2 floating holidays per year, to be requested in Workday like PTO.
