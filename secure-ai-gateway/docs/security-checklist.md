@@ -1,7 +1,15 @@
+[Aegis](../README.md) › [Docs](README.md) › **Security checklist**
+
 # Security checklist
 
-Each control, where it is implemented, and what proves it. `make security-check` automates the
-repository and deployment items (13 checks); the tests prove the runtime behaviour.
+> [!TIP]
+> **In short:** 20 controls, each with its implementation and its proof. `make security-check`
+> automates the 13 repository and deployment checks, and the test suite proves the runtime behaviour.
+> What production still needs is listed at the end.
+
+**Contents:** [Controls](#controls) · [Not done](#not-done-would-be-required-for-production)
+
+## Controls
 
 | # | Control | Implementation | Proof |
 |---|---------|----------------|-------|

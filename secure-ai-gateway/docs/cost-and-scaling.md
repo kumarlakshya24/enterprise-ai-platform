@@ -1,8 +1,19 @@
+[Aegis](../README.md) › [Docs](README.md) › **Cost and scaling**
+
 # Cost and scaling
 
-The measured numbers come from this repo (`reports/latency.md`, plus the load and audit probes described
-below) on a 4 vCPU container host. Prices are **assumptions** for illustration: replace them with
-your contract rates.
+> [!TIP]
+> **In short:** the gateway costs about $0.0003 per 1,000 requests, so it's noise next to model
+> tokens. Its real cost is 10–20 ms of latency. One worker handles about 44 requests/s. The first
+> bottleneck is the single audit hash chain, at about 100 chat requests/s. Batching appends and
+> giving each tenant its own chain removes it.
+
+**Contents:** [Measured capacity](#measured-capacity) · [Cost per 1,000 requests](#cost-per-1000-requests) ·
+[Horizontal scaling](#horizontal-scaling)
+
+The measured numbers come from this repo (the [latency report](../reports/latency.md), plus the load
+and audit probes described below) on a 4 vCPU container host. Prices are **assumptions** for
+illustration: replace them with your contract rates.
 
 ## Measured capacity
 
