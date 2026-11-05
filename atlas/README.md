@@ -1,13 +1,12 @@
-# Atlas: durable execution for multi-agent work
+# Atlas: a durable runtime for multi-agent workflows
 
-The design problem is a worker that dies after a ledger debit has committed and before the
-run records success. Retrying the whole plan charges the customer twice. Atlas is the runtime
-that makes that window explicit: an event log, a separate effect store, and a resume path that
-heals from the idempotency key. Agents propose tool calls. They do not commit them.
+A worker dies after a ledger debit has committed and before the run records success. Retrying the plan charges the customer twice.
 
-This page leads with the shape of the system and the choices behind it. The refund, vendor, and
-incident workflows are the evidence, not the product. Measured numbers are from
-[`eval_results/latest/summary.json`](eval_results/latest/summary.json).
+Atlas is the durable runtime for that window. A planner and specialists propose tool calls. The engine writes an event log, stores the effect under an idempotency key, and resumes from that key so the debit stays at one. Agents propose calls. The runtime commits them.
+
+Offline. No API key, no Docker, no network. Deterministic mock agents and SQLite. `make up` serves the UI.
+
+The diagram and the decisions table are the review: what was chosen, what was rejected, and what the choice costs. The refund, vendor, and incident workflows are the evidence. Numbers are from [`eval_results/latest/summary.json`](eval_results/latest/summary.json). The kill-and-resume clip is in [Demo](#demo).
 
 ## System
 
@@ -160,17 +159,21 @@ Recovery time is simulated milliseconds from resume until the run is terminal ag
 
 The baseline passes where nothing goes wrong, and where the crash happens before any debit. It fails denial, both budgets, compensation, the blocked webhook, a Lumen refusal, a duplicate submit, and a crash after a side effect.
 
-`make kill-resume` is the idempotency decision under `SIGKILL`: child exit `-9`, lease blocks a second worker, then one debit, one email, one case close, zero completed steps re-run. `tests/test_kill_resume.py` runs it.
+## Demo
+
+`make kill-resume` is the idempotency decision under `SIGKILL`: child exit `-9`, the lease blocks a second worker, then one debit, one email, one case close, and zero completed steps re-run. `tests/test_kill_resume.py` runs the same path.
+
+![Atlas kill and resume: approval, a kill after the debit, resume with the ledger still at one, then a single-agent replay that debits twice](docs/assets/atlas-kill-resume.gif)
+
+<video src="docs/assets/atlas-kill-resume.mp4" poster="docs/assets/03-crashed-after-ledger.png" controls playsinline width="960"></video>
+
+The gif plays inline. The video is the same silent clip, [atlas-kill-resume.mp4](docs/assets/atlas-kill-resume.mp4) (about 13 seconds).
 
 ![Paused for approval. Lookup and quote are done. Nothing has been charged.](docs/assets/02-approval.png)
 
 ![Worker killed after the debit. Ledger debits stay at 1. The email has not been sent.](docs/assets/03-crashed-after-ledger.png)
 
 ![Resume heals the ledger step. Still one debit, now one email and one closed case.](docs/assets/04-resumed-one-debit.png)
-
-Short recording: [atlas-kill-resume.mp4](docs/assets/atlas-kill-resume.mp4).
-
-![Kill, resume, still one debit](docs/assets/atlas-kill-resume.gif)
 
 ## Run it
 
