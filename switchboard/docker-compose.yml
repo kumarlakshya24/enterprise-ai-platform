@@ -1,0 +1,20 @@
+services:
+  switchboard:
+    build: .
+    ports:
+      - "8092:8092"
+    environment:
+      SWITCHBOARD_HOST: 0.0.0.0
+      SWITCHBOARD_PORT: "8092"
+      SWITCHBOARD_DB: /tmp/switchboard.db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8092/healthz')",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
