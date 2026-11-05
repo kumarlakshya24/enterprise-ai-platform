@@ -1,0 +1,10 @@
+# Local state and secrets: never committed
+.env
+*.db
+*.db-journal
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/

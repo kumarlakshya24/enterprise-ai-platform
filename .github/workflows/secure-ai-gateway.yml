@@ -1,0 +1,62 @@
+name: secure-ai-gateway
+
+on:
+  push:
+    paths: ["secure-ai-gateway/**", ".github/workflows/secure-ai-gateway.yml"]
+  pull_request:
+    paths: ["secure-ai-gateway/**", ".github/workflows/secure-ai-gateway.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: secure-ai-gateway
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: secure-ai-gateway/requirements-dev.txt
+      - name: Install
+        run: make install PY=python
+      - name: Lint
+        run: make lint PY=python
+      - name: Type check
+        run: make typecheck PY=python
+      - name: Tests
+        run: make test PY=python
+      - name: DLP regression gate (fails the build if protection regresses)
+        run: make regression PY=python
+      - name: Red-team report
+        run: make redteam PY=python
+      - name: Security checklist
+        run: make security-check PY=python
+      - name: Latency budget (p95 < 300 ms)
+        run: python bench/latency.py --n 60 --label ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: secure-ai-gateway/reports/
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: make up
+      - name: End-to-end demo checks
+        run: |
+          pip install httpx
+          python scripts/demo.py --base-url http://localhost:8080
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail 200

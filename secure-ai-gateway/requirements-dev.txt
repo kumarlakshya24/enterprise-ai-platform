@@ -1,0 +1,9 @@
+-r requirements.txt
+pytest==9.2.0
+pytest-cov==7.1.0
+ruff==0.17.3
+mypy==2.4.1
+types-PyYAML==6.0.12.20261103
+# Training-time only: the gateway runs classifier inference in pure Python from JSON.
+scikit-learn==1.9.1
+numpy==2.5.4
