@@ -5,7 +5,7 @@ Usage:
     python -m app.evaluation.runner --profiles baseline full
     python -m app.evaluation.runner --no-reindex          # reuse the current index
 
-Outputs (eval_results/runs/<timestamp>/ and eval_results/latest/):
+Outputs: eval_results/latest/ (committed, cited by the README) and eval_results/runs/<timestamp>/ (local history, git-ignored):
     summary.json, summary.md   aggregated metrics per profile + cache experiment
     <profile>.json             per-question results (answer, citations, ranks, timings)
 """

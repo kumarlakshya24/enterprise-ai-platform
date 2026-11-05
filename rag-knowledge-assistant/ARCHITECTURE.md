@@ -5,6 +5,61 @@ the tradeoff, and what breaks first as documents or traffic grow. Measured numbe
 `20261104-010419` ([`eval_results/latest/summary.md`](eval_results/latest/summary.md)), produced on a 4-vCPU
 container with no GPU.
 
+> **TL;DR:** one PostgreSQL database holds vectors, BM25 postings, access-control columns and lineage, so
+> filtering happens *inside* retrieval and document updates are a single transaction. A cross-encoder turns wide
+> recall into precision and also decides when to refuse. A Redis cache is partitioned by permission and invalidated
+> by provenance. Each phase is a feature flag, so its effect is measured in isolation.
+
+**Contents:** [1. Goals](#1-goals-and-non-goals) · [2. Request path](#2-request-path-and-latency-budget) ·
+[3. Stack choices](#3-stack-choices-and-deviations-from-the-default) · [4. Decisions](#4-decisions) ·
+[5. Evaluation](#5-evaluation-design) · [6. Scaling](#6-what-breaks-at-scale-and-what-i-would-change) ·
+[7. Weaknesses](#7-known-weaknesses)
+
+### Decisions at a glance
+
+| Area | Choice | Main alternative rejected | Why |
+|:--|:--|:--|:--|
+| Store | PostgreSQL + pgvector (HNSW) | dedicated vector DB | ACL filters, BM25 and atomic re-indexing in one transaction |
+| Keyword search | BM25 over a `chunk_terms` inverted index in SQL | `ts_rank` | real IDF and length normalisation, same `WHERE` clause as vectors |
+| Chunking | structure first, semantic split second | fixed-size windows | tables and clauses stay whole; citations name sections |
+| Fusion | weighted RRF (k=60) | score averaging | cosine and BM25 scores are not comparable |
+| Precision | cross-encoder 50 → 5, int8 | LLM re-ranking | ~330 ms on CPU, deterministic, and doubles as the refusal signal |
+| Access | filter inside retrieval SQL | post-filter top-k | no leaks through debug output; no recall loss |
+| Refusal | calibrated score gate + identifier grounding | “trust the LLM to say no” | refuses before spending tokens; can't substitute codes |
+| Cache | Redis HNSW, scope-partitioned, provenance-invalidated | exact-match cache | paraphrases hit, permissions and freshness are never violated |
+| Models | ONNX Runtime on CPU | PyTorch + sentence-transformers | smaller image, no GPU, faster cold start |
+
+### One request, end to end
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as Employee
+  participant API as FastAPI
+  participant C as Redis cache
+  participant PG as Postgres (pgvector + BM25)
+  participant X as Cross-encoder
+  participant G as Generator
+  U->>API: question + identity
+  API->>C: KNN in this user's scope partition
+  alt similar question cached (and codes match)
+    C-->>API: cited answer (~5 ms)
+  else miss
+    API->>PG: vector ⊕ BM25 (+ variants), ACL + audience in WHERE
+    PG-->>API: 50 fused candidates
+    API->>X: score (question, chunk) pairs, with a latency budget
+    X-->>API: top 5 + scores
+    alt best score below threshold, or unknown code
+      API-->>U: “Not found in the provided documents”
+    else enough evidence
+      API->>G: fenced, PII-redacted context
+      G-->>API: answer with [n] citations (uncited → discarded)
+      API->>C: store, keyed by the cited doc_ids
+    end
+  end
+  API-->>U: answer · citations · per-stage timings · cost
+```
+
 ## 1. Goals and non-goals
 
 | Goal | How it is enforced | Where it is measured |

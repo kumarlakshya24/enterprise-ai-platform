@@ -1,4 +1,4 @@
 
 # --- rag-knowledge-assistant
 models/
-eval_results/runs/*-api/
+eval_results/runs/

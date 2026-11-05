@@ -48,5 +48,6 @@ window.__render=function(t){
   }
   const D=SCENE.dur, f=document.getElementById('fade');
   f.style.opacity=Math.max(1-t/0.45,(t-(D-0.45))/0.45,0);
-  document.getElementById('bg').style.transform=`translate(${Math.sin(t/6)*30}px,${Math.cos(t/7)*20}px)`;
+  // A drifting background looks nice in video but defeats GIF frame-diff compression; ?staticbg=1 freezes it.
+  if(!new URLSearchParams(location.search).has('staticbg'))document.getElementById('bg').style.transform=`translate(${Math.sin(t/6)*30}px,${Math.cos(t/7)*20}px)`;
 };
