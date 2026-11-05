@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas</title>
+<style>
+  :root {
+    --bg: #10141a;
+    --panel: #171d27;
+    --ink: #e7edf5;
+    --muted: #8e9aab;
+    --line: #2c3646;
+    --copper: #d4894c;
+    --green: #3cba8b;
+    --red: #e15d4c;
+    --amber: #e2b340;
+    --blue: #7aa2f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.45 "Segoe UI", "Helvetica Neue", sans-serif;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 28px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mark {
+    font-family: Palatino, "Iowan Old Style", Georgia, serif;
+    font-size: 28px;
+    letter-spacing: 0.14em;
+    margin: 0;
+  }
+  .mark span { color: var(--copper); }
+  header p { margin: 0; color: var(--muted); }
+  main {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 250px;
+    gap: 16px;
+    padding: 16px 28px 8px;
+  }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    min-width: 0;
+  }
+  h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  label { display: block; margin: 8px 0 4px; color: var(--muted); font-size: 12px; }
+  input, select, button { width: 100%; font: inherit; color: var(--ink); }
+  input, select {
+    background: #10151d;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  button {
+    margin-top: 10px;
+    background: var(--copper);
+    color: #1a120c;
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-weight: 650;
+    cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button.good { background: var(--green); color: #06281c; }
+  button.bad { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .row { display: flex; gap: 8px; }
+  .row button { flex: 1; }
+  #status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #243044;
+    color: var(--blue);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  #banner {
+    display: none;
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #2a2116;
+    border: 1px solid #6a4a28;
+    color: #f0d7b8;
+  }
+  #graph {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    min-height: 220px;
+    min-width: 0;
+    overflow-x: auto;
+    padding-top: 6px;
+  }
+  .wave { display: flex; flex-direction: column; gap: 10px; min-width: 118px; flex: 1 0 118px; }
+  .node {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 10px;
+    background: #121821;
+  }
+  .node strong { display: block; font-size: 13px; }
+  .node em { color: var(--muted); font-style: normal; font-size: 12px; }
+  .node small { display: block; color: var(--muted); margin-top: 4px; }
+  .node.completed { border-color: #246b52; }
+  .node.running, .node.waiting_approval, .node.waiting_retry { border-color: var(--amber); }
+  .node.failed, .node.compensated { border-color: var(--red); }
+  .node.skipped { opacity: 0.7; }
+  .counts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .count {
+    background: #10151d;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+  }
+  .count b { display: block; font-size: 28px; font-variant-numeric: tabular-nums; }
+  .count span { color: var(--muted); font-size: 12px; }
+  #events { margin: 8px 28px 20px; }
+  #event-log { list-style: none; margin: 0; padding: 0; max-height: 180px; overflow: auto; }
+  #event-log li { padding: 4px 0; border-bottom: 1px solid #222a36; color: var(--muted); font-family: ui-monospace, monospace; font-size: 12px; }
+  #event-log li b { color: var(--ink); font-weight: 600; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1 class="mark">AT<span>L</span>AS</h1>
+  <p>Durable runs for multi-agent work. Checkpoints, idempotent tools, approvals, compensation.</p>
+</header>
+<main>
+  <section>
+    <h2>Start a run</h2>
+    <label for="workflow">Workflow</label>
+    <select id="workflow"></select>
+    <label for="customer">Customer</label>
+    <input id="customer" value="cus_1042" />
+    <label for="amount">Amount (USD)</label>
+    <input id="amount" type="number" value="40" />
+    <label for="email">Email</label>
+    <input id="email" value="dana.holloway@example.com" />
+    <label for="fault">Injected fault</label>
+    <select id="fault">
+      <option value="">None</option>
+      <option value="email-permanent">Email fails after the debit</option>
+    </select>
+    <label for="crash">Crash injection</label>
+    <select id="crash">
+      <option value="">None</option>
+      <option value="post_ledger:after_remote">Kill after the ledger debit commits</option>
+      <option value="post_ledger:after_intent">Kill before the ledger debit</option>
+      <option value="post_ledger:after_remote:compensate">Kill during compensation</option>
+    </select>
+    <button id="start" type="button">Start run</button>
+    <button id="baseline" class="ghost" type="button">Replay crash with a single agent</button>
+    <p id="baseline-note" class="hidden"></p>
+  </section>
+  <section>
+    <h2>Run graph <span id="status-pill">idle</span></h2>
+    <div id="banner"></div>
+    <div class="row" id="actions">
+      <button id="approve" class="good" type="button" disabled>Approve</button>
+      <button id="deny" class="bad" type="button" disabled>Deny</button>
+      <button id="resume" type="button" disabled>Resume</button>
+    </div>
+    <div id="graph"></div>
+  </section>
+  <section>
+    <h2>Side effects</h2>
+    <div class="counts">
+      <div class="count"><b id="ledger-count">0</b><span>ledger debits</span></div>
+      <div class="count"><b id="credit-count">0</b><span>compensating credits</span></div>
+      <div class="count"><b id="email-count">0</b><span>emails sent</span></div>
+      <div class="count"><b id="case-count">0</b><span>cases closed</span></div>
+    </div>
+    <p id="budget" style="color: var(--muted); margin-bottom: 0;"></p>
+    <p id="plan" style="color: var(--muted);"></p>
+  </section>
+</main>
+<section id="events">
+  <h2>Event log</h2>
+  <ol id="event-log"></ol>
+</section>
+<script>
+const $ = (id) => document.getElementById(id);
+let current = null;
+
+const labels = {
+  completed: "done", running: "running", waiting_approval: "needs approval",
+  waiting_retry: "backing off", failed: "failed", skipped: "skipped",
+  pending: "pending", ready: "ready", compensated: "compensated"
+};
+
+async function loadWorkflows() {
+  const rows = await fetch("/api/workflows").then((r) => r.json());
+  const order = ["refund", "vendor_onboarding", "incident_response", "sms_notice"];
+  rows.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  $("workflow").innerHTML = rows.map((row) => `<option value="${row.id}">${row.title}</option>`).join("");
+}
+
+function inputs() {
+  const id = $("workflow").value;
+  if (id === "vendor_onboarding") return { vendor_id: "ven_9" };
+  if (id === "incident_response") return { incident_id: "inc_441" };
+  if (id === "sms_notice") return { phone: "+15555550100" };
+  const payload = {
+    customer_id: $("customer").value,
+    amount_usd: Number($("amount").value),
+    email: $("email").value,
+    reason: "duplicate charge",
+    policy_question: "What is the customer refund policy?"
+  };
+  if ($("fault").value === "email-permanent") {
+    payload.fail_tools = { "email.send": { mode: "permanent" } };
+  }
+  return payload;
+}
+
+function render(snap) {
+  current = snap;
+  $("status-pill").textContent = snap.status || "idle";
+  const crashed = snap.crashed || (snap.lease && snap.lease.expired && snap.status === "running");
+  const banner = $("banner");
+  if (snap.crashed) {
+    banner.style.display = "block";
+    banner.textContent = "Worker stopped after a committed side effect. The completion event was not written. Resume heals from the effect key.";
+  } else if (snap.status === "paused_approval") {
+    banner.style.display = "block";
+    banner.textContent = "Paused for a human. Nothing expensive has been sent.";
+  } else if (snap.status === "compensated") {
+    banner.style.display = "block";
+    banner.textContent = "A later step failed. Compensating credits reversed the debit. Net ledger movement is zero.";
+  } else {
+    banner.style.display = "none";
+  }
+  $("approve").disabled = snap.status !== "paused_approval";
+  $("deny").disabled = snap.status !== "paused_approval";
+  $("resume").disabled = !(snap.crashed || snap.status === "running" || snap.status === "waiting_retry");
+  const waves = new Map();
+  (snap.activities || []).forEach((activity) => {
+    const key = activity.wave;
+    if (!waves.has(key)) waves.set(key, []);
+    waves.get(key).push(activity);
+  });
+  $("graph").innerHTML = [...waves.keys()].sort((a, b) => a - b).map((wave) => {
+    const cards = waves.get(wave).map((activity) => {
+      const healed = activity.healed ? " · healed" : "";
+      return `<div class="node ${activity.status}"><strong>${activity.id}</strong><em>${activity.agent} · ${labels[activity.status] || activity.status}${healed}</em><small>${activity.tool}</small></div>`;
+    }).join("");
+    return `<div class="wave">${cards}</div>`;
+  }).join("");
+  const counts = snap.effect_counts || {};
+  $("ledger-count").textContent = counts["ledger.post"] || 0;
+  $("credit-count").textContent = counts["ledger.reverse"] || 0;
+  $("email-count").textContent = counts["email.send"] || 0;
+  $("case-count").textContent = counts["case.close"] || 0;
+  const budget = snap.budget || {};
+  $("budget").textContent = snap.cost_usd == null ? "" :
+    `Accounted cost $${Number(snap.cost_usd).toFixed(3)} · steps ${snap.steps} · cap $${budget.max_cost_usd} / ${budget.max_steps} steps`;
+  $("plan").textContent = snap.plan_rationale || "";
+  const events = (snap.events || []).slice(-14);
+  $("event-log").innerHTML = events.map((event) => `<li><b>${event.type}</b> ${summarize(event)}</li>`).join("");
+}
+
+function summarize(event) {
+  const payload = event.payload || {};
+  if (payload.activity_id && payload.rule) return payload.activity_id + " " + payload.rule;
+  if (payload.activity_id) return payload.activity_id + (payload.decision ? " " + payload.decision : "");
+  if (payload.status) return payload.status;
+  if (payload.reason) return payload.reason;
+  return "";
+}
+
+async function post(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body || {})
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+
+$("start").onclick = async () => {
+  $("baseline-note").classList.add("hidden");
+  const snap = await post("/api/runs", {
+    workflow_id: $("workflow").value,
+    inputs: inputs(),
+    crash_after: $("crash").value || null,
+    idempotency_key: "ui-" + Date.now()
+  });
+  render(snap);
+};
+
+$("approve").onclick = async () => {
+  const snap = await post(`/api/runs/${current.id}/decision`, {
+    decision: "approved",
+    actor: "morgan",
+    crash_after: $("crash").value || null
+  });
+  render(snap);
+};
+
+$("deny").onclick = async () => {
+  render(await post(`/api/runs/${current.id}/decision`, { decision: "denied", actor: "morgan" }));
+};
+
+$("resume").onclick = async () => {
+  render(await post(`/api/runs/${current.id}/resume`, {}));
+};
+
+$("baseline").onclick = async () => {
+  const report = await post("/api/baseline", {
+    workflow_id: $("workflow").value || "refund",
+    inputs: inputs(),
+    crash_after: $("crash").value || "post_ledger:after_remote"
+  });
+  const note = $("baseline-note");
+  note.classList.remove("hidden");
+  const debits = (report.effect_counts || {})["ledger.post"] || 0;
+  note.textContent = `Single agent after the same crash: status ${report.status}, ledger debits ${debits}, completed steps re-run ${report.recovery.completed_steps_rerun}. No effect key, so the debit is repeated.`;
+};
+
+loadWorkflows();
+</script>
+</body>
+</html>
