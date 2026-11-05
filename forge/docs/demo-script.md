@@ -2,7 +2,7 @@
 
 About six minutes. Terminal on the left, UI on the right (`make up`, http://127.0.0.1:8095). Run `make demo` once before recording so the checks are green.
 
-A frame sequence captured from that UI is `docs/assets/demo.mp4`. Still frames are `ui-home.png`, `ui-sum.png`, `ui-traversal.png`, `ui-import.png`, and `ui-regression.png`.
+A frame sequence captured from that UI is `docs/assets/demo.mp4`. The same frames are `docs/assets/demo.gif`, which the README embeds next to the video. Still frames are `ui-home.png`, `ui-sum.png`, `ui-traversal.png`, `ui-import.png`, and `ui-regression.png`.
 
 ## How to record
 
