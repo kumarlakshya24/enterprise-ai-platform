@@ -92,7 +92,7 @@ def run_kill_resume(directory: Path, lease_s: float = 0.4) -> dict[str, Any]:
         "mid_activity": post["status"],
         "mid_healed": post["healed"],
         "mid_ledger": ledger_mid,
-        "mid_email": effect_store.counts(run_id).get("email.send", 0) if False else mid["effect_counts"].get("email.send", 0),
+        "mid_email": mid["effect_counts"].get("email.send", 0),
         "final_status": resume_snap["status"],
         "final_counts": final_counts,
         "recovery": resume_snap["recovery"],

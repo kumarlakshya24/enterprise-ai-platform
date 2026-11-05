@@ -23,6 +23,18 @@ ALLOWED_EMAIL_DOMAINS = frozenset({"example.com", "acme.example"})
 URL_ALLOWLIST = frozenset({"status.acme.example", "hooks.acme.example", "api.acme.example"})
 
 
+def require_http_url(base_url: str) -> str:
+    """Return ``base_url`` without a trailing slash, or raise if it is not http(s).
+
+    ``urllib`` also opens ``file://`` and other schemes; a sibling-service URL that came from the
+    environment must not be able to point the adapter at the local filesystem.
+    """
+    parsed = urlparse(base_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError(f"expected an http(s) base URL, got {base_url!r}")
+    return base_url.rstrip("/")
+
+
 @dataclass(frozen=True)
 class GuardDecision:
     verdict: str
@@ -104,7 +116,7 @@ class HttpAegisGuard:
     """POST ``{AEGIS_BASE_URL}/v1/tool-guard/evaluate``. Fail closed on any error."""
 
     def __init__(self, base_url: str, timeout: float = 2.0) -> None:
-        self.base_url = base_url.rstrip("/")
+        self.base_url = require_http_url(base_url)
         self.timeout = timeout
 
     def evaluate(
@@ -127,14 +139,14 @@ class HttpAegisGuard:
                 "rationale": rationale,
             }
         ).encode()
-        request = urllib.request.Request(
+        request = urllib.request.Request(  # noqa: S310 - http(s) only, see __init__
             f"{self.base_url}/v1/tool-guard/evaluate",
             data=body,
             headers={"content-type": "application/json"},
             method="POST",
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:  # noqa: S310 - http(s) only, see __init__
                 data = json.loads(response.read().decode())
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
             return GuardDecision(

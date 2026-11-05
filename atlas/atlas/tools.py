@@ -190,9 +190,7 @@ def _provision(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
 
 
 def _deprovision(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:
-    return _once(
-        ctx, "vendor.deprovision", "provision", {"vendor_id": args["vendor_id"], "action": "deprovision"}
-    )
+    return _once(ctx, "vendor.deprovision", "provision", {"vendor_id": args["vendor_id"], "action": "deprovision"})
 
 
 def _status(ctx: ToolContext, args: dict[str, Any]) -> ToolResult:

@@ -70,9 +70,7 @@ def test_raising_the_budget_continues(world) -> None:
         budget={"max_steps": 1, "max_cost_usd": 1, "on_exceeded": "pause"},
     )
     assert paused["status"] == "paused_budget"
-    done = world.engine.raise_budget(
-        paused["id"], {"max_steps": 20, "max_cost_usd": 1, "on_exceeded": "pause"}
-    )
+    done = world.engine.raise_budget(paused["id"], {"max_steps": 20, "max_cost_usd": 1, "on_exceeded": "pause"})
     assert done["status"] == "completed"
     assert done["effect_counts"]["ledger.post"] == 1
 

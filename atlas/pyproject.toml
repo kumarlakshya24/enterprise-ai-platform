@@ -30,3 +30,18 @@ testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["eval_results", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF"]
+ignore = ["S101", "S603", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S108"]
+"scripts/**" = ["T201"]
+# Markdown table rows of the generated evidence report; wrapping them hides the table shape.
+"atlas/evaluation/runner.py" = ["E501"]

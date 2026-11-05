@@ -20,13 +20,11 @@ def _serve(handler: type[BaseHTTPRequestHandler]) -> tuple[ThreadingHTTPServer, 
 
 def test_aegis_http_adapter_maps_the_verdict() -> None:
     class Handler(BaseHTTPRequestHandler):
-        def do_POST(self) -> None:  # noqa: N802
+        def do_POST(self) -> None:
             length = int(self.headers.get("content-length", "0"))
             body = json.loads(self.rfile.read(length))
             assert body["tool"] == "http.post"
-            payload = json.dumps(
-                {"verdict": "block", "rule": "R-TOOL-URL-NOT-ALLOWLISTED", "message": "no"}
-            ).encode()
+            payload = json.dumps({"verdict": "block", "rule": "R-TOOL-URL-NOT-ALLOWLISTED", "message": "no"}).encode()
             self.send_response(200)
             self.send_header("content-type", "application/json")
             self.send_header("content-length", str(len(payload)))
@@ -67,7 +65,7 @@ def test_aegis_adapter_fails_closed_when_the_gateway_is_down() -> None:
 
 def test_lumen_http_adapter_reads_the_ask_contract() -> None:
     class Handler(BaseHTTPRequestHandler):
-        def do_POST(self) -> None:  # noqa: N802
+        def do_POST(self) -> None:
             assert self.headers.get("x-user-id") == "atlas-worker"
             payload = json.dumps(
                 {
@@ -98,3 +96,17 @@ def test_lumen_adapter_refuses_when_the_service_is_down() -> None:
     answer = HttpLumen("http://127.0.0.1:1", "atlas-worker").ask("refund?", principal="atlas-worker")
     assert answer["refused"] is True
     assert answer["answer"] == REFUSAL
+
+
+def test_http_adapters_reject_non_http_base_urls() -> None:
+    import pytest
+
+    from atlas.guard import HttpAegisGuard
+    from atlas.knowledge import HttpLumen
+
+    for bad in ("file:///etc/passwd", "ftp://example.com", "localhost:8080", ""):
+        with pytest.raises(ValueError):
+            HttpAegisGuard(bad)
+        with pytest.raises(ValueError):
+            HttpLumen(bad, "atlas-worker")
+    assert HttpAegisGuard("http://127.0.0.1:8080/").base_url == "http://127.0.0.1:8080"

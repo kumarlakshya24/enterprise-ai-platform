@@ -103,7 +103,11 @@ class BaselineAgent:
                     self.error = spec.get("error", spec["mode"])
                     self.started_unfinished.append(definition["id"])
                     return self.report()
-                if definition["tool"] == "sms.send" or not definition["idempotent"] or not TOOL_META[definition["tool"]]["idempotent"]:
+                if (
+                    definition["tool"] == "sms.send"
+                    or not definition["idempotent"]
+                    or not TOOL_META[definition["tool"]]["idempotent"]
+                ):
                     self._raw_effect(definition, inputs, now)
                     self.finished.append(definition["id"])
                     continue
@@ -119,7 +123,9 @@ class BaselineAgent:
         self.status = "completed"
         return self.report()
 
-    def _account(self, definition: dict[str, Any], *, replay: bool, catch_up_done: bool, crashed_id: str | None) -> None:
+    def _account(
+        self, definition: dict[str, Any], *, replay: bool, catch_up_done: bool, crashed_id: str | None
+    ) -> None:
         self.steps += 1
         self.cost_usd = money(self.cost_usd + float(definition["cost_usd"]))
         if not replay:
@@ -174,7 +180,11 @@ def _payload(tool: str, inputs: dict[str, Any]) -> dict[str, Any]:
             "currency": "USD",
         }
     if tool == "email.send":
-        return {"to": inputs.get("email") or inputs.get("vendor_email") or "ap-vendors@acme.example", "subject": "baseline", "body": ""}
+        return {
+            "to": inputs.get("email") or inputs.get("vendor_email") or "ap-vendors@acme.example",
+            "subject": "baseline",
+            "body": "",
+        }
     if tool == "case.close":
         return {"case_id": f"case-{inputs.get('customer_id')}", "action": "close"}
     if tool == "http.post":

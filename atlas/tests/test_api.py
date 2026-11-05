@@ -19,7 +19,7 @@ def _client(tmp_path) -> TestClient:
         lumen_base_url="http://127.0.0.1:9",
         lumen_user_id="atlas-worker",
         host="127.0.0.1",
-        port=8095,
+        port=8096,
     )
     return TestClient(create_app(settings.db_path, settings.effects_path, settings))
 
