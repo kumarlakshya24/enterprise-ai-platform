@@ -1,4 +1,5 @@
 """Prompt templates. Retrieved text is fenced as untrusted data."""
+
 from __future__ import annotations
 
 from xml.sax.saxutils import escape
@@ -24,8 +25,10 @@ def format_context(contexts: list[Candidate]) -> str:
     parts = []
     for i, c in enumerate(contexts, start=1):
         section = escape(c.heading_path[-1]) if c.heading_path else ""
-        parts.append(f'<document index="{i}" title="{escape(c.title)}" section="{section}" '
-                     f'team="{c.team}" version="{escape(c.version_label)}">\n{escape(c.content)}\n</document>')
+        parts.append(
+            f'<document index="{i}" title="{escape(c.title)}" section="{section}" '
+            f'team="{c.team}" version="{escape(c.version_label)}">\n{escape(c.content)}\n</document>'
+        )
     return "<documents>\n" + "\n".join(parts) + "\n</documents>"
 
 

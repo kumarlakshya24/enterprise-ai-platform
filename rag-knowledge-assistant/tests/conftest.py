@@ -5,6 +5,7 @@ namespace, with the deterministic hash embedder and no re-ranker, so they are
 fast and do not depend on model downloads. They are skipped when the services
 are not reachable.
 """
+
 from __future__ import annotations
 
 import os
@@ -48,9 +49,16 @@ SERVICES = _services_up()
 
 @pytest.fixture(scope="session")
 def test_settings(tmp_path_factory) -> Settings:
-    return Settings(database_url=_test_db_url(), redis_url=REDIS_URL, embedding_provider="hash",
-                    reranker_provider="none", llm_provider="extractive", min_vector_score=0.0,
-                    docs_dir=tmp_path_factory.mktemp("docs"), _env_file=None)
+    return Settings(
+        database_url=_test_db_url(),
+        redis_url=REDIS_URL,
+        embedding_provider="hash",
+        reranker_provider="none",
+        llm_provider="extractive",
+        min_vector_score=0.0,
+        docs_dir=tmp_path_factory.mktemp("docs"),
+        _env_file=None,
+    )
 
 
 @pytest.fixture()

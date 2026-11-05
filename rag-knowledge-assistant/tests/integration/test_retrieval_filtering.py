@@ -1,4 +1,5 @@
 """Retrieval (vector, BM25, hybrid) and pre-ranking filters (RBAC + audience)."""
+
 import pytest
 
 from app.models import Principal
@@ -14,21 +15,43 @@ DAVE = Principal("dave", "hr", ["employee", "hr_admin"])
 
 @pytest.fixture()
 def corpus(svc, docdir):
-    write_doc(docdir, "vpn.md", {"doc_id": "vpn", "title": "VPN Guide", "team": "it"},
-              "# VPN Guide\n## Errors\nVPN-ERR-809 means the device certificate expired. Re-enroll in Company Portal.\n"
-              "VPN-ERR-503 means the gateway is under maintenance on Sundays.")
-    write_doc(docdir, "fin.md", {"doc_id": "fin-remote", "title": "Finance Analyst Remote Work", "team": "finance",
-                                 "audience": ["finance"]},
-              "# Finance Analyst Remote Work\nFinance analysts may work remotely up to 4 days per week.")
-    write_doc(docdir, "sales.md", {"doc_id": "sales-remote", "title": "Sales Analyst Remote Work", "team": "sales",
-                                   "audience": ["sales"]},
-              "# Sales Analyst Remote Work\nSales operations analysts are remote-first and work from home.")
-    write_doc(docdir, "comp.md", {"doc_id": "comp", "title": "Compensation Bands", "team": "hr",
-                                  "visibility": "restricted", "allowed_roles": ["hr_admin"]},
-              "# Compensation Bands\nLevel L5 salary band ranges from $124,000 to $168,000.")
-    write_doc(docdir, "oncall.md", {"doc_id": "oncall", "title": "On-call Runbook", "team": "engineering",
-                                    "visibility": "team"},
-              "# On-call Runbook\nSEV1 pages must be acknowledged within 5 minutes.")
+    write_doc(
+        docdir,
+        "vpn.md",
+        {"doc_id": "vpn", "title": "VPN Guide", "team": "it"},
+        "# VPN Guide\n## Errors\nVPN-ERR-809 means the device certificate expired. Re-enroll in Company Portal.\n"
+        "VPN-ERR-503 means the gateway is under maintenance on Sundays.",
+    )
+    write_doc(
+        docdir,
+        "fin.md",
+        {"doc_id": "fin-remote", "title": "Finance Analyst Remote Work", "team": "finance", "audience": ["finance"]},
+        "# Finance Analyst Remote Work\nFinance analysts may work remotely up to 4 days per week.",
+    )
+    write_doc(
+        docdir,
+        "sales.md",
+        {"doc_id": "sales-remote", "title": "Sales Analyst Remote Work", "team": "sales", "audience": ["sales"]},
+        "# Sales Analyst Remote Work\nSales operations analysts are remote-first and work from home.",
+    )
+    write_doc(
+        docdir,
+        "comp.md",
+        {
+            "doc_id": "comp",
+            "title": "Compensation Bands",
+            "team": "hr",
+            "visibility": "restricted",
+            "allowed_roles": ["hr_admin"],
+        },
+        "# Compensation Bands\nLevel L5 salary band ranges from $124,000 to $168,000.",
+    )
+    write_doc(
+        docdir,
+        "oncall.md",
+        {"doc_id": "oncall", "title": "On-call Runbook", "team": "engineering", "visibility": "team"},
+        "# On-call Runbook\nSEV1 pages must be acknowledged within 5 minutes.",
+    )
     svc.indexer.ingest_directory(docdir)
     return svc
 
@@ -56,7 +79,8 @@ def test_restricted_docs_filtered_before_ranking(corpus, who, can_see):
     where, params = build_where(who, None, enforce_acl=True)
     qv = corpus.embedder.embed(["L5 salary band"])[0]
     found = set(_docs(vector_search(corpus.db, qv, 50, where, params))) | set(
-        _docs(bm25_search(corpus.db, "L5 salary band", 50, where, params)))
+        _docs(bm25_search(corpus.db, "L5 salary band", 50, where, params))
+    )
     assert ("comp" in found) is can_see
 
 

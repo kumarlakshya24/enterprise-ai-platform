@@ -1,4 +1,5 @@
 """Domain objects shared across modules."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -9,6 +10,7 @@ from typing import Any
 @dataclass
 class Block:
     """A structural unit produced by a parser."""
+
     kind: str  # heading | paragraph | list_item | clause | table
     text: str
     level: int = 0

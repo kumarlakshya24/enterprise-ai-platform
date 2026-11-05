@@ -2,6 +2,7 @@
 
 No secrets have defaults; provider keys are read from the environment only.
 """
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -99,14 +100,17 @@ class Settings(BaseSettings):
 
     default_profile: str = Field(default="full")
 
-
     @model_validator(mode="after")
     def _assemble_database_url(self) -> "Settings":
         if not self.database_url:
             from psycopg.conninfo import make_conninfo
 
-            parts = {"host": self.postgres_host, "port": self.postgres_port,
-                     "user": self.postgres_user, "dbname": self.postgres_db}
+            parts = {
+                "host": self.postgres_host,
+                "port": self.postgres_port,
+                "user": self.postgres_user,
+                "dbname": self.postgres_db,
+            }
             if self.postgres_password is not None:
                 parts["password"] = self.postgres_password.get_secret_value()
             self.database_url = make_conninfo(**parts)

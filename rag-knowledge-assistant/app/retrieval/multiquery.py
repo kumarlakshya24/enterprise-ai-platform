@@ -11,6 +11,7 @@ document from its most discriminative terms (high tf in the feedback chunk,
 low document frequency in the corpus). This is a classic IR technique, not an
 LLM; it helps vague queries less than an LLM would, and the eval reports it as such.
 """
+
 from __future__ import annotations
 
 import json
@@ -41,12 +42,16 @@ def llm_variants(llm: LLM, question: str, n: int, timeout_s: float) -> tuple[lis
 
 def feedback_words(question: str, cand: Candidate) -> list[str]:
     q_words = {w.lower() for w in re.findall(r"[A-Za-z0-9-]+", question)}
-    return [w for w in re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", f"{cand.title} {cand.content}")
-            if w.lower() not in STOPWORDS and w.lower() not in q_words]
+    return [
+        w
+        for w in re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", f"{cand.title} {cand.content}")
+        if w.lower() not in STOPWORDS and w.lower() not in q_words
+    ]
 
 
-def prf_variants(question: str, feedback: list[Candidate], df: dict[str, int], n_docs: int, n: int,
-                 terms_per_variant: int = 5) -> list[str]:
+def prf_variants(
+    question: str, feedback: list[Candidate], df: dict[str, int], n_docs: int, n: int, terms_per_variant: int = 5
+) -> list[str]:
     """`df` maps *stemmed* terms to chunk document-frequency."""
     seen_docs, variants = set(), []
     for cand in feedback:

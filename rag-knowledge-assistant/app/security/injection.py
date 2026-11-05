@@ -10,6 +10,7 @@ Retrieved text is *data*. Three layers:
      (see app/generation/prompts.py). The extractive generator also never
      selects a flagged sentence.
 """
+
 from __future__ import annotations
 
 import re
@@ -17,12 +18,27 @@ import re
 from app.textproc import split_sentences
 
 _RULES: list[tuple[re.Pattern, float]] = [
-    (re.compile(r"\bignore (all |any )?(the )?(previous|prior|above|earlier) (instructions|rules|prompts?)\b", re.I), 1.0),
-    (re.compile(r"\b(disregard|forget|override) (all |your |the )?(previous |prior )?(instructions|rules|guidelines|system prompt)\b", re.I), 1.0),
+    (
+        re.compile(r"\bignore (all |any )?(the )?(previous|prior|above|earlier) (instructions|rules|prompts?)\b", re.I),
+        1.0,
+    ),
+    (
+        re.compile(
+            r"\b(disregard|forget|override) (all |your |the )?(previous |prior )?"
+            r"(instructions|rules|guidelines|system prompt)\b",
+            re.I,
+        ),
+        1.0,
+    ),
     (re.compile(r"\byou are now\b|\bact as\b|\bpretend to be\b|\bmaintenance mode\b|\bdeveloper mode\b", re.I), 0.6),
     (re.compile(r"\b(note|message|instructions?) (to|for) (the )?(ai|assistant|llm|chatbot|model)s?\b", re.I), 0.7),
     (re.compile(r"\b(system prompt|reveal your|print your instructions)\b", re.I), 0.6),
-    (re.compile(r"\b(email|send|share|give) (us |me )?(your|their) (password|credentials|mfa code|bypass code)\b", re.I), 0.9),
+    (
+        re.compile(
+            r"\b(email|send|share|give) (us |me )?(your|their) (password|credentials|mfa code|bypass code)\b", re.I
+        ),
+        0.9,
+    ),
     (re.compile(r"</?(system|assistant|instructions?)>", re.I), 0.8),
 ]
 

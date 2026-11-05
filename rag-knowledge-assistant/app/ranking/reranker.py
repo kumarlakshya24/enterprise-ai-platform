@@ -5,10 +5,12 @@ passage *together* and outputs a relevance logit, which is far more precise than
 the bi-encoder cosine used for first-stage recall, but O(candidates) model calls
 per query, which is why it only sees the top-N fused candidates.
 """
+
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol, Sequence
+from typing import Protocol
 
 import numpy as np
 
@@ -40,7 +42,7 @@ class OnnxCrossEncoder:
     def score(self, query: str, passages: Sequence[str]) -> np.ndarray:
         scores: list[np.ndarray] = []
         for i in range(0, len(passages), self.batch_size):
-            batch = list(passages[i:i + self.batch_size])
+            batch = list(passages[i : i + self.batch_size])
             enc = self.tokenizer.encode_batch([(query, p) for p in batch])
             feeds = {
                 "input_ids": np.array([e.ids for e in enc], dtype=np.int64),

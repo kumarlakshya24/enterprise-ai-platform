@@ -7,6 +7,7 @@ Corpus statistics (N, avgdl, df) are global, so a user's scores do not depend on
 which documents they can see (no side channel through IDF), while the candidate
 set itself is ACL-filtered.
 """
+
 from __future__ import annotations
 
 from collections import Counter
@@ -22,14 +23,28 @@ _COLS = """c.chunk_id, c.doc_id, d.title, c.team, c.content, c.heading_path, c.c
 
 
 def _cand(row: dict, score: float, stage: str, rank: int) -> Candidate:
-    return Candidate(chunk_id=row["chunk_id"], score=score, doc_id=row["doc_id"], title=row["title"], team=row["team"],
-                     content=row["content"], heading_path=list(row["heading_path"]), chunk_index=row["chunk_index"],
-                     doc_version=row["doc_version"], version_label=row["version_label"],
-                     injection_risk=row["injection_risk"], pii_types=list(row["pii_types"]),
-                     context_header=row["context_header"], ranks={stage: rank}, scores={stage: score})
+    return Candidate(
+        chunk_id=row["chunk_id"],
+        score=score,
+        doc_id=row["doc_id"],
+        title=row["title"],
+        team=row["team"],
+        content=row["content"],
+        heading_path=list(row["heading_path"]),
+        chunk_index=row["chunk_index"],
+        doc_version=row["doc_version"],
+        version_label=row["version_label"],
+        injection_risk=row["injection_risk"],
+        pii_types=list(row["pii_types"]),
+        context_header=row["context_header"],
+        ranks={stage: rank},
+        scores={stage: score},
+    )
 
 
-def vector_search(db: Database, qvec: np.ndarray, k: int, where: str, params: dict, ef_search: int = 100) -> list[Candidate]:
+def vector_search(
+    db: Database, qvec: np.ndarray, k: int, where: str, params: dict, ef_search: int = 100
+) -> list[Candidate]:
     sql = f"""SELECT {_COLS}, 1 - (c.embedding <=> %(qv)s) AS score
               FROM chunks c JOIN documents d USING (doc_id)
               WHERE {where}
@@ -44,7 +59,9 @@ def vector_search(db: Database, qvec: np.ndarray, k: int, where: str, params: di
     return [_cand(r, float(r["score"]), "vector", i + 1) for i, r in enumerate(rows)]
 
 
-def bm25_search(db: Database, query: str, k: int, where: str, params: dict, k1: float = 1.2, b: float = 0.75) -> list[Candidate]:
+def bm25_search(
+    db: Database, query: str, k: int, where: str, params: dict, k1: float = 1.2, b: float = 0.75
+) -> list[Candidate]:
     q = Counter(tokenize(query))
     if not q:
         return []

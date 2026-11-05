@@ -7,6 +7,7 @@ unanswerable refused). Prints the recommendation; it does not edit config.
 
 Usage: python scripts/calibrate.py
 """
+
 from __future__ import annotations
 
 import itertools
@@ -33,10 +34,22 @@ def main() -> None:
         chunk = r.retrieved[0]["scores"].get("rerank", float("nan")) if r.retrieved else float("-inf")
         # best extracted-segment score on the same final context
         from app.models import Candidate
-        ctx = [Candidate(chunk_id=x["chunk_id"], score=0, doc_id=x["doc_id"], title=x["title"], content=x["content"],
-                         heading_path=[x["section"]] if x["section"] else []) for x in r.retrieved]
+
+        ctx = [
+            Candidate(
+                chunk_id=x["chunk_id"],
+                score=0,
+                doc_id=x["doc_id"],
+                title=x["title"],
+                content=x["content"],
+                heading_path=[x["section"]] if x["section"] else [],
+            )
+            for x in r.retrieved
+        ]
         g = svc.generator.extractive(q["question"], ctx, True) if ctx else None
-        rows.append((q["answerable"], chunk, g.top_score if g and g.top_score is not None else float("-inf"), q["question"]))
+        rows.append(
+            (q["answerable"], chunk, g.top_score if g and g.top_score is not None else float("-inf"), q["question"])
+        )
     print(f"{'answerable':10s} {'chunk':>7s} {'segment':>8s}  question")
     for a, c, sg, qq in sorted(rows, key=lambda x: -x[1]):
         print(f"{str(a):10s} {c:7.2f} {sg:8.2f}  {qq}")
@@ -55,8 +68,10 @@ def main() -> None:
         if best is None or key > best[0]:
             best = (key, tc, ts, tp, tn, pos, neg)
     (bal, _), tc, ts, tp, tn, pos, neg = best
-    print(f"\nrecommended MIN_RERANK_SCORE={tc:.2f} MIN_SENTENCE_SCORE={ts:.2f} "
-          f"balanced_acc={bal:.3f} (answered {tp}/{pos}, refused {tn}/{neg})")
+    print(
+        f"\nrecommended MIN_RERANK_SCORE={tc:.2f} MIN_SENTENCE_SCORE={ts:.2f} "
+        f"balanced_acc={bal:.3f} (answered {tp}/{pos}, refused {tn}/{neg})"
+    )
     svc.close()
 
 

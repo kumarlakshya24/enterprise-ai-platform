@@ -1,0 +1,13 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["eval_results", "models", "tools", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI declares request parameters with calls in defaults (File(...), Form(...)); that is the framework's idiom.
+"app/main.py" = ["B008"]
+# Sample-document prose for the generated PDFs; wrapping it would hurt readability.
+"scripts/make_sample_pdfs.py" = ["E501"]

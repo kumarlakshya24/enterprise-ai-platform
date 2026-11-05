@@ -9,6 +9,7 @@ Every file is verified against a pinned sha256 regardless of source.
 
 Usage: python scripts/fetch_models.py [--dest models] [--no-quantize]
 """
+
 from __future__ import annotations
 
 import argparse

@@ -5,13 +5,19 @@
 * weighted - weighted sum of min-max normalised scores. Sensitive to outliers but
              lets a very strong exact-match BM25 score dominate.
 """
+
 from __future__ import annotations
 
 from app.models import Candidate
 
 
-def fuse(result_lists: dict[str, list[Candidate]], weights: dict[str, float], method: str = "rrf",
-         rrf_k: int = 60, stage: str = "fused") -> list[Candidate]:
+def fuse(
+    result_lists: dict[str, list[Candidate]],
+    weights: dict[str, float],
+    method: str = "rrf",
+    rrf_k: int = 60,
+    stage: str = "fused",
+) -> list[Candidate]:
     pool: dict[str, Candidate] = {}
     fused: dict[str, float] = {}
     for name, results in result_lists.items():

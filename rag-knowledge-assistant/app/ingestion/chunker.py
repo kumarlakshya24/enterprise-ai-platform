@@ -16,11 +16,13 @@ Algorithm (see ARCHITECTURE.md §Chunking):
   5. Each chunk carries a context header (doc title > heading path) that is
      prepended for embedding and shown in citations.
 """
+
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Sequence
+from itertools import takewhile
 
 import numpy as np
 
@@ -71,8 +73,12 @@ def _build_units(blocks: list[Block], max_tokens: int) -> list[_Unit]:
         b = blocks[i]
         lead_in = None
         # a paragraph ending with ':' introduces the following list/table
-        if b.kind == "paragraph" and b.text.rstrip().endswith(":") and i + 1 < len(blocks) \
-                and blocks[i + 1].kind in ("list_item", "table"):
+        if (
+            b.kind == "paragraph"
+            and b.text.rstrip().endswith(":")
+            and i + 1 < len(blocks)
+            and blocks[i + 1].kind in ("list_item", "table")
+        ):
             lead_in = b.text
             i += 1
             b = blocks[i]
@@ -124,8 +130,9 @@ def _semantic_split(units: list[_Unit], sims: list[float], max_tokens: int, min_
         return sims[j - 1] + 0.15 * balance
 
     j = min(cands, key=cost)
-    return (_semantic_split(units[:j], sims[: j - 1], max_tokens, min_tokens)
-            + _semantic_split(units[j:], sims[j:], max_tokens, min_tokens))
+    return _semantic_split(units[:j], sims[: j - 1], max_tokens, min_tokens) + _semantic_split(
+        units[j:], sims[j:], max_tokens, min_tokens
+    )
 
 
 def _related(a: tuple[str, ...], b: tuple[str, ...]) -> bool:
@@ -142,8 +149,9 @@ def _render(path: tuple[str, ...], units: list[_Unit], title: str, show_heading:
     return body
 
 
-def chunk_document(doc: ParsedDocument, embed: EmbedFn | None = None,
-                   max_tokens: int = 200, min_tokens: int = 40) -> list[Chunk]:
+def chunk_document(
+    doc: ParsedDocument, embed: EmbedFn | None = None, max_tokens: int = 200, min_tokens: int = 40
+) -> list[Chunk]:
     title = doc.meta.title
     drafts: list[_Draft] = []
     for path, blocks in _sections(doc):
@@ -167,7 +175,7 @@ def chunk_document(doc: ParsedDocument, embed: EmbedFn | None = None,
         if merged:
             ppath, ptext, pkinds, ptok = merged[-1]
             if (ptok < min_tokens or tok < min_tokens) and ptok + tok <= max_tokens and _related(ppath, d.path):
-                common = tuple(x for x, y in zip(ppath, d.path) if x == y)
+                common = tuple(x for x, _ in takewhile(lambda xy: xy[0] == xy[1], zip(ppath, d.path, strict=False)))
                 merged[-1] = (common or ppath, f"{ptext}\n{text}", pkinds | kinds, ptok + tok)
                 continue
         merged.append((d.path, text, kinds, tok))
@@ -178,6 +186,15 @@ def chunk_document(doc: ParsedDocument, embed: EmbedFn | None = None,
         header = " > ".join([title, *crumbs])
         ctype = "table" if kinds == {"table"} else ("mixed" if "table" in kinds else "text")
         h = hashlib.sha256(f"{header}\n{text}".encode()).hexdigest()[:16]
-        chunks.append(Chunk(index=idx, content=text, heading_path=path, chunk_type=ctype,
-                            token_count=tok, context_header=header, content_hash=h))
+        chunks.append(
+            Chunk(
+                index=idx,
+                content=text,
+                heading_path=path,
+                chunk_type=ctype,
+                token_count=tok,
+                context_header=header,
+                content_hash=h,
+            )
+        )
     return chunks

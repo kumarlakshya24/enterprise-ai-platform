@@ -9,10 +9,11 @@ Tables
   ingestion_events  every ingest/update/delete/failure, for the status dashboard
   redaction_events  PII redactions (type + count only; values are never stored)
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 import psycopg
 from pgvector.psycopg import register_vector
@@ -127,8 +128,9 @@ class Database:
         # Create the extension before the pool registers the vector type.
         with psycopg.connect(url, autocommit=True) as c:
             c.execute("CREATE EXTENSION IF NOT EXISTS vector")
-        self.pool = ConnectionPool(url, min_size=min_size, max_size=max_size, configure=_configure,
-                                   kwargs={"row_factory": dict_row}, open=True)
+        self.pool = ConnectionPool(
+            url, min_size=min_size, max_size=max_size, configure=_configure, kwargs={"row_factory": dict_row}, open=True
+        )
 
     def migrate(self) -> None:
         with self.conn() as c:
@@ -142,8 +144,10 @@ class Database:
     def reset(self) -> None:
         """Drop everything (tests / eval re-runs only)."""
         with self.conn() as c:
-            c.execute("DROP TABLE IF EXISTS chunk_terms, chunks, documents, chunk_lineage, "
-                      "ingestion_events, redaction_events CASCADE")
+            c.execute(
+                "DROP TABLE IF EXISTS chunk_terms, chunks, documents, chunk_lineage, "
+                "ingestion_events, redaction_events CASCADE"
+            )
         self.migrate()
 
     def ping(self) -> bool:

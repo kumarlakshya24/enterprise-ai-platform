@@ -5,6 +5,7 @@ empty). Prints a comparison and writes eval_results/demo_output.md.
 
 Usage: python scripts/demo.py
 """
+
 from __future__ import annotations
 
 import logging
@@ -33,22 +34,38 @@ def main() -> None:
     with svc.db.conn() as c:
         if c.execute("SELECT count(*) AS n FROM documents").fetchone()["n"] == 0:
             svc.indexer.ingest_directory(s.docs_dir)
-    md = ["# Demo: baseline vs full pipeline", "",
-          f"Generator: `{svc.llm.name}` · reranker: `{svc.reranker.name if svc.reranker else None}`", ""]
+    md = [
+        "# Demo: baseline vs full pipeline",
+        "",
+        f"Generator: `{svc.llm.name}` · reranker: `{svc.reranker.name if svc.reranker else None}`",
+        "",
+    ]
     for user, q, why in QUESTIONS:
         p = get_principal(user, s.users_file)
         base = svc.ask(q, p, "baseline")
         full = svc.ask(q, p, "full")
         print("=" * 100)
         print(f"{p.display_name}: {q}\n  ({why})")
-        md += [f"## {q}", f"*Asked by {p.display_name}: {why}*", "", "| | Baseline (Phase 1) | Full pipeline |", "|---|---|---|"]
+        md += [
+            f"## {q}",
+            f"*Asked by {p.display_name}: {why}*",
+            "",
+            "| | Baseline (Phase 1) | Full pipeline |",
+            "|---|---|---|",
+        ]
         for label, b, f in [
             ("Answer", base.answer, full.answer),
-            ("Top source", base.retrieved[0]["title"] if base.retrieved else "–", full.retrieved[0]["title"] if full.retrieved else "–"),
+            (
+                "Top source",
+                base.retrieved[0]["title"] if base.retrieved else "–",
+                full.retrieved[0]["title"] if full.retrieved else "–",
+            ),
             ("Refused", f"{base.refused} {base.refusal_reason or ''}", f"{full.refused} {full.refusal_reason or ''}"),
             ("Latency", f"{base.timings_ms['total']:.0f} ms", f"{full.timings_ms['total']:.0f} ms"),
         ]:
-            print(f"  {label:10s} | BASELINE: " + "\n             |           ".join(textwrap.wrap(str(b), 80) or ["–"]))
+            print(
+                f"  {label:10s} | BASELINE: " + "\n             |           ".join(textwrap.wrap(str(b), 80) or ["–"])
+            )
             print(f"  {'':10s} | FULL:     " + "\n             |           ".join(textwrap.wrap(str(f), 80) or ["–"]))
             md.append(f"| {label} | {str(b).replace('|', '/')} | {str(f).replace('|', '/')} |")
         md.append("")

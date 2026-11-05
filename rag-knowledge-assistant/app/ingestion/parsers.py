@@ -6,6 +6,7 @@ Every parser preserves:
   * numbered policy clauses ("2.1 ...") and list items as their own units,
   * document metadata (front-matter, PDF sidecar `.meta.yaml`, or API-supplied).
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -28,6 +29,7 @@ class ParseError(ValueError):
 
 
 # --------------------------------------------------------------------------- metadata
+
 
 def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
@@ -70,10 +72,11 @@ def split_front_matter(text: str) -> tuple[dict[str, Any], str]:
     data = yaml.safe_load(m.group(1)) or {}
     if not isinstance(data, dict):
         raise ParseError("front-matter must be a mapping")
-    return data, text[m.end():]
+    return data, text[m.end() :]
 
 
 # --------------------------------------------------------------------------- markdown
+
 
 def _is_table_line(line: str) -> bool:
     s = line.strip()
@@ -144,6 +147,7 @@ def parse_markdown_body(body: str) -> list[Block]:
 
 # --------------------------------------------------------------------------- plain text
 
+
 def _is_text_heading(line: str, nxt: str | None) -> bool:
     s = line.strip()
     if not s or len(s) > 80:
@@ -177,8 +181,10 @@ def parse_text_body(body: str) -> list[Block]:
         if _is_text_heading(line, nxt):
             md_lines.append(("# " if not level_seen else "## ") + line.strip())
             level_seen = True
-        elif is_short(line) and ((nxt is not None and is_short(nxt)) or (prv is not None and is_short(prv)
-                                                                         and not _is_text_heading(prv, line))):
+        elif is_short(line) and (
+            (nxt is not None and is_short(nxt))
+            or (prv is not None and is_short(prv) and not _is_text_heading(prv, line))
+        ):
             md_lines.append("- " + line.strip())
         else:
             md_lines.append(line)
@@ -186,6 +192,55 @@ def parse_text_body(body: str) -> list[Block]:
 
 
 # --------------------------------------------------------------------------- pdf
+
+
+def _inside_any(word: dict, bboxes: list[tuple[float, float, float, float]]) -> bool:
+    """True if the word's centre falls inside any table bounding box."""
+    cx, cy = (word["x0"] + word["x1"]) / 2, (word["top"] + word["bottom"]) / 2
+    return any(b[0] <= cx <= b[2] and b[1] <= cy <= b[3] for b in bboxes)
+
+
+def _group_lines(words: list[dict]) -> list[dict]:
+    """Group words whose tops are within 2.5 pt into lines (pdfplumber returns words in reading order)."""
+    lines: list[dict] = []
+    for w in words:
+        if lines and abs(lines[-1]["top"] - w["top"]) < 2.5:
+            lines[-1]["words"].append(w)
+            lines[-1]["bottom"] = max(lines[-1]["bottom"], w["bottom"])
+        else:
+            lines.append({"top": w["top"], "bottom": w["bottom"], "words": [w]})
+    return lines
+
+
+def _paragraph_items(lines: list[dict], body_size: float) -> list[tuple[float, str, Any]]:
+    """Merge lines into paragraphs on a vertical gap or a font-size change, and label headings.
+
+    A paragraph is a heading when its font is >15% larger than the body text, or when it is short and
+    entirely bold. Returns ``(top, kind, (text, size))`` items for the caller to sort with tables.
+    """
+    items: list[tuple[float, str, Any]] = []
+    para: list[dict] = []
+
+    def line_size(line: dict) -> float:
+        return round(max(w["size"] for w in line["words"]), 1)
+
+    def flush() -> None:
+        if not para:
+            return
+        text = " ".join(" ".join(w["text"] for w in ln["words"]) for ln in para).strip()
+        size = max(w["size"] for ln in para for w in ln["words"])
+        bold = all("Bold" in w["fontname"] for ln in para for w in ln["words"])
+        kind = "heading" if (size > body_size * 1.15 or (bold and len(text) < 90)) else "paragraph"
+        items.append((para[0]["top"], kind, (text, size)))
+        para.clear()
+
+    for ln in lines:
+        if para and (ln["top"] - para[-1]["bottom"] > 4 or line_size(ln) != line_size(para[-1])):
+            flush()
+        para.append(ln)
+    flush()
+    return items
+
 
 def parse_pdf(path: Path) -> tuple[list[Block], str, str]:
     """Extract headings (by font size / weight), paragraphs and tables from a PDF.
@@ -216,42 +271,9 @@ def parse_pdf(path: Path) -> tuple[list[Block], str, str]:
                 md += ["| " + " | ".join(r) + " |" for r in rows[1:]]
                 items.append((t.bbox[1], "table", "\n".join(md)))
 
-            def outside(obj: dict) -> bool:
-                cx, cy = (obj["x0"] + obj["x1"]) / 2, (obj["top"] + obj["bottom"]) / 2
-                return not any(b[0] <= cx <= b[2] and b[1] <= cy <= b[3] for b in bboxes)
-
             words = page.extract_words(extra_attrs=["size", "fontname"], keep_blank_chars=False, use_text_flow=True)
-            words = [w for w in words if outside(w)]
-            # group words into lines
-            lines: list[dict] = []
-            for w in words:
-                if lines and abs(lines[-1]["top"] - w["top"]) < 2.5:
-                    lines[-1]["words"].append(w)
-                    lines[-1]["bottom"] = max(lines[-1]["bottom"], w["bottom"])
-                else:
-                    lines.append({"top": w["top"], "bottom": w["bottom"], "words": [w]})
-            # group lines into paragraphs by vertical gap and style
-            para: list[dict] = []
-
-            def emit_para() -> None:
-                if not para:
-                    return
-                text = " ".join(" ".join(w["text"] for w in ln["words"]) for ln in para).strip()
-                size = max(w["size"] for ln in para for w in ln["words"])
-                bold = all("Bold" in w["fontname"] for ln in para for w in ln["words"])
-                kind = "heading" if (size > body_size * 1.15 or (bold and len(text) < 90)) else "paragraph"
-                items.append((para[0]["top"], kind, (text, size)))
-                para.clear()
-
-            for ln in lines:
-                if para:
-                    gap = ln["top"] - para[-1]["bottom"]
-                    same_style = round(max(w["size"] for w in ln["words"]), 1) == round(
-                        max(w["size"] for w in para[-1]["words"]), 1)
-                    if gap > 4 or not same_style:
-                        emit_para()
-                para.append(ln)
-            emit_para()
+            words = [w for w in words if not _inside_any(w, bboxes)]
+            items.extend(_paragraph_items(_group_lines(words), body_size))
 
             for _, kind, payload in sorted(items, key=lambda x: x[0]):
                 if kind == "table":
@@ -263,7 +285,9 @@ def parse_pdf(path: Path) -> tuple[list[Block], str, str]:
                     while path_stack and path_stack[-1][0] >= level:
                         path_stack.pop()
                     path_stack.append((level, text))
-                    blocks.append(Block("heading", text, level=level, heading_path=tuple(t for _, t in path_stack), page=pno))
+                    blocks.append(
+                        Block("heading", text, level=level, heading_path=tuple(t for _, t in path_stack), page=pno)
+                    )
                     all_text.append(text)
                 else:
                     text, _ = payload
@@ -276,6 +300,7 @@ def parse_pdf(path: Path) -> tuple[list[Block], str, str]:
 
 
 # --------------------------------------------------------------------------- entry point
+
 
 def parse_file(path: Path, data: bytes | None = None, meta_override: dict | None = None) -> ParsedDocument:
     """Parse a file from disk (or raw bytes with its filename) into a ParsedDocument."""
@@ -290,6 +315,7 @@ def parse_file(path: Path, data: bytes | None = None, meta_override: dict | None
     if suffix == ".pdf":
         if data is not None:
             import tempfile
+
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp.write(data)
             try:
