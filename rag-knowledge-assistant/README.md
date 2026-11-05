@@ -204,7 +204,15 @@ flowchart LR
   U([Employees]) --> LUM[🔦 Lumen<br/>cited answers · access control · cache]
   ATL[🧭 Atlas agents] -. "what does the refund policy allow?" .-> LUM
   LUM -. "retrieval and answer spans" .-> LENS[🔬 Lens]
-  style LUM fill:#bf8700,color:#fff,stroke:#bf8700
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class LUM lumen
+  class ATL atlas
+  class LENS lens
 ```
 
 | Neighbour | What flows across it | Status today |
