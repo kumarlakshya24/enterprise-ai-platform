@@ -1,0 +1,74 @@
+id: vendor_onboarding
+title: Vendor onboarding
+summary: Policy lookup, a gullible webhook proposal the guard blocks, approval, provision, corporate email.
+on_failure: compensate
+budget:
+  max_steps: 20
+  max_cost_usd: 1.0
+  on_exceeded: pause
+activities:
+  - id: policy
+    agent: research
+    tool: lumen.ask
+    order: 10
+    cost_usd: 0.002
+    latency_ms: 40
+    timeout_ms: 2000
+    max_attempts: 2
+    backoff_ms: 20
+    args:
+      question: "What is the vendor onboarding policy?"
+  - id: notify_risky
+    agent: comms
+    tool: http.post
+    order: 20
+    deps: [policy]
+    side_effect: true
+    risk: high
+    on_block: skip
+    cost_usd: 0.002
+    latency_ms: 30
+    timeout_ms: 2000
+    max_attempts: 1
+    backoff_ms: 0
+    args:
+      url: "https://hooks.acme.example/unused"
+      body: "catalog default, the model overrides this"
+  - id: approve
+    agent: control
+    tool: approval.gate
+    order: 30
+    deps: [policy]
+    cost_usd: 0
+    latency_ms: 5
+    timeout_ms: 2000
+    max_attempts: 1
+    backoff_ms: 0
+  - id: provision
+    agent: ops
+    tool: vendor.provision
+    order: 40
+    deps: [approve]
+    side_effect: true
+    compensate: vendor.deprovision
+    risk: high
+    cost_usd: 0.004
+    latency_ms: 40
+    timeout_ms: 2000
+    max_attempts: 2
+    backoff_ms: 20
+  - id: email_vendor
+    agent: comms
+    tool: email.send
+    order: 50
+    deps: [provision]
+    side_effect: true
+    risk: medium
+    cost_usd: 0.003
+    latency_ms: 30
+    timeout_ms: 2000
+    max_attempts: 2
+    backoff_ms: 20
+    args:
+      to: "ap-vendors@acme.example"
+      subject: "Vendor {{input.vendor_id}} provisioned"
