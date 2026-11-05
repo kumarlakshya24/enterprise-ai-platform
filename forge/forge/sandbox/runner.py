@@ -66,7 +66,10 @@ class SandboxRunner:
         }
         try:
             completed = subprocess.run(
-                [sys.executable, "-I", str(CHILD)],
+                # -B: never write .pyc files. On an interpreter whose stdlib has no cached
+                # bytecode, importing an allowed module would otherwise call marshal.dumps
+                # to cache it, which the audit hook blocks, and a legal import would fail.
+                [sys.executable, "-I", "-B", str(CHILD)],
                 input=json.dumps(payload).encode("utf-8"),
                 capture_output=True,
                 timeout=timeout_s,

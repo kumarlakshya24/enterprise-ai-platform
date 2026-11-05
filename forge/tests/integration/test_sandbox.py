@@ -150,3 +150,24 @@ def test_hard_deny_set_covers_process_and_network() -> None:
         assert name in HARD_DENY_MODULES
     assert "pathlib" not in HARD_DENY_MODULES
     assert "math" not in HARD_DENY_MODULES
+
+
+def test_child_never_writes_bytecode(tmp_path: Path, monkeypatch) -> None:
+    """The child must run with -B.
+
+    Without it, importing an allowed stdlib module on an interpreter with no cached
+    .pyc (a fresh CI toolcache) calls marshal.dumps, which the audit hook blocks.
+    """
+    import forge.sandbox.runner as runner_module
+
+    seen: list[list[str]] = []
+
+    def fake_run(cmd, **_kwargs):
+        seen.append(list(cmd))
+        return subprocess.CompletedProcess(cmd, 0, stdout=b'{"status": "ok", "rule": "R-ALLOW"}', stderr=b"")
+
+    monkeypatch.setattr(runner_module.subprocess, "run", fake_run)
+    limits = effective_limits(load_default_policy(), "python")
+    assert limits is not None
+    SandboxRunner().run("print(1)", limits, tmp_path)
+    assert seen and seen[0][1:3] == ["-I", "-B"], seen

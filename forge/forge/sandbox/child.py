@@ -1,6 +1,6 @@
 """Sandbox child process.
 
-Invoked as `python -I forge/sandbox/child.py`. The parent already decided the
+Invoked as `python -I -B forge/sandbox/child.py`. The parent already decided the
 call is allowed. This process repeats the AST gate, installs an audit hook,
 applies rlimits, and only then executes the snippet.
 """

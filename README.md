@@ -8,7 +8,7 @@ how does a company let its people and its AI agents use LLMs *safely, cheaply, r
 Each project solves one hard part on its own, runs offline with one command, and proves its claims with a saved evaluation.
 
 ![Projects](https://img.shields.io/badge/projects-6-0969da)
-![Automated tests](https://img.shields.io/badge/tests-387_passing-2ea44f)
+![Automated tests](https://img.shields.io/badge/tests-388_passing-2ea44f)
 ![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-6e7781)
 ![Data](https://img.shields.io/badge/data-100%25_synthetic-8250df)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
@@ -126,7 +126,7 @@ and budget ceilings, and falls back safely when a model times out.
 Refuses dangerous file paths and imports *before* any process starts, runs the rest in a short-lived
 restricted interpreter with resource limits, and logs every decision.
 
-**55 / 55** eval cases · refuses in **0.21 ms** p95 · **41** protections locked by a regression gate · 53 tests
+**55 / 55** eval cases · refuses in **0.21 ms** p95 · **41** protections locked by a regression gate · 54 tests
 
 </td>
 </tr>
@@ -187,7 +187,7 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 
 | | Aegis | Lumen | Switchboard | Forge | Atlas | Lens |
 |:--|:-:|:-:|:-:|:-:|:-:|:-:|
-| Automated tests | 200 | 52 | 29 | 53 | 30 | 23 |
+| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 |
 | Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ |
 | Strict type check (mypy) | ✅ | | | | | ✅ |

@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-53%20passing-2ea44f)
+![Tests](https://img.shields.io/badge/tests-54%20passing-2ea44f)
 ![Eval](https://img.shields.io/badge/eval-55%2F55-2ea44f)
 ![Deny p95](https://img.shields.io/badge/deny%20p95-0.21%20ms-0969da)
 ![Regression gate](https://img.shields.io/badge/regression%20gate-41%20cases%20locked-8250df)
@@ -53,7 +53,7 @@ Offline. No API key, no network, no Docker. Synthetic workspace files only.
 | Eval corpus | **55 / 55 (100%)**: 41 protection, 14 utility | [`reports/eval.md`](reports/eval.md) |
 | Regression gate | **41 protected cases locked, 0 regressions** on the default policy. Granting `pathlib` and raising the code cap fails the gate on `prot-import-pathlib` and `prot-code-size`. `import os` stays denied. | [`reports/regression.md`](reports/regression.md) |
 | Latency | Deny-before-spawn p50 **0.13 ms**, p95 **0.21 ms**. Allow, one subprocess, p50 **33.68 ms**, p95 **37.55 ms** | [`reports/latency.md`](reports/latency.md) |
-| Tests | **53** unit and integration tests | `make test` |
+| Tests | **54** unit and integration tests | `make test` |
 | Security check | Passes (no private keys, no `shell=True`) | `make security-check` |
 
 The corpus is a development set. It locks the decisions we intend to keep. It is not a claim about unknown attacks.
