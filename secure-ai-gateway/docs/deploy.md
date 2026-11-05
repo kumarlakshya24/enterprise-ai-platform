@@ -1,4 +1,11 @@
+[Aegis](../README.md) › [Docs](README.md) › **Deploy**
+
 # Hosting the demo
+
+> [!TIP]
+> **In short:** click the Render button to get a free, public demo link with no secrets. It runs every
+> control in one container. Open it a couple of minutes before you need it, because free instances
+> sleep after 15 minutes without traffic.
 
 There are two ways to run Aegis: the full topology (`make up`), or a single container for a public
 demo link. This page covers the single container.
@@ -7,8 +14,9 @@ demo link. This page covers the single container.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kumarlakshya24/personal-projects)
 
-1. Merge the PR so `render.yaml` is on the default branch. Render reads the Blueprint from there;
-   you can also point a Blueprint at another branch in the Render dashboard.
+1. Render reads the Blueprint (`render.yaml` at the repository root) from the default branch. If the
+   repository is private, connect your GitHub account to Render and grant it access to the repository
+   first.
 2. Click the button, sign in to Render, and approve the Blueprint. It creates one free web service,
    `aegis-gateway-demo`, which builds `secure-ai-gateway/Dockerfile`.
 3. When the health check (`/healthz`) passes, open the service URL. The banner at the top confirms

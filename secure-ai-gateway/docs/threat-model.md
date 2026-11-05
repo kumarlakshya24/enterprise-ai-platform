@@ -1,8 +1,18 @@
+[Aegis](../README.md) › [Docs](README.md) › **Threat model**
+
 # Threat model
 
+> [!TIP]
+> **In short:** 6 attackers, from a careless employee to a rogue policy admin, and 19 attack
+> vectors. Every mitigation names the code that implements it and the test that proves it. A STRIDE
+> pass confirms coverage. What is out of scope, and why, is listed at the end.
+
+**Contents:** [Assets](#assets) · [Attackers](#attackers) ·
+[Vectors and mitigations](#attacker-vector-impact-mitigation) · [STRIDE](#stride-summary) ·
+[Out of scope](#out-of-scope)
+
 Scope: the Aegis gateway, its agent runner and tools, its stores, and its clients.
-Method: attacker, vector, impact, mitigation, plus a STRIDE pass. Every mitigation names
-the code that implements it and the test that proves it.
+Method: attacker, vector, impact, mitigation, plus a STRIDE pass.
 
 ## Assets
 
@@ -61,7 +71,11 @@ the code that implements it and the test that proves it.
 | Denial of service | Large payloads, request floods | Body limit, rate limit, step limit |
 | Elevation of privilege | Self-approval, employee reading audit | Four-eyes, permission checks on every admin route |
 
-## Out of scope (see `docs/tradeoffs-and-limitations.md`)
+## Out of scope
+
+Details and mitigations outside this repository are in
+[tradeoffs and limitations](tradeoffs-and-limitations.md).
+
 
 * Traffic that bypasses the gateway (personal devices, consumer AI sites). Needs egress
   controls or a CASB.

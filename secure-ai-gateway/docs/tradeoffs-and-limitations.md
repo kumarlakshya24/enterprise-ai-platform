@@ -1,7 +1,19 @@
+[Aegis](../README.md) › [Docs](README.md) › **Tradeoffs and limitations**
+
 # Tradeoffs and limitations
 
-What this system does not solve, where it is weak, and what I would build next. The measured gaps
-come from `reports/redteam.md` and `reports/classifier.md`.
+> [!TIP]
+> **In short:** a gateway can't protect traffic that never reaches it, and it can't stop an insider
+> with legitimate access. The measured gaps are spelled-out digits, a card split across a sentence,
+> social-engineering injections, and some over-routing of benign prompts. Each one comes with its fix.
+> The next build would add number-word normalization, a local LLM judge for uncertain cases, and
+> KMS-backed keys.
+
+**Contents:** [Out of scope by design](#out-of-scope-by-design) · [Measured weaknesses](#measured-weaknesses) ·
+[Engineering tradeoffs](#engineering-tradeoffs-i-made) · [What I would build next](#what-i-would-build-next)
+
+The measured gaps come from the [red-team report](../reports/redteam.md) and the
+[classifier report](../reports/classifier.md).
 
 ## Out of scope by design
 

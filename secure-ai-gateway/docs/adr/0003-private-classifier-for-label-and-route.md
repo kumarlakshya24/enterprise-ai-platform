@@ -1,3 +1,5 @@
+[Aegis](../../README.md) › [Docs](../README.md) › [Decision records](README.md) › **ADR 0003**
+
 # ADR 0003: A private local classifier labels context and drives routing
 
 * Status: accepted

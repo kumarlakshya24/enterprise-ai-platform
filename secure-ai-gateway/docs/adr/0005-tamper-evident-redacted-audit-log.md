@@ -1,3 +1,5 @@
+[Aegis](../../README.md) › [Docs](../README.md) › [Decision records](README.md) › **ADR 0005**
+
 # ADR 0005: Tamper-evident, redacted audit log in Postgres
 
 * Status: accepted
