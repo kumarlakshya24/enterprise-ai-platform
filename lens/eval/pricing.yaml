@@ -1,0 +1,15 @@
+# Projection inputs. make eval does not call a model and does not read an invoice.
+# The stand-in rates are a small judge. The premium rates are a stronger judge.
+# Replace both with your contract price before anyone uses this as a budget.
+stand_in:
+  label: small-judge-stand-in
+  input_usd_per_million: 0.25
+  output_usd_per_million: 1.25
+premium:
+  label: premium-judge-stand-in
+  input_usd_per_million: 3.00
+  output_usd_per_million: 15.00
+assumed_input_tokens: 900
+assumed_output_tokens: 60
+production_requests_per_day: 50000
+production_sample_rate: 0.05
