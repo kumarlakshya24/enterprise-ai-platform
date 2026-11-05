@@ -1,0 +1,26 @@
+{
+  "n": 400,
+  "warmup": 20,
+  "includes_sqlite_append": true,
+  "sleep": false,
+  "router_overhead_ms": {
+    "p50": 0.057,
+    "p95": 0.079,
+    "p99": 0.087,
+    "max": 0.099
+  },
+  "catalog_latency_ms": {
+    "p50": 251.08,
+    "p95": 681.61,
+    "note": "Catalog estimate of the chosen model. Not wall clock."
+  },
+  "mix": [
+    "default",
+    "cost-saver",
+    "quality-first",
+    "default",
+    "default",
+    "default",
+    "latency-first"
+  ]
+}
