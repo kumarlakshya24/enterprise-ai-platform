@@ -69,9 +69,7 @@ def _chart(report: dict[str, Any]) -> str:
             continue
         index = stamps.index(marker["ts"])
         x, _ = xy(index, 1)
-        markers.append(
-            f'<line x1="{x:.1f}" y1="{top}" x2="{x:.1f}" y2="{height - bottom}" class="marker"/>'
-        )
+        markers.append(f'<line x1="{x:.1f}" y1="{top}" x2="{x:.1f}" y2="{height - bottom}" class="marker"/>')
     axis = (
         f'<text x="{left}" y="{height - 6}" class="tick">{_esc(series[0]["ts"][5:10])}</text>'
         f'<text x="{width - right}" y="{height - 6}" class="tick" text-anchor="end">{_esc(series[-1]["ts"][5:10])}</text>'
