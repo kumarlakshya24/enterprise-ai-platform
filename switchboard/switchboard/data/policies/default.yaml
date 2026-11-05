@@ -1,0 +1,31 @@
+version: "2026.11.05"
+name: default
+description: >
+  Capability floor first, then a weighted score of capability, cost, and latency.
+  Confidential prompts are pinned to local. If every hosted attempt fails, a
+  degraded local escape is allowed.
+selection: weighted
+weights: {capability: 0.45, cost: 0.35, latency: 0.20}
+budget_usd: 0.05
+latency_slo_ms: 2000
+min_quality: 0.50
+min_headroom: 0.10
+fallback:
+  order: [balanced, premium, fast-cheap]
+  allow_local_on_total_failure: true
+  max_attempts: 3
+rules:
+  - id: R-SENSITIVE-LOCAL
+    description: >
+      Confidential or restricted content is pinned to the local model and is
+      not spilled to a hosted provider, even when local is slower or weaker.
+    when: {sensitivity_in: [confidential, restricted]}
+    pin: local
+    waive: [capability, budget, latency, quality]
+    stop_fallback: true
+  - id: R-REALTIME-HINT
+    description: >
+      Wording that asks for a real-time answer tightens the SLO to 120 ms.
+      An explicit latency_slo_ms on the request can only tighten it further.
+    when: {latency_sensitivity: high}
+    max_latency_ms: 120

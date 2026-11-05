@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Forge — sandboxed tool execution</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <strong>Forge</strong>
+        <span class="tag">sandboxed tool execution</span>
+      </div>
+    </div>
+    <p class="thesis">Untrusted agent calls run in a fresh process. Policy cannot grant a shell, a host path, or a process module.</p>
+    <div class="status">
+      <span id="policy" class="pill">policy</span>
+      <span id="audit-pill" class="pill">audit</span>
+      <button id="verify" type="button">Verify audit</button>
+      <button id="reset" type="button" class="ghost">Reset workspace</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav id="scenarios" aria-label="Scenarios"></nav>
+    <main>
+      <section class="intro">
+        <h1 id="title">Pick a scenario</h1>
+        <p id="say" class="say">The left pane is a decision preview. It never executes a call. The right pane is the sandbox.</p>
+      </section>
+      <div class="split">
+        <article class="pane preview">
+          <header><span class="stamp">Preview</span><h2>Unprotected decision</h2></header>
+          <p class="fine">Simulated. Denied calls are not run, not even for the demo.</p>
+          <div id="preview" class="stack"></div>
+        </article>
+        <article class="pane sandbox">
+          <header><span class="stamp safe">Sandbox</span><h2>Forge decision</h2></header>
+          <div id="sandbox" class="stack"></div>
+        </article>
+      </div>
+      <section class="custom">
+        <h2>Try a call</h2>
+        <form id="custom">
+          <label>Tool
+            <select name="tool">
+              <option value="python">python</option>
+              <option value="read_file">read_file</option>
+              <option value="write_file">write_file</option>
+              <option value="list_dir">list_dir</option>
+              <option value="shell">shell</option>
+            </select>
+          </label>
+          <label class="grow">Code or path
+            <input name="text" spellcheck="false" placeholder="print(sum(range(10)))">
+          </label>
+          <button type="submit">Run</button>
+        </form>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

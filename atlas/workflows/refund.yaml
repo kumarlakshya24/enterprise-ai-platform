@@ -1,0 +1,81 @@
+id: refund
+title: Customer refund
+summary: Policy lookup, quote, human approval over $25, ledger debit, email, case close.
+on_failure: compensate
+budget:
+  max_steps: 20
+  max_cost_usd: 1.0
+  on_exceeded: pause
+activities:
+  - id: lookup_policy
+    agent: research
+    tool: lumen.ask
+    order: 10
+    cost_usd: 0.002
+    latency_ms: 40
+    timeout_ms: 2000
+    max_attempts: 3
+    backoff_ms: 50
+    args:
+      question: "{{input.policy_question}}"
+  - id: quote_refund
+    agent: finance
+    tool: finance.quote
+    order: 20
+    deps: [lookup_policy]
+    cost_usd: 0.001
+    latency_ms: 25
+    timeout_ms: 2000
+    max_attempts: 2
+    backoff_ms: 20
+  - id: approve_refund
+    agent: control
+    tool: approval.gate
+    order: 30
+    deps: [quote_refund]
+    when: "activity.quote_refund.output.approval_required == true"
+    cost_usd: 0
+    latency_ms: 5
+    timeout_ms: 2000
+    max_attempts: 1
+    backoff_ms: 0
+  - id: post_ledger
+    agent: finance
+    tool: ledger.post
+    order: 40
+    deps: [approve_refund]
+    side_effect: true
+    compensate: ledger.reverse
+    risk: high
+    cost_usd: 0.004
+    latency_ms: 45
+    timeout_ms: 2000
+    max_attempts: 3
+    backoff_ms: 50
+  - id: email_customer
+    agent: comms
+    tool: email.send
+    order: 50
+    deps: [post_ledger]
+    side_effect: true
+    risk: medium
+    cost_usd: 0.003
+    latency_ms: 35
+    timeout_ms: 2000
+    max_attempts: 3
+    backoff_ms: 50
+    args:
+      to: "{{input.email}}"
+      subject: "Refund for {{input.customer_id}}"
+  - id: close_case
+    agent: ops
+    tool: case.close
+    order: 60
+    deps: [email_customer]
+    side_effect: true
+    compensate: case.reopen
+    cost_usd: 0.001
+    latency_ms: 20
+    timeout_ms: 2000
+    max_attempts: 2
+    backoff_ms: 20

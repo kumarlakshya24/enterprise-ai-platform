@@ -1,0 +1,24 @@
+id: sms_notice
+title: SMS notice
+summary: A single non-idempotent send. Atlas refuses it before any side effect.
+on_failure: halt
+budget:
+  max_steps: 5
+  max_cost_usd: 1.0
+  on_exceeded: pause
+activities:
+  - id: text_customer
+    agent: comms
+    tool: sms.send
+    order: 10
+    side_effect: true
+    idempotent: false
+    risk: medium
+    cost_usd: 0.002
+    latency_ms: 20
+    timeout_ms: 2000
+    max_attempts: 1
+    backoff_ms: 0
+    args:
+      to: "{{input.phone}}"
+      body: "Your refund was posted."
