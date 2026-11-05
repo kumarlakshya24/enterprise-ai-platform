@@ -1,0 +1,8 @@
+{
+  "deny_n": 40,
+  "deny_p50_ms": 0.13,
+  "deny_p95_ms": 0.21,
+  "allow_n": 20,
+  "allow_p50_ms": 33.68,
+  "allow_p95_ms": 37.55
+}
