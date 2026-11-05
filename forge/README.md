@@ -36,7 +36,7 @@ The corpus is a development set. It locks the decisions we intend to keep. It is
 
 <video src="docs/assets/demo.mp4" poster="docs/assets/ui-sum.png" controls playsinline width="960"></video>
 
-The gif and the video are the same UI clip (`docs/assets/demo.mp4`, about nine seconds). The gif plays inline. The video is the original file.
+The gif plays inline. The video is the same clip: [docs/assets/demo.mp4](docs/assets/demo.mp4) (about nine seconds).
 
 ```bash
 cd forge
