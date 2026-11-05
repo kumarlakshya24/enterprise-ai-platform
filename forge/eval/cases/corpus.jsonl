@@ -1,0 +1,55 @@
+{"id": "util-sum", "class": "utility", "tool": "python", "code": "print(sum(range(1, 101)))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "5050", "spawned": true}
+{"id": "util-math", "class": "utility", "tool": "python", "code": "import math\nprint(int(math.sqrt(144)))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "12", "spawned": true}
+{"id": "util-json", "class": "utility", "tool": "python", "code": "import json\nprint(json.dumps({\"ok\": True}))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "true", "spawned": true}
+{"id": "util-statistics", "class": "utility", "tool": "python", "code": "import statistics\nprint(statistics.mean([1, 2, 3, 4]))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "2.5", "spawned": true}
+{"id": "util-datetime", "class": "utility", "tool": "python", "code": "import datetime\nprint(datetime.date(2026, 11, 5).isoformat())", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "2026-11-05", "spawned": true}
+{"id": "util-collections", "class": "utility", "tool": "python", "code": "import collections\nprint(collections.Counter(\"aab\")[\"a\"])", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "2", "spawned": true}
+{"id": "util-re", "class": "utility", "tool": "python", "code": "import re\nprint(re.sub(\"a\", \"b\", \"a\"))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "b", "spawned": true}
+{"id": "util-decimal", "class": "utility", "tool": "python", "code": "import decimal\nprint(decimal.Decimal(\"0.1\") + decimal.Decimal(\"0.2\"))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "0.3", "spawned": true}
+{"id": "util-textwrap", "class": "utility", "tool": "python", "code": "import textwrap\nprint(textwrap.wrap(\"abcd\", 2)[0])", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "ab", "spawned": true}
+{"id": "util-function", "class": "utility", "tool": "python", "code": "def add(a, b):\n    return a + b\nprint(add(20, 22))", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "42", "spawned": true}
+{"id": "util-read-notes", "class": "utility", "tool": "read_file", "path": "notes/summary.txt", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "Northwind", "spawned": false}
+{"id": "util-read-metrics", "class": "utility", "tool": "read_file", "path": "data/metrics.json", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "sla_pct", "spawned": false}
+{"id": "util-write", "class": "utility", "tool": "write_file", "path": "notes/draft.txt", "content": "forge-draft", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "wrote", "spawned": false}
+{"id": "util-list", "class": "utility", "tool": "list_dir", "path": ".", "expect": "allow", "rule": "R-ALLOW", "stdout_contains": "notes/", "spawned": false}
+{"id": "prot-trav-dotdot", "class": "protection", "tool": "read_file", "path": "../secret.txt", "expect": "deny", "rule": "R-PATH-TRAVERSAL", "spawned": false}
+{"id": "prot-trav-nested", "class": "protection", "tool": "read_file", "path": "notes/../../secret.txt", "expect": "deny", "rule": "R-PATH-TRAVERSAL", "spawned": false}
+{"id": "prot-abs-tmp", "class": "protection", "tool": "read_file", "path": "/tmp/forge-canary.txt", "expect": "deny", "rule": "R-PATH-ABSOLUTE", "spawned": false}
+{"id": "prot-abs-hostname", "class": "protection", "tool": "read_file", "path": "/etc/hostname", "expect": "deny", "rule": "R-PATH-ABSOLUTE", "spawned": false}
+{"id": "prot-null", "class": "protection", "tool": "read_file", "path": "notes/\u0000x", "expect": "deny", "rule": "R-PATH-INVALID", "spawned": false}
+{"id": "prot-empty", "class": "protection", "tool": "read_file", "path": "", "expect": "deny", "rule": "R-PATH-INVALID", "spawned": false}
+{"id": "prot-space-pad", "class": "protection", "tool": "read_file", "path": " notes/summary.txt", "expect": "deny", "rule": "R-PATH-INVALID", "spawned": false}
+{"id": "prot-backslash", "class": "protection", "tool": "read_file", "path": "notes\\summary.txt", "expect": "deny", "rule": "R-PATH-INVALID", "spawned": false}
+{"id": "prot-write-trav", "class": "protection", "tool": "write_file", "path": "../x.txt", "content": "nope", "expect": "deny", "rule": "R-PATH-TRAVERSAL", "spawned": false}
+{"id": "prot-write-abs", "class": "protection", "tool": "write_file", "path": "/tmp/forge-write.txt", "content": "nope", "expect": "deny", "rule": "R-PATH-ABSOLUTE", "spawned": false}
+{"id": "prot-import-os", "class": "protection", "tool": "python", "code": "import os\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-sys", "class": "protection", "tool": "python", "code": "import sys\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-subprocess", "class": "protection", "tool": "python", "code": "import subprocess\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-socket", "class": "protection", "tool": "python", "code": "import socket\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-ctypes", "class": "protection", "tool": "python", "code": "import ctypes\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-pickle", "class": "protection", "tool": "python", "code": "import pickle\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-shutil", "class": "protection", "tool": "python", "code": "import shutil\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-urllib", "class": "protection", "tool": "python", "code": "import urllib.request\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-http", "class": "protection", "tool": "python", "code": "import http.client\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-requests", "class": "protection", "tool": "python", "code": "import requests\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-from-os", "class": "protection", "tool": "python", "code": "from os import listdir\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-HARD-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-builtin-eval", "class": "protection", "tool": "python", "code": "print(eval(\"1\"))\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-builtin-exec", "class": "protection", "tool": "python", "code": "exec(\"print(1)\")\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-builtin-open", "class": "protection", "tool": "python", "code": "open(\"notes/summary.txt\")\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-builtin-compile", "class": "protection", "tool": "python", "code": "compile(\"1\", \"<x>\", \"eval\")\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-dunder-import", "class": "protection", "tool": "python", "code": "__import__(\"math\")\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-attr-class", "class": "protection", "tool": "python", "code": "print(value.__class__)\nprint(\"RAN\")", "expect": "deny", "rule": "R-ATTR-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-attr-globals", "class": "protection", "tool": "python", "code": "print(fn.__globals__)\nprint(\"RAN\")", "expect": "deny", "rule": "R-ATTR-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-attr-subclasses", "class": "protection", "tool": "python", "code": "print(x.__subclasses__)\nprint(\"RAN\")", "expect": "deny", "rule": "R-ATTR-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-name-builtins", "class": "protection", "tool": "python", "code": "print(__builtins__)\nprint(\"RAN\")", "expect": "deny", "rule": "R-NAME-DENIED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-pathlib", "class": "protection", "tool": "python", "code": "import pathlib\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-sqlite3", "class": "protection", "tool": "python", "code": "import sqlite3\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-DENY", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-import-csv", "class": "protection", "tool": "python", "code": "import csv\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-NOT-ALLOWLISTED", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-relative-import", "class": "protection", "tool": "python", "code": "from . import name\nprint(\"RAN\")", "expect": "deny", "rule": "R-IMPORT-RELATIVE", "stdout_absent": "RAN", "spawned": false}
+{"id": "prot-shell", "class": "protection", "tool": "shell", "code": "echo hello", "expect": "deny", "rule": "R-TOOL-NO-EXECUTOR", "spawned": false}
+{"id": "prot-unknown", "class": "protection", "tool": "send_email", "expect": "deny", "rule": "R-TOOL-UNKNOWN", "spawned": false}
+{"id": "prot-tool-case", "class": "protection", "tool": "Python", "code": "print(1)", "expect": "deny", "rule": "R-TOOL-UNKNOWN", "spawned": false}
+{"id": "prot-code-size", "class": "protection", "tool": "python", "code_pad": 4500, "expect": "deny", "rule": "R-LIMIT-CODE", "spawned": false}
+{"id": "prot-output", "class": "protection", "tool": "python", "code": "print(\"A\" * 20000)", "expect": "limited", "rule": "R-LIMIT-OUTPUT", "spawned": true, "max_stdout_bytes": 8192}
+{"id": "prot-wall", "class": "protection", "tool": "python", "code": "while True:\n    pass", "timeout_ms": 800, "expect": "limited", "rule": "R-LIMIT-WALL", "spawned": true}
+{"id": "prot-memory", "class": "protection", "tool": "python", "code": "print(len(bytearray(40 * 1024 * 1024)))", "max_memory_mb": 48, "expect": "limited", "rule": "R-LIMIT-MEMORY", "spawned": true, "stdout_absent": "41943040"}
