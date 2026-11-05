@@ -1,0 +1,27 @@
+version: "2026.11.05"
+name: cost-saver
+description: >
+  Same capability floor as default, then the cheapest eligible model.
+  Use this when a team would rather degrade quality than pay for surplus
+  capability. Sensitive prompts still pin to local.
+selection: cheapest
+weights: {capability: 0.25, cost: 0.60, latency: 0.15}
+budget_usd: 0.05
+latency_slo_ms: 2000
+min_quality: 0.45
+min_headroom: 0.00
+fallback:
+  order: [fast-cheap, balanced, premium]
+  allow_local_on_total_failure: true
+  max_attempts: 3
+rules:
+  - id: R-SENSITIVE-LOCAL
+    description: Confidential or restricted content stays on the local model.
+    when: {sensitivity_in: [confidential, restricted]}
+    pin: local
+    waive: [capability, budget, latency, quality]
+    stop_fallback: true
+  - id: R-REALTIME-HINT
+    description: Real-time wording tightens the SLO to 120 ms.
+    when: {latency_sensitivity: high}
+    max_latency_ms: 120

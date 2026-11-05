@@ -1,0 +1,25 @@
+version: "2026.11.05"
+name: latency-first
+description: >
+  SLO is 100 ms of catalog latency. Only Fast Cheap fits. If that model misses
+  the capability floor, the request is rejected instead of blowing the SLO.
+  There is no slower fallback and no local escape.
+selection: fastest
+weights: {capability: 0.25, cost: 0.15, latency: 0.60}
+budget_usd: 0.05
+latency_slo_ms: 100
+min_quality: 0.45
+min_headroom: 0.00
+fallback:
+  order: [fast-cheap]
+  allow_local_on_total_failure: false
+  max_attempts: 1
+rules:
+  - id: R-SENSITIVE-LOCAL
+    description: >
+      Safety still wins over the SLO. Confidential content is pinned to local
+      and the SLO waiver is recorded on the decision.
+    when: {sensitivity_in: [confidential, restricted]}
+    pin: local
+    waive: [capability, budget, latency, quality]
+    stop_fallback: true
