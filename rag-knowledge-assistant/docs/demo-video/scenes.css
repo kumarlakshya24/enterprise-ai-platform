@@ -1,0 +1,33 @@
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2d3748;--ink:#e6edf3;--muted:#8b97a8;
+  --blue:#5b8cff;--blue2:#9db8ff;--green:#3fb950;--amber:#e3a33b;--red:#f85149;--violet:#b48cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden}
+#bg{position:absolute;inset:-80px;background:
+  radial-gradient(1200px 700px at 15% 10%,rgba(91,140,255,.16),transparent 60%),
+  radial-gradient(1000px 700px at 90% 95%,rgba(180,140,255,.12),transparent 60%),
+  linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px) 0 0/48px 48px,
+  linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px) 0 0/48px 48px,var(--bg)}
+#content{position:absolute;inset:0}
+#fade{position:absolute;inset:0;background:#000;pointer-events:none}
+.abs{position:absolute}
+.label{font-size:22px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue2);font-weight:600}
+.h1{font-size:104px;font-weight:800;letter-spacing:-.03em;line-height:1.02}
+.h2{font-size:58px;font-weight:750;letter-spacing:-.02em;line-height:1.1}
+.sub{font-size:34px;color:var(--muted);line-height:1.4}
+.muted{color:var(--muted)}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.chip{display:inline-block;padding:12px 24px;border-radius:999px;background:rgba(91,140,255,.14);border:1px solid rgba(91,140,255,.4);
+  font-size:26px;font-weight:600;color:var(--blue2)}
+.box{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  border-radius:16px;background:var(--panel2);border:1.5px solid var(--line);font-size:22px;font-weight:600;line-height:1.25;padding:10px}
+.box small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:6px}
+.mono{font-family:"DejaVu Sans Mono",monospace}
+.g{color:var(--green)}.r{color:var(--red)}.a{color:var(--amber)}.b{color:var(--blue2)}.v{color:var(--violet)}
+.badge{display:inline-block;padding:6px 16px;border-radius:999px;font-size:20px;font-weight:700}
+.badge.g{background:rgba(63,185,80,.15);border:1px solid rgba(63,185,80,.5)}
+.badge.r{background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.5)}
+.badge.a{background:rgba(227,163,59,.15);border:1px solid rgba(227,163,59,.5)}
+svg{position:absolute;inset:0;overflow:visible}

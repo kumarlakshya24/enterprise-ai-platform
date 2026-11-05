@@ -1,0 +1,19 @@
+# Held-out calibration set: used ONLY to choose refusal thresholds (scripts/calibrate.py).
+# None of these questions appear in eval/dataset.yaml, so eval numbers are not tuned on themselves.
+questions:
+  - {user: alice, question: "How much is my yearly learning budget?", answerable: true}
+  - {user: bob,   question: "On which days is payday?", answerable: true}
+  - {user: carol, question: "What is the monthly limit on the corporate card?", answerable: true}
+  - {user: frank, question: "How large is my mailbox quota?", answerable: true}
+  - {user: alice, question: "What bonus do I get for referring a friend who gets hired?", answerable: true}
+  - {user: frank, question: "Can I use a GPL library in our product?", answerable: true}
+  - {user: bob,   question: "What wifi network should my personal phone use?", answerable: true}
+  - {user: carol, question: "How long is the onboarding period?", answerable: true}
+  - {user: alice, question: "my headset stopped working", answerable: true}
+  - {user: bob,   question: "How many counseling sessions does the EAP cover?", answerable: true}
+  - {user: frank, question: "What is the parking policy at the office?", answerable: false}
+  - {user: alice, question: "Do we have a sabbatical program?", answerable: false}
+  - {user: bob,   question: "What is the dress code?", answerable: false}
+  - {user: carol, question: "Is there a company car program?", answerable: false}
+  - {user: dave,  question: "How much jury duty leave do we get?", answerable: false}
+  - {user: frank, question: "Can I expense a home gym bike?", answerable: false}

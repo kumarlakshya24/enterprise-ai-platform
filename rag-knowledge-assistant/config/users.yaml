@@ -1,0 +1,9 @@
+# Demo identities. In production these claims come from the IdP (OIDC/JWT groups),
+# never from a static file. `X-User-Id` header selects the user in the demo API.
+users:
+  alice: {display_name: "Alice (Finance analyst)", team: finance, roles: [employee, analyst]}
+  bob:   {display_name: "Bob (Sales ops analyst)", team: sales, roles: [employee, analyst]}
+  carol: {display_name: "Carol (Engineering manager)", team: engineering, roles: [employee, manager]}
+  frank: {display_name: "Frank (Engineer)", team: engineering, roles: [employee]}
+  dave:  {display_name: "Dave (HR compensation)", team: hr, roles: [employee, hr_admin]}
+  erin:  {display_name: "Erin (IT / KB admin)", team: it, roles: [employee, it_admin, kb_admin]}

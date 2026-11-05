@@ -1,0 +1,17 @@
+fastapi==0.121.1
+uvicorn[standard]==0.38.0
+pydantic==2.12.4
+pydantic-settings==2.12.0
+python-multipart==0.0.20
+psycopg[binary,pool]==3.2.12
+pgvector==0.4.1
+redis==7.0.1
+numpy==2.3.4
+onnxruntime==1.23.2
+tokenizers==0.22.1
+pdfplumber==0.11.8
+pyyaml==6.0.3
+snowballstemmer==3.0.1
+httpx==0.28.1
+anthropic
+onnx==1.19.1
