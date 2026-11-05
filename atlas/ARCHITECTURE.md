@@ -1,30 +1,15 @@
 # Atlas architecture
 
-Atlas runs multi-agent work that is allowed to crash. The engine is the product. The agents
-propose tool calls. They do not get to commit a side effect themselves.
+This is the design review. The question is how a multi-agent run survives a crash between a
+remote side effect and the local record of it, without charging twice and without re-deciding
+finished work. Agents propose tool calls. The engine commits them.
 
-Measured numbers in this document come from eval suite `atlas-workflows-v1`
+Numbers are from suite `atlas-workflows-v1`
 ([`eval_results/latest/summary.json`](eval_results/latest/summary.json)). Recovery times are
-simulated from each activity's declared `latency_ms`. A healed step costs 1 ms. Wall-clock
-figures are labeled as measured on the eval host.
+simulated from each activity's `latency_ms` (a heal is 1 ms). Wall-clock figures are measured
+on the eval host and labeled as such.
 
-## 1. Goals and non-goals
-
-| Goal | How it is enforced | Where it shows up |
-|---|---|---|
-| A side effect happens once | Idempotency key in `effects.db`, separate transaction from the completion event | kill-and-resume demo, crash cases in the suite |
-| Resume does not re-decide finished work | Append-only event log, checkpoints, replay | `tests/test_engine.py` replay and hostile-model tests |
-| A human can stop a refund | Approval activity; high-risk tools also ask the guard | `refund_denied` |
-| A runaway agent stops | Step cap and cost cap, checked before a new attempt | `refund_step_budget`, `refund_cost_budget` |
-| A failed later step undoes the earlier one | Saga compensations, themselves idempotent | `refund_email_compensate`, `compensate_crash` |
-| The model cannot bypass policy | Aegis-shaped guard on the bound arguments | `vendor_guard`, personal-email test |
-| Policy text comes from the knowledge base | Lumen-shaped `ask`; a refusal fails the quote | `lumen_refusal` |
-
-Non-goals for this version: a sampled model, multi-region replication, a general programming
-language for workflows, timers beyond retry backoff, and approval SLAs. Those are in
-[`docs/FAILURE_MODES.md`](docs/FAILURE_MODES.md).
-
-## 2. System context
+## 1. System
 
 ```mermaid
 flowchart TB
@@ -47,16 +32,151 @@ flowchart TB
   ENG --> FX
   GUARD -->|ATLAS_GUARD=aegis| AEGIS
   KNOW -->|ATLAS_KNOWLEDGE=lumen| LUMEN
-  GUARD -->|default| GUARD
-  KNOW -->|default| KNOW
 ```
 
 Aegis and Lumen stay separate processes. Atlas does not import them. The offline stubs speak
-the same verdict vocabulary as Aegis (`allow`, `require_approval`, `block`, `R-TOOL-...` rule
-ids) and Lumen's `POST /ask` shape (`answer`, `citations`, `refused`, including the sentence
-"Not found in the provided documents."). HTTP adapters fail closed.
+Aegis's verdict vocabulary (`allow`, `require_approval`, `block`, `R-TOOL-...`) and Lumen's
+`POST /ask` shape (`answer`, `citations`, `refused`). HTTP adapters fail closed.
 
-## 3. Durable state machine
+## 2. Decisions at a glance
+
+| Choice | Chose | Rejected | Why this one | What it costs |
+|---|---|---|---|---|
+| Durable store | Event log and effect store, separate commits | One mutable status row. One transaction around the remote call | The row cannot say whether the debit committed. One transaction cannot span a payment API | Two files, backed up together. SQLite is one writer |
+| Replay model | Append-only log, hashed checkpoints, model decision recorded before the side effect | Re-read mutable rows. Re-prompt the model on resume | Resume is a function of the log. A sampled model will not repeat itself | The fold is deterministic. A bad first decision is sticky |
+| Idempotency | Remote key, local heal if the key exists, refuse tools with no key | At-most-once. Blind at-least-once | The first drops the refund. The second double-charges | The remote system must honor the key |
+| Compensation | Saga, each reverse keyed like a forward effect | Two-phase commit across mail and ledger | Atlas does not operate those systems | `compensation_failed` is a real terminal state |
+| Guardrail adapter | Port. Offline Aegis stub. Fail-closed HTTP | Import Aegis. Trust the model | Separate deployable. The demo model is gullible on purpose | Stub is a subset. Rule ids can drift |
+| Retrieval adapter | Port. Offline Lumen stub. `POST /ask`. Refusal fails the step | Policy text in the prompt. Fail open | Citations and refusal are the contract. A down dependency must not invent a refund | Offline routing is keywords until Lumen is configured |
+
+### Durable store
+
+Two SQLite files. `atlas.db` holds the run row (a projection), the event log, and checkpoints.
+`effects.db` holds side effects under the idempotency key, and its commit returns before the
+engine appends `activity_completed`.
+
+Rejected a mutable activity row as the source of truth. After `SIGKILL` it still says
+`running`. Rejected wrapping the remote call and the completion in one transaction. That
+demo passes unit tests and cannot be deployed against a ledger. The SQL, including
+`UPDATE runs SET lease_epoch = ? WHERE lease_epoch = ?`, is what a Postgres store keeps.
+[ADR 0001](docs/adr/0001-event-log-and-replay.md), [ADR 0002](docs/adr/0002-idempotency-keys-not-at-most-once.md).
+
+### Replay model
+
+`replay.fold` applies events in order. Resume uses the newest checkpoint whose stored SHA-256
+matches the payload, then folds the tail. A mismatch drops that checkpoint. `llm_decision`
+is appended before the tool call. Resume replays it. A hostile model swapped in after a crash
+is not consulted for a step that already has a decision.
+
+Rejected re-prompting, because the second completion will not match the first attempt's
+idempotency key. Rejected trusting the checkpoint alone. The hash is for torn writes, not
+for a malicious writer who can update the hash too. Clock reads and random choices inside
+the fold are forbidden. Time is an argument.
+
+### Idempotency
+
+Forward key `{run_id}:{activity_id}`. Compensation key with a `:compensate` suffix. Same
+payload returns the original row. A different payload is `IdempotencyConflict`. Resume of a
+`running` activity with a key present appends `activity_healed` and skips the body. No key
+means one retry under the same key. `sms.send` is refused with `R-TOOL-NOT-IDEMPOTENT`
+before any send.
+
+Rejected at-most-once: the customer never gets the refund if the process dies before the
+call. Rejected a fresh call on every retry: the baseline posts two debits on
+`refund_crash_after_remote`; Atlas posts one and re-runs 0 completed steps. A provider that
+forgets keys after a short window will double-charge later. That is outside what this
+process can prove.
+
+### Compensation
+
+Permanent failure skips unfinished forward work and runs `compensate` tools in reverse
+completion order. Each one is an effect with the heal protocol, so `compensate_crash` ends
+as one debit and one credit. Compensations are exempt from the step and cost caps. A failed
+compensation ends the run as `compensation_failed`.
+
+Rejected two-phase commit. There is no shared transaction manager, and building one would
+couple Atlas to systems it does not run. The amount on the credit is the quote result, not
+a model argument. Steps with no honest reverse (a page that already fired) declare no
+`compensate` and should be ordered last. [ADR 0003](docs/adr/0003-sagas-not-two-phase-commit.md).
+
+### Guardrail adapter
+
+`ToolGuard.evaluate` returns one verdict. The offline implementation blocks non-idempotent
+tools, freemail domains, and URL hosts outside `status.acme.example`, `hooks.acme.example`,
+and `api.acme.example`. High-risk tools need an approval already on the run. Block outranks
+`require_approval`. The HTTP adapter targets `POST /v1/tool-guard/evaluate` and blocks with
+`R-AEGIS-UNAVAILABLE` on any error. The vendor specialist proposes a personal webhook because
+the mock follows an injected instruction. The activity is `on_block: skip`. The provision
+step still runs once.
+
+Rejected a library import of Aegis, which would make three deployables one outage. Rejected
+a system prompt that says not to exfiltrate. The eval's interesting case is a model that
+does it anyway. The stub does not tokenize, taint, or audit. Those remain Aegis features
+behind the port. [ADR 0004](docs/adr/0004-ports-for-aegis-and-lumen.md).
+
+### Retrieval adapter
+
+`Knowledge.ask` returns answer, citations, and `refused`. Offline, three articles plus
+Lumen's refusal sentence. The quote step parses the limits out of the answer. Refusal or a
+transport failure fails the quote. Nothing is posted.
+
+Rejected inlining the policy in the planner prompt: no citation, no refusal signal, no way
+to point the same step at the real index. Rejected failing open. The HTTP path is Lumen's
+actual demo API (`POST /ask`, `X-User-Id`). The offline path is keyword routing, so it will
+miss paraphrases and it does not apply Lumen's ACLs. That is acceptable only while
+`ATLAS_KNOWLEDGE=offline`.
+
+## 3. SLO and cost budgets
+
+| Budget | Target | Mechanism | Result on this suite |
+|---|---|---|---|
+| Duplicate effects after crash | 0 | Effect key plus fencing epoch on the completion write | 0 / 4 crash cases. Baseline 3 / 4 |
+| Completed steps re-run | 0 | Replay restores them. Only a started step with no effect row runs again | Mean 0 vs 3.25 |
+| Catch-up | Bookkeeping, not a replay. Operational floor is one lease TTL | `activity_healed` | Simulated mean 12 ms vs 104 ms. Default lease 30 s. Demo lease 0.4 s |
+| Engine overhead, small refund, no model | p95 < 50 ms | In-process drive, no network on the default path | Measured p50 17.3 ms, p95 28.3 ms, SQLite setup included |
+| Run cost | Pause before `max_cost_usd` ($1.00 default) or `max_steps` (20) | Check before admitting a new attempt. Compensations exempt | Happy path $0.011. Suite mean $0.00750 vs $0.01225. A $0.0025 cap pauses before the quote |
+| High-risk effect without approval | Zero such effects | Approval activity, and the guard if the gate was skipped without a policy waiver | `refund_denied`: empty effect set |
+| Guard or retrieval down | Fail closed | Block, or refusal that fails the dependent step | Adapter tests against a closed port |
+
+The $0.011 on a $40 refund is the per-workflow budget I would ship. The $1.00 cap is the
+backstop for a planner that will not stop. Accounted cost is the declared price of a
+specialist step. It is the projection the enforcer uses. It is not a provider bill. Actual
+spend against a model in this repo is $0.
+
+## 4. How this scales to production
+
+| Offline piece | Production replacement |
+|---|---|
+| `atlas.db` | Postgres, same schema. Lease-epoch update unchanged. Restore this database and the effect records as a pair |
+| `drive` loop in one process | Temporal, if the platform has it: log becomes workflow history, each tool call an activity, lease becomes the activity heartbeat. Otherwise a queue, one message per run, same epoch fencing |
+| `effects.db` | Idempotency tables inside the ledger, the mailer, and the pager. Atlas writes the completion after their ack |
+| Mock LLM | LLM gateway. Here that is Aegis in front of the provider. The completion is still an event, so resume does not call the model again |
+| Offline guard | `ATLAS_GUARD=aegis`, fail closed. Tokenization, taint, and the hash-chained audit log stay in Aegis |
+| Offline corpus | `ATLAS_KNOWLEDGE=lumen` and `POST /ask`. A refusal still fails the step |
+| In-process approval | Same `paused_approval` state. The decision arrives on a queue. No path from timeout to debit |
+| `SIGKILL` between the two files | Worker crash between provider ack and history append. The next activity task heals |
+
+Leave behind when you make that move: SQLite as a shared log, a single lease covering a
+parallel wave, and keyword retrieval. Add per-activity leases before more than one worker
+executes ready activities of the same run. Keep the catalog as the allowlist.
+
+## 5. Goals and non-goals
+
+| Goal | How it is enforced | Where it shows up |
+|---|---|---|
+| A side effect happens once | Idempotency key in `effects.db`, separate transaction from the completion event | kill-and-resume demo, crash cases in the suite |
+| Resume does not re-decide finished work | Append-only event log, checkpoints, replay | `tests/test_engine.py` replay and hostile-model tests |
+| A human can stop a refund | Approval activity; high-risk tools also ask the guard | `refund_denied` |
+| A runaway agent stops | Step cap and cost cap, checked before a new attempt | `refund_step_budget`, `refund_cost_budget` |
+| A failed later step undoes the earlier one | Saga compensations, themselves idempotent | `refund_email_compensate`, `compensate_crash` |
+| The model cannot bypass policy | Aegis-shaped guard on the bound arguments | `vendor_guard`, personal-email test |
+| Policy text comes from the knowledge base | Lumen-shaped `ask`; a refusal fails the quote | `lumen_refusal` |
+
+Non-goals for this version: a sampled model, multi-region replication, a general programming
+language for workflows, timers beyond retry backoff, and approval SLAs. Those are in
+[`docs/FAILURE_MODES.md`](docs/FAILURE_MODES.md).
+
+## 6. Durable state machine
 
 A run is not a row that says `running`. The row is a cache of the log. The log is the state.
 
@@ -145,22 +265,12 @@ On this path the suite records Atlas recovery **56 ms** simulated (1 ms heal + e
 and **0** completed steps re-run. The baseline, which restarts the plan, records **170 ms** and
 **4** completed steps re-run, and posts the debit twice.
 
-## 4. Decisions at a glance
+Money amounts and recipients are bound by the engine from the quote and the request. The model
+may still set an email subject or a URL. Those arguments are what the guard evaluates. That
+split is deliberate: free-form arguments are the ones a jailbroken specialist will abuse, and
+they are the ones the port is there to see.
 
-| Decision | Chose | Rejected | Why | Tradeoff |
-|---|---|---|---|---|
-| History | Append-only event log plus checkpoints, replay on resume | One mutable status row | A row that says `running` does not say whether the debit committed | Replay has to be deterministic; the log stores the model decision |
-| Side effects | Idempotency key in a second database, heal if the key exists | At-most-once (do not retry) | At-most-once drops the refund when the worker dies before the completion | The remote system must honor the key; non-idempotent tools are refused |
-| Failure | Saga compensations, keyed the same way | Two-phase commit across email and ledger | Atlas does not control those systems | A compensation can fail; that is a terminal state, not a silent success |
-| Agents | Mock LLM, decision recorded before the side effect | Re-prompt on resume | A live model will not repeat itself | The log holds the completion; the plan is fixed once `plan_recorded` is written |
-| Arguments | Money and recipients bound by the engine from upstream results | Pass model JSON straight to the tool | The quote tool clamps to the policy cap; the model cannot change the amount | Free-form tools (`http.post`) still take model arguments, and the guard has to see them |
-| Guard and knowledge | Ports with offline stubs and HTTP adapters | Import Aegis or Lumen | Those projects deploy on their own | The stub can drift; the contract is the verdict vocabulary and `POST /ask` |
-| Budgets | Step cap and cost cap, pause | An unlimited tool loop | A planner bug should not drain a budget | A pause needs a person to raise the cap; compensations ignore the cap |
-| Retries | Bounded attempts, exponential backoff, per-activity timeout | Immediate tight loop | A hung tool and a thundering herd | Recovery waits out the backoff; the caller ticks again |
-| Workers | Lease plus a fencing epoch on every log write | A single global lock, or no lock | A second worker should pick up a dead one and an old one must not finish the job | Clock skew delays recovery by about one lease TTL |
-| Storage | SQLite, two files | Postgres required for the demo | The kill demo is one directory and a signal | One writer; the SQL lives in `store.py` so a Postgres store can replace it |
-
-## 5. Crash windows
+## 7. Crash windows
 
 | Window | What has committed | Resume |
 |---|---|---|
@@ -173,7 +283,7 @@ and **0** completed steps re-run. The baseline, which restarts the plan, records
 `make kill-resume` is the `after_remote` window with `SIGKILL`, a live lease, and a second process.
 In-process tests expire the lease immediately so they do not sleep. The demo waits.
 
-## 6. Replay and checkpoints
+## 8. Replay and checkpoints
 
 `replay.fold` is a pure function from events to state. Resume loads the latest checkpoint whose
 SHA-256 still matches the stored payload, then folds only the tail. A tampered checkpoint is
@@ -187,7 +297,7 @@ recorded decision and still delivers the original subject.
 The planner may propose extra activities. They are stored on `plan_recorded` as rejected and
 never inserted. The catalog is the allowlist: tools, compensations, timeouts, and budgets.
 
-## 7. Guard, knowledge, budgets, retries
+## 9. Operational rules the budgets depend on
 
 The offline guard blocks non-idempotent tools (`R-TOOL-NOT-IDEMPOTENT`), freemail domains
 (`R-TOOL-PERSONAL-DOMAIN`), and URL hosts outside `status.acme.example`, `hooks.acme.example`,
@@ -207,7 +317,7 @@ cap. Backoff is `backoff_ms * 2^(attempt-1)`, and the run parks in `waiting_retr
 clock passes `retry_at`. Timeouts are an elapsed-time report from the tool compared with
 `timeout_ms`. A timeout after the effect committed is a success, not a retry.
 
-## 8. What breaks first at 10×
+## 10. What breaks first at 10×
 
 Ten times the activities, the workers, or the side-effect rate.
 
@@ -231,7 +341,7 @@ Ten times the activities, the workers, or the side-effect rate.
   stay in `compensating` and the operator to resume if the process dies. The crash test covers
   the die-and-resume half.
 
-## 9. Trust boundaries
+## 11. Trust boundaries
 
 | Boundary | What crosses | Control |
 |---|---|---|
