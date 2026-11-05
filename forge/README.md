@@ -1,4 +1,34 @@
-# Forge: an offline sandbox for agent tool calls
+<div align="center">
+
+# ⚒️ Forge
+
+### A sandbox that refuses a dangerous agent tool call before a process even exists
+
+[![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-53%20passing-2ea44f)
+![Eval](https://img.shields.io/badge/eval-55%2F55-2ea44f)
+![Deny p95](https://img.shields.io/badge/deny%20p95-0.21%20ms-0969da)
+![Regression gate](https://img.shields.io/badge/regression%20gate-41%20cases%20locked-8250df)
+![Offline](https://img.shields.io/badge/network%2C%20Docker%2C%20API%20key-none-6e7781)
+
+[**Results**](#results-measured) ·
+[**60-second demo**](#60-second-demo) ·
+[Setup](#setup) ·
+[Architecture](#architecture) ·
+[Where it fits](#-where-it-fits-in-the-platform) ·
+[Limits](#limits-said-plainly)
+
+<img src="docs/assets/demo.gif" alt="Forge demo: an allowed sum, a path denial, an import denial, and the regression gate" width="100%">
+
+<sub>An allowed sum runs in the sandbox. A path traversal and <code>import os</code> are refused before any process starts. A weaker candidate policy is refused by the regression gate.</sub>
+
+</div>
+
+---
+
+## In plain English
+
 
 An agent that can run tools can also read the wrong file, import the wrong module, or loop until the machine stalls. That call needs a control in front of it.
 
@@ -32,11 +62,9 @@ The corpus is a development set. It locks the decisions we intend to keep. It is
 
 ## 60-second demo
 
-![Forge demo: an allowed sum, a path denial, an import denial, and the regression gate](docs/assets/demo.gif)
-
 <video src="docs/assets/demo.mp4" poster="docs/assets/ui-sum.png" controls playsinline width="960"></video>
 
-The gif and the video are the same UI clip (`docs/assets/demo.mp4`, about nine seconds). The gif plays inline. The video is the original file.
+The clip at the top of this page and this video are the same UI recording (`docs/assets/demo.mp4`, about nine seconds).
 
 ```bash
 cd forge
@@ -79,12 +107,14 @@ make interview
 
 ```mermaid
 flowchart LR
-  Caller[Caller or demo UI] --> Guard[Tool guard]
-  Guard -->|deny| Audit[(HMAC JSONL)]
-  Guard -->|python allow| Child[Child interpreter]
-  Guard -->|file allow| WS[Workspace]
+  Caller([Caller or demo UI]) --> Guard{"Tool guard<br/>path · import · tool · size"}
+  Guard -->|"deny (no process spawned)"| Audit[("Append-only<br/>HMAC JSONL")]
+  Guard -->|python allow| Child["Child interpreter<br/>python -I · audit hook<br/>restricted builtins · rlimits"]
+  Guard -->|file allow| WS[("Workspace<br/>relative paths only")]
   Child --> WS
-  Child --> Audit
+  Child -->|"result, exit code, kill reason"| Audit
+  Policy["Policy YAML<br/>can only shrink<br/>the allowlist"] -.-> Guard
+  Hard["Hard denials in code<br/>os · socket · shell · network"] -.-> Guard
 ```
 
 The full design, trust boundaries, sandbox lifecycle, both sequences, STRIDE, and the decision table are in [`ARCHITECTURE.md`](ARCHITECTURE.md). Failure behavior is in [`FAILURE_MODES.md`](FAILURE_MODES.md). The interview script is [`docs/INTERVIEW_WALKTHROUGH.md`](docs/INTERVIEW_WALKTHROUGH.md).
@@ -100,6 +130,28 @@ The full design, trust boundaries, sandbox lifecycle, both sequences, STRIDE, an
 | `shell` | No executor. Enabling it in YAML does not create one. |
 
 Hard denials live in `forge/guard/constants.py`. The YAML file can only shrink the allowlist. Network cannot be switched to allow: the schema rejects `network: allow`.
+
+---
+
+## 🔗 Where it fits in the platform
+
+```mermaid
+flowchart LR
+  A[🧭 Atlas<br/>agent proposes a tool call] -. "may this happen?" .-> AEG[🛡️ Aegis<br/>tool guard]
+  A -. "run it safely" .-> F[⚒️ Forge<br/>sandboxed execution]
+  style F fill:#cf222e,color:#fff,stroke:#cf222e
+```
+
+Aegis answers *whether* an agent may make a call. Forge answers *how* an allowed call that runs code or
+touches files is contained. The two layers are separate on purpose: a policy mistake in one is still
+caught by the other.
+
+| Neighbour | Relationship | Status today |
+|:--|:--|:--|
+| [🧭 Atlas](../atlas/) | Forge is the intended executor for agent tools that run code or touch files. | ⚠️ Not wired. Atlas's demo tools are ledger, email, pager and webhook calls, not code execution. |
+| [🛡️ Aegis](../secure-ai-gateway/) | Identity and prompt-injection defence happen at the Aegis boundary; Forge stays out of the auth path. | By design ([ARCHITECTURE.md, assumption A1](ARCHITECTURE.md)). |
+
+<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
 
 ---
 
