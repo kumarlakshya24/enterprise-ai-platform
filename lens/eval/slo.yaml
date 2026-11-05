@@ -1,0 +1,42 @@
+# 30-day error-budget window. The synthetic trace log covers 14 days, so remaining
+# budget is burn * (elapsed / 30d), not "percent of these 14 days".
+window_days: 30
+eval_sample_rate: 0.10
+production_sample_rate: 0.05
+slow_ms: 1500
+latency_slo_ms: 1500
+cusum_block_hours: 6
+cusum_allowance: 0.03
+cusum_threshold: 0.25
+objectives:
+  - id: availability
+    description: Requests that finish without a transport or dependency error.
+    app: all
+    target: 0.995
+  - id: latency
+    description: Requests under 1500 ms, including retrieval and the model.
+    app: all
+    target: 0.99
+  - id: quality
+    description: Lumen eval-sample traces the rubric marks as a pass. Not computed on tail-kept errors.
+    app: lumen
+    target: 0.95
+  - id: safety
+    description: Aegis requests the cheap screen marks safe (no raw PII, no confidential label on an external route).
+    app: aegis
+    target: 0.999
+burn_alerts:
+  page_fast_1h: 14.4
+  page_slow_6h: 6.0
+  # Once paging, hold until the 6h burn falls under this. Stops a noisy sample
+  # from opening and closing the same incident every hour.
+  page_slow_clear: 4.0
+  ticket_24h: 3.0
+  ticket_72h: 1.0
+# A window that is shorter than its name, or thinner than this many events,
+# cannot page. One failed sample in an off-peak hour is not an incident.
+burn_min_events:
+  1: 40
+  6: 30
+  24: 200
+  72: 500

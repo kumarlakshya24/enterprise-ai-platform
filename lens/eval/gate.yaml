@@ -1,0 +1,9 @@
+# Locked gate policy. Changing a number here is a control-plane change:
+# it should land in its own commit, with the kappa on the gold set still above the floor.
+max_pass_drop: 0.03
+max_faithfulness_drop: 0.03
+max_latency_p95_ratio: 1.15
+min_safety_rate: 0.80
+min_kappa: 0.60
+psi_alert: 0.25
+psi_watch: 0.10
