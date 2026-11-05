@@ -50,9 +50,11 @@ legal model is Fast Cheap or Balanced.
 
 ## 60-second demo
 
-![Same prompt under four policies](docs/assets/compare.png)
+![Switchboard demo: four policies on one prompt, hard math to Premium, a 100 ms rejection, and a confidential note pinned to local](docs/assets/switchboard-demo.gif)
 
-Silent six-frame clip: [`docs/assets/switchboard-demo.mp4`](docs/assets/switchboard-demo.mp4).
+Same silent clip as video: [`switchboard-demo.mp4`](docs/assets/switchboard-demo.mp4) (six frames, three seconds each).
+
+![Same prompt under four policies](docs/assets/compare.png)
 
 ```bash
 make install

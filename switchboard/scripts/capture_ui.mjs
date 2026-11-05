@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Headless screenshots of the demo UI, plus a short silent mp4.
+// Headless screenshots of the demo UI, plus a short silent mp4 and gif.
 // Requires google-chrome and ffmpeg on PATH. Starts the API if :8092 is closed.
 
 import { spawn } from "node:child_process";
@@ -116,15 +116,28 @@ async function shoot(debugPort, query, filename) {
   console.log("wrote", filename);
 }
 
-async function video(frameDir) {
-  const args = [
+function ffmpeg(args) {
+  return new Promise((resolveDone, rejectDone) => {
+    const child = spawn("ffmpeg", args, { stdio: "inherit" });
+    child.on("exit", (code) => (code === 0 ? resolveDone() : rejectDone(new Error(`ffmpeg ${code}`))));
+  });
+}
+
+// Six stills, three seconds each. libx264 needs even dimensions; the gif uses the same scale
+// so the two files show the same pixels. The gif keeps a shared 256-color palette and skips
+// dither so UI text stays sharp.
+const frameScale = "scale=trunc(iw/2)*2:trunc(ih/2)*2";
+
+async function encode(frameDir) {
+  const input = resolve(frameDir, "frame-%02d.png");
+  await ffmpeg([
     "-y",
     "-framerate",
     "1/3",
     "-i",
-    resolve(frameDir, "frame-%02d.png"),
+    input,
     "-vf",
-    "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+    frameScale,
     "-c:v",
     "libx264",
     "-pix_fmt",
@@ -132,11 +145,34 @@ async function video(frameDir) {
     "-movflags",
     "+faststart",
     resolve(assets, "switchboard-demo.mp4"),
-  ];
-  await new Promise((resolveDone, rejectDone) => {
-    const child = spawn("ffmpeg", args, { stdio: "inherit" });
-    child.on("exit", (code) => (code === 0 ? resolveDone() : rejectDone(new Error(`ffmpeg ${code}`))));
-  });
+  ]);
+  const palette = resolve(frameDir, "palette.png");
+  await ffmpeg([
+    "-y",
+    "-framerate",
+    "1/3",
+    "-i",
+    input,
+    "-vf",
+    `${frameScale},palettegen=stats_mode=full:max_colors=256`,
+    palette,
+  ]);
+  await ffmpeg([
+    "-y",
+    "-framerate",
+    "1/3",
+    "-i",
+    input,
+    "-i",
+    palette,
+    "-lavfi",
+    `${frameScale}[x];[x][1:v]paletteuse=dither=none:diff_mode=rectangle`,
+    "-gifflags",
+    "+offsetting+transdiff",
+    "-loop",
+    "0",
+    resolve(assets, "switchboard-demo.gif"),
+  ]);
 }
 
 const debugPort = 9222;
@@ -166,8 +202,9 @@ try {
     const frame = `frame-${String(index + 1).padStart(2, "0")}.png`;
     copyFileSync(resolve(assets, filename), resolve(frameDir, frame));
   });
-  await video(frameDir);
+  await encode(frameDir);
   console.log("wrote switchboard-demo.mp4");
+  console.log("wrote switchboard-demo.gif");
 } finally {
   if (chrome) chrome.kill();
   if (api) api.kill();

@@ -38,7 +38,7 @@ lint:            ## Ruff lint and format check
 	$(PY) -m ruff check switchboard tests eval bench scripts
 	$(PY) -m ruff format --check switchboard tests eval bench scripts
 
-capture:         ## Headless screenshots and a short silent demo video
+capture:         ## Headless screenshots plus a silent demo mp4 and gif
 	node scripts/capture_ui.mjs
 
 clean:           ## Remove the local SQLite file and caches
