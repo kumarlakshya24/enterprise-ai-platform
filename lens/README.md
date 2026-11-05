@@ -18,6 +18,14 @@ make up       # dashboard at http://127.0.0.1:8088
 
 ![SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)
 
+## Demo
+
+![Lens demo: SLO cards, the quality drop, drift and alert transitions, a blocked tool span, and the seeded prompt failing the CI gate](docs/assets/lens-demo.gif)
+
+<video src="docs/assets/lens-demo.mp4" poster="docs/assets/slo-dashboard.png" controls playsinline width="960"></video>
+
+The gif plays inline. The same silent clip is [`lens-demo.mp4`](docs/assets/lens-demo.mp4) (about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
+
 ## Why
 
 Latency and HTTP 500s do not measure a wrong policy answer. A prompt change can pass unit tests and still
@@ -245,5 +253,3 @@ known holes. The long version is [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md).
 | [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md) | What fails, and the mitigation that is actually in the code. |
 | [docs/INTERVIEW_WALKTHROUGH.md](docs/INTERVIEW_WALKTHROUGH.md) | The script. `make interview` prints it. |
 | [reports/latest/](reports/latest/) | The JSON the README is rendered from. |
-
-Demo: `docs/assets/lens-demo.mp4` and `docs/assets/lens-demo.gif`.
