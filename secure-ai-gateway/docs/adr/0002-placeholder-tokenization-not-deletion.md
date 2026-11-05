@@ -1,3 +1,5 @@
+[Aegis](../../README.md) › [Docs](../README.md) › [Decision records](README.md) › **ADR 0002**
+
 # ADR 0002: Reversible placeholder tokenization instead of deletion
 
 * Status: accepted

@@ -1,3 +1,5 @@
+[Aegis](../../README.md) › [Docs](../README.md) › [Decision records](README.md) › **ADR 0001**
+
 # ADR 0001: Enforce DLP in a gateway proxy, not in the client
 
 * Status: accepted

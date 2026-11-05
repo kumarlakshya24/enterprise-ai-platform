@@ -1,3 +1,5 @@
+[Aegis](../../README.md) › [Docs](../README.md) › [Decision records](README.md) › **ADR 0004**
+
 # ADR 0004: Deterministic tool guard with taint tracking, not model self-defense
 
 * Status: accepted
