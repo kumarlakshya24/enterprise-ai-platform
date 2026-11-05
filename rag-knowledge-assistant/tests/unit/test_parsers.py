@@ -7,8 +7,19 @@ from tests.conftest import ROOT, write_doc
 
 
 def test_markdown_front_matter_headings_and_tables(tmp_path):
-    p = write_doc(tmp_path, "pol.md", {"doc_id": "Pol 1", "title": "Policy", "team": "HR", "version": "2.0",
-                                       "updated": "2026-01-01", "visibility": "team", "audience": ["hr"]}, """
+    p = write_doc(
+        tmp_path,
+        "pol.md",
+        {
+            "doc_id": "Pol 1",
+            "title": "Policy",
+            "team": "HR",
+            "version": "2.0",
+            "updated": "2026-01-01",
+            "visibility": "team",
+            "audience": ["hr"],
+        },
+        """
         # Policy
         ## Section A
         2.1 First clause text.
@@ -17,7 +28,8 @@ def test_markdown_front_matter_headings_and_tables(tmp_path):
         | Tier | Amount |
         | --- | --- |
         | 1 | $95 |
-    """)
+    """,
+    )
     doc = parse_file(p)
     assert doc.meta.doc_id == "pol-1" and doc.meta.team == "hr" and doc.meta.version_label == "2.0"
     assert doc.meta.visibility == "team" and doc.meta.audience == ["hr"] and str(doc.meta.updated) == "2026-01-01"
@@ -49,10 +61,13 @@ def test_pdf_tables_and_sidecar_metadata():
     assert any(b.kind == "heading" and b.text == "How to Report" for b in doc.blocks)
 
 
-@pytest.mark.parametrize("front,err", [
-    ({"visibility": "secret"}, "invalid visibility"),
-    ({"visibility": "restricted"}, "allowed_roles"),
-])
+@pytest.mark.parametrize(
+    "front,err",
+    [
+        ({"visibility": "secret"}, "invalid visibility"),
+        ({"visibility": "restricted"}, "allowed_roles"),
+    ],
+)
 def test_invalid_metadata_rejected(tmp_path, front, err):
     p = write_doc(tmp_path, "bad.md", {"title": "x", **front}, "# X\nbody text here")
     with pytest.raises(ParseError, match=err):

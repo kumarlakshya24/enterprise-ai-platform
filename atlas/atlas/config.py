@@ -46,5 +46,5 @@ class Settings:
             lumen_base_url=os.environ.get("LUMEN_BASE_URL", "http://127.0.0.1:8000"),
             lumen_user_id=os.environ.get("LUMEN_USER_ID", "atlas-worker"),
             host=os.environ.get("ATLAS_HOST", "127.0.0.1"),
-            port=int(os.environ.get("ATLAS_PORT", "8095")),
+            port=int(os.environ.get("ATLAS_PORT", "8096")),
         )

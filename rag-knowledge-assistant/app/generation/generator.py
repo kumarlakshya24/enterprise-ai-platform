@@ -7,6 +7,7 @@ Two paths share the same contract (answer text with [n] citations, or a refusal)
   * Extractive path - select the most relevant sentences from the retrieved chunks
     with the cross-encoder, never selecting injection-flagged sentences.
 """
+
 from __future__ import annotations
 
 import logging
@@ -55,7 +56,7 @@ def _table_row_sentences(table: str) -> list[str]:
     out = []
     for ln in lines[2:]:
         row = cells(ln)
-        out.append("; ".join(f"{h}: {v}" for h, v in zip(header, row) if v))
+        out.append("; ".join(f"{h}: {v}" for h, v in zip(header, row, strict=False) if v))
     return out
 
 
@@ -76,7 +77,7 @@ def candidate_segments(c: Candidate, guard: bool) -> list[tuple[str, str]]:
         if guard:
             sents = [x for x in sents if not injection.is_risky(x)]
         out.extend((section, x) for x in sents)
-        out.extend((section, f"{a} {b}") for a, b in zip(sents, sents[1:]))
+        out.extend((section, f"{a} {b}") for a, b in zip(sents, sents[1:], strict=False))
         block.clear()
 
     for line in c.content.split("\n") + [""]:
@@ -107,15 +108,31 @@ def _cite(contexts: list[Candidate], idxs: list[int]) -> list[dict]:
     out = []
     for i in sorted(set(idxs)):
         c = contexts[i - 1]
-        out.append({"index": i, "doc_id": c.doc_id, "title": c.title, "chunk_id": c.chunk_id,
-                    "chunk_index": c.chunk_index, "section": _section(c),
-                    "version": c.version_label, "reference": c.citation_ref()})
+        out.append(
+            {
+                "index": i,
+                "doc_id": c.doc_id,
+                "title": c.title,
+                "chunk_id": c.chunk_id,
+                "chunk_index": c.chunk_index,
+                "section": _section(c),
+                "version": c.version_label,
+                "reference": c.citation_ref(),
+            }
+        )
     return out
 
 
 class Generator:
-    def __init__(self, llm: LLM, reranker: Reranker | None, embedder: Embedder, max_tokens: int,
-                 min_sentence_score: float, executor: ThreadPoolExecutor):
+    def __init__(
+        self,
+        llm: LLM,
+        reranker: Reranker | None,
+        embedder: Embedder,
+        max_tokens: int,
+        min_sentence_score: float,
+        executor: ThreadPoolExecutor,
+    ):
         self.llm, self.reranker, self.embedder = llm, reranker, embedder
         self.max_tokens, self.min_sentence_score = max_tokens, min_sentence_score
         self.executor = executor
@@ -124,8 +141,15 @@ class Generator:
         return GenerationResult(REFUSAL_TEXT, True, reason=reason, model=self.llm.name)
 
     # ------------------------------------------------------------------ public
-    def generate(self, question: str, contexts: list[Candidate], principal: Principal | None,
-                 redact_pii: bool, guard_injection: bool, budget_ms: int) -> GenerationResult:
+    def generate(
+        self,
+        question: str,
+        contexts: list[Candidate],
+        principal: Principal | None,
+        redact_pii: bool,
+        guard_injection: bool,
+        budget_ms: int,
+    ) -> GenerationResult:
         if not contexts:
             return self.refusal("no_context")
         projected_in = estimate_tokens(SYSTEM_PROMPT + user_prompt(question, contexts, principal))
@@ -146,8 +170,9 @@ class Generator:
         return res
 
     # ------------------------------------------------------------------ LLM path
-    def _llm_answer(self, question: str, contexts: list[Candidate], principal: Principal | None,
-                    redact_pii: bool, timeout_s: float) -> GenerationResult:
+    def _llm_answer(
+        self, question: str, contexts: list[Candidate], principal: Principal | None, redact_pii: bool, timeout_s: float
+    ) -> GenerationResult:
         red = Counter()
         ctx = contexts
         if redact_pii:
@@ -170,8 +195,14 @@ class Generator:
         return GenerationResult(text, False, _cite(contexts, valid), **base)
 
     # ------------------------------------------------------------------ extractive path
-    def extractive(self, question: str, contexts: list[Candidate], guard_injection: bool,
-                   max_segments: int = 2, margin: float = 1.5) -> GenerationResult:
+    def extractive(
+        self,
+        question: str,
+        contexts: list[Candidate],
+        guard_injection: bool,
+        max_segments: int = 2,
+        margin: float = 1.5,
+    ) -> GenerationResult:
         pool: list[tuple[int, str, str]] = []
         for i, c in enumerate(contexts, start=1):
             pool += [(i, sec, txt) for sec, txt in candidate_segments(c, guard_injection)]
@@ -201,6 +232,8 @@ class Generator:
             chosen.append(j)
         chosen.sort(key=lambda j: (pool[j][0], j))
         parts = [f"{pool[j][2].rstrip()} [{pool[j][0]}]" for j in chosen]
-        res = GenerationResult(" ".join(parts), False, _cite(contexts, [pool[j][0] for j in chosen]), model="extractive")
+        res = GenerationResult(
+            " ".join(parts), False, _cite(contexts, [pool[j][0] for j in chosen]), model="extractive"
+        )
         res.top_score = best
         return res

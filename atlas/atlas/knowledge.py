@@ -12,6 +12,8 @@ import urllib.error
 import urllib.request
 from typing import Any, Protocol
 
+from atlas.guard import require_http_url
+
 REFUSAL = "Not found in the provided documents."
 
 _ARTICLES: dict[str, dict[str, Any]] = {
@@ -79,20 +81,20 @@ class HttpLumen:
     """
 
     def __init__(self, base_url: str, user_id: str, timeout: float = 5.0) -> None:
-        self.base_url = base_url.rstrip("/")
+        self.base_url = require_http_url(base_url)
         self.user_id = user_id
         self.timeout = timeout
 
     def ask(self, question: str, *, principal: str) -> dict[str, Any]:
         body = json.dumps({"question": question}).encode()
-        request = urllib.request.Request(
+        request = urllib.request.Request(  # noqa: S310 - http(s) only, see __init__
             f"{self.base_url}/ask",
             data=body,
             headers={"content-type": "application/json", "x-user-id": principal or self.user_id},
             method="POST",
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:  # noqa: S310 - http(s) only, see __init__
                 data = json.loads(response.read().decode())
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
             return _refuse()

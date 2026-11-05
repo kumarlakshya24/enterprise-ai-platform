@@ -97,7 +97,7 @@ invariants, not the steps:
 
 If the debit count is 2, the design is wrong.
 
-The UI (`make up`, http://127.0.0.1:8095) is the same window with the approval gate in
+The UI (`make up`, http://127.0.0.1:8096) is the same window with the approval gate in
 front of it, which is a different row of the SLO table.
 
 1. Customer refund, $40, `dana.holloway@example.com`, crash set to "Kill after the ledger

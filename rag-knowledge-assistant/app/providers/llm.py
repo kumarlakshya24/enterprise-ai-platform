@@ -8,6 +8,7 @@
                   retrieved chunks with the cross-encoder. Deterministic, zero cost,
                   faithful by construction; used for offline/CI evaluation.
 """
+
 from __future__ import annotations
 
 import logging
@@ -79,22 +80,30 @@ class OpenAICompatLLM:
     def __init__(self, base_url: str, model: str, api_key: str | None):
         import httpx
 
-        self.client = httpx.Client(base_url=base_url,
-                                   headers={"Authorization": f"Bearer {api_key}"} if api_key else {})
+        self.client = httpx.Client(base_url=base_url, headers={"Authorization": f"Bearer {api_key}"} if api_key else {})
         self.model = model
         self.name = f"openai_compat:{model}"
         self.is_external = not any(h in base_url for h in ("localhost", "127.0.0.1", "ollama", "vllm"))
 
     def complete(self, system: str, user: str, max_tokens: int, timeout_s: float) -> LLMResult:
-        r = self.client.post("/chat/completions", timeout=timeout_s, json={
-            "model": self.model, "max_tokens": max_tokens,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-        })
+        r = self.client.post(
+            "/chat/completions",
+            timeout=timeout_s,
+            json={
+                "model": self.model,
+                "max_tokens": max_tokens,
+                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            },
+        )
         r.raise_for_status()
         body = r.json()
         usage = body.get("usage", {})
-        return LLMResult(body["choices"][0]["message"]["content"], usage.get("prompt_tokens", 0),
-                         usage.get("completion_tokens", 0), self.model)
+        return LLMResult(
+            body["choices"][0]["message"]["content"],
+            usage.get("prompt_tokens", 0),
+            usage.get("completion_tokens", 0),
+            self.model,
+        )
 
 
 def build_llm(s: Settings) -> LLM:

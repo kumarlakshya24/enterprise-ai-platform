@@ -1,4 +1,5 @@
 """Semantic cache: hit, scope isolation, specificity guard, invalidation on document change."""
+
 import numpy as np
 import pytest
 
@@ -20,12 +21,14 @@ def test_hit_miss_partition_and_guard(svc):
     part_a = cache.partition(ALICE.scope_key(), "full_cached", None)
     part_b = cache.partition(BOB.scope_key(), "full_cached", None)
     v = _vec(1)
-    cache.store(v, "What does VPN-ERR-809 mean?", part_a, {"answer": "cert expired", "refused": False, "citations": []}, ["vpn"])
+    cache.store(
+        v, "What does VPN-ERR-809 mean?", part_a, {"answer": "cert expired", "refused": False, "citations": []}, ["vpn"]
+    )
     hit = cache.lookup(v, "What does VPN-ERR-809 mean?", part_a)
     assert hit and hit.answer["answer"] == "cert expired" and hit.similarity > 0.99
-    assert cache.lookup(v, "What does VPN-ERR-809 mean?", part_b) is None          # other access scope
-    assert cache.lookup(v, "What does VPN-ERR-503 mean?", part_a) is None          # specificity guard
-    assert cache.lookup(_vec(2), "unrelated", part_a) is None                       # below threshold
+    assert cache.lookup(v, "What does VPN-ERR-809 mean?", part_b) is None  # other access scope
+    assert cache.lookup(v, "What does VPN-ERR-503 mean?", part_a) is None  # specificity guard
+    assert cache.lookup(_vec(2), "unrelated", part_a) is None  # below threshold
     s = cache.stats()
     assert s["hits"] == 1 and s["misses"] == 3 and s["guard_rejects"] == 1
 
@@ -44,13 +47,17 @@ def test_invalidation_by_document_and_refusals_on_any_change(svc):
 
 def test_end_to_end_update_invalidates_cached_answer(svc, docdir):
     front = {"doc_id": "office-days", "title": "Office Days", "team": "hr"}
-    p = write_doc(docdir, "o.md", front, "# Office Days\n## Schedule\nEmployees work in the office three anchor days per week.")
+    p = write_doc(
+        docdir, "o.md", front, "# Office Days\n## Schedule\nEmployees work in the office three anchor days per week."
+    )
     svc.indexer.ingest_path(p)
     q = "How many anchor days per week in the office?"
     first = svc.ask(q, ALICE, "full_cached")
     assert not first.cache["hit"] and "three" in first.answer
     assert svc.ask(q, ALICE, "full_cached").cache["hit"]
-    write_doc(docdir, "o.md", front, "# Office Days\n## Schedule\nEmployees work in the office two anchor days per week.")
-    svc.indexer.ingest_path(p)          # fires on_change -> cache invalidation
+    write_doc(
+        docdir, "o.md", front, "# Office Days\n## Schedule\nEmployees work in the office two anchor days per week."
+    )
+    svc.indexer.ingest_path(p)  # fires on_change -> cache invalidation
     after = svc.ask(q, ALICE, "full_cached")
     assert not after.cache["hit"] and "two" in after.answer and "three" not in after.answer

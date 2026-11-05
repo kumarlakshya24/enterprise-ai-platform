@@ -1,7 +1,7 @@
 # Atlas durable workflows. Run `make help`.
 PY ?= python3
 
-.PHONY: help install up test eval demo kill-resume interview clean
+.PHONY: lint help install up test eval demo kill-resume interview clean
 
 help:            ## Show targets
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-16s %s\n", $$1, $$2}'
@@ -9,9 +9,13 @@ help:            ## Show targets
 install:         ## Install runtime and test dependencies
 	$(PY) -m pip install -r requirements-dev.txt
 
-up:              ## Run the demo API and UI on :8095 (SQLite, no Docker)
+up:              ## Run the demo API and UI on :8096 (SQLite, no Docker)
 	mkdir -p var
 	$(PY) -m atlas serve
+
+lint:            ## Ruff lint + format check
+	$(PY) -m ruff check atlas tests scripts
+	$(PY) -m ruff format --check atlas tests scripts
 
 test:            ## Unit and integration tests, including kill-and-resume
 	$(PY) -m pytest -q

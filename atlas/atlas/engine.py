@@ -12,8 +12,9 @@ import json
 import os
 import signal
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 from atlas.catalog import load_workflow
 from atlas.clock import SystemClock
@@ -612,9 +613,7 @@ class Engine:
         timed_out = result.elapsed_ms > int(definition["timeout_ms"]) and not result.committed
         if result.committed:
             self._after_remote(state, activity_id)
-            self._maybe_crash(
-                state, epoch, activity_id, "after_remote", crash, committed=True, compensation=False
-            )
+            self._maybe_crash(state, epoch, activity_id, "after_remote", crash, committed=True, compensation=False)
         if timed_out or (not result.ok and not result.permanent):
             attempt = int(state["activities"][activity_id]["attempt"])
             if attempt < int(definition["max_attempts"]):
@@ -813,9 +812,7 @@ class Engine:
         result = call_tool(job["tool"], ctx, args)
         if result.committed:
             self._after_remote(state, activity_id)
-            self._maybe_crash(
-                state, epoch, activity_id, "after_remote", crash, committed=True, compensation=True
-            )
+            self._maybe_crash(state, epoch, activity_id, "after_remote", crash, committed=True, compensation=True)
         if not result.ok:
             self._append(
                 state,
@@ -855,9 +852,7 @@ class Engine:
         )
 
 
-def _messages(
-    state: dict[str, Any], decision_id: str, definition: dict[str, Any] | None
-) -> list[dict[str, str]]:
+def _messages(state: dict[str, Any], decision_id: str, definition: dict[str, Any] | None) -> list[dict[str, str]]:
     if decision_id == "plan" or definition is None:
         content: dict[str, Any] = {
             "workflow_id": state["workflow_id"],
@@ -945,7 +940,7 @@ def _lookup(path: str, state: dict[str, Any]) -> Any:
         current: Any = state["inputs"]
         parts = parts[1:]
     elif parts[0] == "activity":
-        current = (state["activities"][parts[1]]["result"] or {})
+        current = state["activities"][parts[1]]["result"] or {}
         parts = parts[3:]
     else:
         raise KeyError(path)
@@ -983,9 +978,9 @@ def _next_activity(state: dict[str, Any], now: float) -> str | None:
     ready: list[str] = []
     for activity_id in state["activity_order"]:
         act = state["activities"][activity_id]
-        if act["status"] == "ready":
-            ready.append(activity_id)
-        elif act["status"] == "waiting_retry" and act.get("retry_at") is not None and act["retry_at"] <= now:
+        if act["status"] == "ready" or (
+            act["status"] == "waiting_retry" and act.get("retry_at") is not None and act["retry_at"] <= now
+        ):
             ready.append(activity_id)
     if not ready:
         return None

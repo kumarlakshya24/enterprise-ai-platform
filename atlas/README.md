@@ -1,4 +1,34 @@
-# Atlas: a durable runtime for multi-agent workflows
+<div align="center">
+
+# 🧭 Atlas
+
+### Multi-agent workflows that survive a crash without charging the customer twice
+
+[![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-event%20log-003B57?logo=sqlite&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-30%20passing-2ea44f)
+![Task success](https://img.shields.io/badge/task%20success-16%2F16%20vs%203%2F16-2ea44f)
+![Duplicate charges](https://img.shields.io/badge/duplicate%20charges%20after%20SIGKILL-0-2ea44f)
+![Offline](https://img.shields.io/badge/API%20key-not%20needed-6e7781)
+
+[**System**](#system) ·
+[**Decisions**](#decisions-at-a-glance) ·
+[Evidence](#evidence) ·
+[Demo](#demo) ·
+[Run it](#run-it) ·
+[Where it fits](#-where-it-fits-in-the-platform)
+
+<img src="docs/assets/atlas-kill-resume.gif" alt="Atlas kill and resume: approval, a kill after the debit, resume with the ledger still at one, then a single-agent replay that debits twice" width="100%">
+
+<sub>A refund waits for approval, the worker is killed with <code>SIGKILL</code> right after the debit, a new worker resumes with the ledger still at one debit, then a naive single-agent replay of the same crash debits twice.</sub>
+
+</div>
+
+---
+
+## In plain English
+
 
 A worker dies after a ledger debit has committed and before the run records success. Retrying the plan charges the customer twice.
 
@@ -163,11 +193,9 @@ The baseline passes where nothing goes wrong, and where the crash happens before
 
 `make kill-resume` is the idempotency decision under `SIGKILL`: child exit `-9`, the lease blocks a second worker, then one debit, one email, one case close, and zero completed steps re-run. `tests/test_kill_resume.py` runs the same path.
 
-![Atlas kill and resume: approval, a kill after the debit, resume with the ledger still at one, then a single-agent replay that debits twice](docs/assets/atlas-kill-resume.gif)
-
 <video src="docs/assets/atlas-kill-resume.mp4" poster="docs/assets/03-crashed-after-ledger.png" controls playsinline width="960"></video>
 
-The gif plays inline. The video is the same silent clip, [atlas-kill-resume.mp4](docs/assets/atlas-kill-resume.mp4) (about 13 seconds).
+The clip at the top of this page is the same recording as this silent video, [atlas-kill-resume.mp4](docs/assets/atlas-kill-resume.mp4) (about 13 seconds).
 
 ![Paused for approval. Lookup and quote are done. Nothing has been charged.](docs/assets/02-approval.png)
 
@@ -187,10 +215,33 @@ make test          # includes the SIGKILL resume test
 make eval          # rewrites eval_results/latest and the Evidence table
 make kill-resume   # signal 9 after the debit
 make interview     # architecture-review script
-make up            # UI on http://127.0.0.1:8095
+make up            # UI on http://127.0.0.1:8096
 ```
 
 To use the real siblings, copy `.env.example`. `ATLAS_GUARD=aegis` and `ATLAS_KNOWLEDGE=lumen`. If either call fails, the run blocks or refuses. It does not guess.
+
+## 🔗 Where it fits in the platform
+
+Atlas is where the other projects meet: it is the only one that *calls* its siblings. Each call goes
+through a small port with an offline stand-in, so Atlas's tests and demo never need the other service.
+
+```mermaid
+flowchart LR
+  ATL[🧭 Atlas<br/>durable workflow engine]
+  ATL -- "Guard port: is this tool call allowed?" --> AEG[🛡️ Aegis]
+  ATL -- "Knowledge port: what does the policy say?" --> LUM[🔦 Lumen]
+  ATL -. "future: run untrusted code" .-> FRG[⚒️ Forge]
+  style ATL fill:#1a7f37,color:#fff,stroke:#1a7f37
+```
+
+| Neighbour | What flows across it | Status today |
+|:--|:--|:--|
+| [🛡️ Aegis](../secure-ai-gateway/) | Every proposed tool call → `allow`, `require_approval`, or `block`, with an `R-TOOL-…` rule id | ✅ Tested against an offline Aegis-shaped guard (same verdicts and rule vocabulary). ⚠️ `ATLAS_GUARD=aegis` targets `/v1/tool-guard/evaluate`, which Aegis doesn't expose yet, so it fails closed and blocks every call. |
+| [🔦 Lumen](../rag-knowledge-assistant/) | "What does the refund policy allow?" → a cited answer, or a refusal that stops the step | ✅ Tested against an offline Lumen-shaped stub. ⚠️ `POST /ask` matches Lumen's API; going live needs a service identity for Atlas in Lumen and Atlas's policies in Lumen's documents. |
+| [⚒️ Forge](../forge/) | Agent tools that run code or touch files | ⚠️ Not wired. The demo tools are ledger, email, pager and webhook calls. |
+| [🔬 Lens](../lens/) | Workflow and tool spans for sampling, judging and SLOs | ⚠️ Not wired. Atlas's event log is the natural source. |
+
+<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
 
 ## Docs
 

@@ -1,4 +1,5 @@
 """Incremental indexing: replace, don't duplicate; lineage; reuse; delete; reindex; status."""
+
 import pytest
 
 from app.ingestion.pipeline import ingestion_status
@@ -38,11 +39,16 @@ def test_update_replaces_chunks_and_records_lineage(svc, docdir):
     # only the changed chunk was re-embedded; the rest reused
     assert r2.chunks_replaced == 1 and r2.embeddings_computed == 1 and r2.chunks_unchanged == n1 - 1
     with svc.db.conn() as c:
-        lin = c.execute("SELECT change, previous_chunk_id FROM chunk_lineage WHERE doc_id='policy-x' AND doc_version=2").fetchall()
-    assert sorted(l["change"] for l in lin) == sorted(["modified"] + ["unchanged"] * (n1 - 1))
-    assert all(l["previous_chunk_id"].startswith("policy-x::v1::") for l in lin)
+        lin = c.execute(
+            "SELECT change, previous_chunk_id FROM chunk_lineage WHERE doc_id='policy-x' AND doc_version=2"
+        ).fetchall()
+    assert sorted(row["change"] for row in lin) == sorted(["modified"] + ["unchanged"] * (n1 - 1))
+    assert all(row["previous_chunk_id"].startswith("policy-x::v1::") for row in lin)
     # BM25 postings follow the swap (no orphaned terms from v1)
-    assert _count(svc, "SELECT count(*) FROM chunk_terms ct LEFT JOIN chunks c USING (chunk_id) WHERE c.chunk_id IS NULL") == 0
+    assert (
+        _count(svc, "SELECT count(*) FROM chunk_terms ct LEFT JOIN chunks c USING (chunk_id) WHERE c.chunk_id IS NULL")
+        == 0
+    )
 
 
 def test_unchanged_content_is_a_noop(svc, docdir):

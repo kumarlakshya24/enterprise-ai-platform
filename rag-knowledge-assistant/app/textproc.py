@@ -4,6 +4,7 @@ Tokenization keeps identifiers such as `VPN-ERR-809`, `HR-POL-104` or `$5,000`
 intact as a single term *and* emits their parts, so exact-code lookups match
 precisely while partial queries ("ERR 809") still score.
 """
+
 import re
 from collections import Counter
 

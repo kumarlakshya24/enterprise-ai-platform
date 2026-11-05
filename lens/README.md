@@ -1,4 +1,34 @@
-# Lens: LLMOps observability and continuous evaluation
+<div align="center">
+
+# 🔬 Lens
+
+### Know when your AI got worse, before your users do, and stop the release that caused it
+
+[![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![OpenTelemetry-style](https://img.shields.io/badge/traces-OpenTelemetry--style-425CC7?logo=opentelemetry&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-23%20passing-2ea44f)
+![Judge kappa](https://img.shields.io/badge/judge%20%CE%BA-0.76%20vs%20hand%20labels-0969da)
+![CI gate](https://img.shields.io/badge/seeded%20regression-blocked-cf222e)
+![Offline](https://img.shields.io/badge/API%20key-not%20needed-6e7781)
+
+[**Demo**](#demo) ·
+[**Why**](#why) ·
+[Quickstart](#quickstart) ·
+[Architecture](#architecture) ·
+[Results](#results) ·
+[Where it fits](#-where-it-fits-in-the-platform)
+
+<img src="docs/assets/lens-demo.gif" alt="Lens demo: SLO cards, the quality drop, drift and alert transitions, a blocked tool span, and the seeded prompt failing the CI gate" width="100%">
+
+<sub>SLO cards and error budgets, the day quality dropped, drift alerts, a blocked Aegis tool span in a trace, and a seeded bad prompt failing the CI gate.</sub>
+
+</div>
+
+---
+
+## In plain English
+
 
 Aegis decides what may leave the building. Lumen decides what the documents support. Neither one tells you
 that yesterday's prompt is worse than last week's. Lens does. It records OpenTelemetry-style traces for
@@ -16,15 +46,13 @@ make gate-seeded   # seeded prompt, exit 1
 make up       # dashboard at http://127.0.0.1:8088
 ```
 
-![SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)
-
 ## Demo
 
-![Lens demo: SLO cards, the quality drop, drift and alert transitions, a blocked tool span, and the seeded prompt failing the CI gate](docs/assets/lens-demo.gif)
+![SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)
 
 <video src="docs/assets/lens-demo.mp4" poster="docs/assets/slo-dashboard.png" controls playsinline width="960"></video>
 
-The gif plays inline. The same silent clip is [`lens-demo.mp4`](docs/assets/lens-demo.mp4) (about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
+The clip at the top of this page is the same silent recording as [`lens-demo.mp4`](docs/assets/lens-demo.mp4) (about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
 
 ## Why
 
@@ -242,6 +270,31 @@ in that log is generated. It is not a measurement of Aegis or Lumen. The cost ta
 The short version: the rubric misses paraphrase and negation, a thin sample must not be allowed to page,
 route PSI can stay quiet while a leak is real, and the gate locks whatever you already ship, including
 known holes. The long version is [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md).
+
+## 🔗 Where it fits in the platform
+
+```mermaid
+flowchart LR
+  AEG[🛡️ Aegis] -- "route, policy, tool events" --> AD[Lens adapters]
+  LUM[🔦 Lumen] -- "retrieval and answer events" --> AD
+  AD --> L[🔬 Lens<br/>sample · judge · drift · SLOs]
+  L -- "exit 1 names the regressed ids" --> CI{{CI / release}}
+  style L fill:#8250df,color:#fff,stroke:#8250df
+```
+
+Aegis and Lumen each prove themselves with their own eval suites. Lens watches them *after* they ship:
+did quality drift, is an error budget burning, and would this new prompt make things worse?
+
+| Neighbour | What flows across it | Status today |
+|:--|:--|:--|
+| [🛡️ Aegis](../secure-ai-gateway/) | Route, DLP policy and tool-guard decisions → spans; a blocked tool call shows up in the waterfall | ✅ Adapter plus seeded synthetic traces. ⚠️ Aegis doesn't export this event schema yet. |
+| [🔦 Lumen](../rag-knowledge-assistant/) | Retrieval, re-rank and answer events → spans → faithfulness, refusal and safety judgments | ✅ Adapter plus seeded synthetic traces. ⚠️ Lumen doesn't export this event schema yet. |
+| [🔀 Switchboard](../switchboard/), [🧭 Atlas](../atlas/) | Routing decisions and workflow steps are natural span sources | ⚠️ Not wired. |
+
+The adapters never import Aegis or Lumen; they map an event shape, so wiring a real exporter does not
+change Lens.
+
+<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
 
 ## Docs
 

@@ -1,4 +1,5 @@
 """FastAPI application: ingest, ask, re-index, delete, eval, status, health."""
+
 from __future__ import annotations
 
 import json
@@ -40,8 +41,12 @@ async def lifespan(app: FastAPI):
     app.state.svc.close()
 
 
-app = FastAPI(title="Lumen Knowledge Assistant", version="1.0.0", lifespan=lifespan,
-              description="Production-style RAG: hybrid retrieval, re-ranking, RBAC, semantic cache, evals.")
+app = FastAPI(
+    title="Lumen Knowledge Assistant",
+    version="1.0.0",
+    lifespan=lifespan,
+    description="Production-style RAG: hybrid retrieval, re-ranking, RBAC, semantic cache, evals.",
+)
 
 
 def svc() -> RAGService:
@@ -119,8 +124,11 @@ def ask(req: AskRequest, p: Annotated[Principal, Depends(principal)]) -> dict:
 
 
 @app.post("/ingest")
-async def ingest(admin_p: Annotated[Principal, Depends(admin)], file: UploadFile = File(...),
-                 metadata: str | None = Form(default=None, description="JSON: team, visibility, allowed_roles, ...")) -> dict:
+async def ingest(
+    admin_p: Annotated[Principal, Depends(admin)],
+    file: UploadFile = File(...),
+    metadata: str | None = Form(default=None, description="JSON: team, visibility, allowed_roles, ..."),
+) -> dict:
     name = Path(file.filename or "upload.txt").name
     if Path(name).suffix.lower() not in SUPPORTED_SUFFIXES:
         raise HTTPException(415, f"supported types: {sorted(SUPPORTED_SUFFIXES)}")
@@ -162,7 +170,8 @@ def documents(p: Annotated[Principal, Depends(principal)]) -> list[dict]:
 
     with svc().db.conn() as c:
         rows = c.execute("""SELECT doc_id, title, team, doc_type, visibility, allowed_roles, audience, version,
-                                   version_label, updated_at, chunk_count, indexed_at FROM documents ORDER BY team, title""").fetchall()
+                                   version_label, updated_at, chunk_count, indexed_at
+                            FROM documents ORDER BY team, title""").fetchall()
     return [r for r in rows if can_read(p, r["visibility"], r["team"], r["allowed_roles"])]
 
 
@@ -210,8 +219,10 @@ def eval_results() -> dict:
 
 @app.get("/users")
 def users() -> dict:
-    return {k: {"display_name": v.get("display_name"), "team": v["team"], "roles": v["roles"]}
-            for k, v in list_users(settings.users_file).items()}
+    return {
+        k: {"display_name": v.get("display_name"), "team": v["team"], "roles": v["roles"]}
+        for k, v in list_users(settings.users_file).items()
+    }
 
 
 @app.get("/profiles")

@@ -6,12 +6,14 @@
 * hash         - deterministic hashed bag-of-words; used by tests only.
 * openai_compat- any OpenAI-compatible /embeddings endpoint (OpenAI, vLLM, Ollama, TEI).
 """
+
 from __future__ import annotations
 
 import hashlib
 import re
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Protocol, Sequence
+from typing import Protocol
 
 import numpy as np
 
@@ -54,7 +56,7 @@ class OnnxEmbedder:
     def embed(self, texts: Sequence[str]) -> np.ndarray:
         out = []
         for i in range(0, len(texts), self.batch_size):
-            enc = self.tokenizer.encode_batch(list(texts[i:i + self.batch_size]))
+            enc = self.tokenizer.encode_batch(list(texts[i : i + self.batch_size]))
             ids = np.array([e.ids for e in enc], dtype=np.int64)
             mask = np.array([e.attention_mask for e in enc], dtype=np.int64)
             feeds = {"input_ids": ids, "attention_mask": mask}
@@ -80,7 +82,7 @@ class HashEmbedder:
         mat = np.zeros((len(texts), self.dim), dtype=np.float32)
         for r, t in enumerate(texts):
             toks = tokenize(t)
-            for tok in toks + [a + "_" + b for a, b in zip(toks, toks[1:])]:
+            for tok in toks + [a + "_" + b for a, b in zip(toks, toks[1:], strict=False)]:
                 h = int(hashlib.md5(tok.encode()).hexdigest(), 16)
                 mat[r, h % self.dim] += 1.0 if (h >> 64) % 2 else -1.0
         return _l2(mat + 1e-6)
@@ -90,8 +92,9 @@ class OpenAICompatEmbedder:
     def __init__(self, base_url: str, model: str, api_key: str | None, dim: int):
         import httpx
 
-        self.client = httpx.Client(base_url=base_url, timeout=30.0,
-                                   headers={"Authorization": f"Bearer {api_key}"} if api_key else {})
+        self.client = httpx.Client(
+            base_url=base_url, timeout=30.0, headers={"Authorization": f"Bearer {api_key}"} if api_key else {}
+        )
         self.model, self.dim, self.name = model, dim, f"api:{model}"
 
     def embed(self, texts: Sequence[str]) -> np.ndarray:

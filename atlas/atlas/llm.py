@@ -38,8 +38,7 @@ def _plan(message: dict[str, Any]) -> dict[str, Any]:
             "the corporate vendor desk. A side path proposes an external webhook."
         ),
         "incident_response": (
-            "Read the SEV1 runbook, update the status page and page on-call, then draft "
-            "and publish the postmortem."
+            "Read the SEV1 runbook, update the status page and page on-call, then draft and publish the postmortem."
         ),
         "sms_notice": "Send a text. This tool is not idempotent, so the engine should refuse it.",
     }

@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import platform
 import statistics
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -129,7 +130,10 @@ def cases() -> list[dict[str, Any]]:
             "workflow": "incident_response",
             "inputs": {"incident_id": "inc_441"},
             "crash": "status_page:after_remote",
-            "expect": {"status": "completed", "effects": {"status.publish": 1, "pager.page": 1, "postmortem.publish": 1}},
+            "expect": {
+                "status": "completed",
+                "effects": {"status.publish": 1, "pager.page": 1, "postmortem.publish": 1},
+            },
         },
         {
             "id": "duplicate_submit",
@@ -155,7 +159,9 @@ def cases() -> list[dict[str, Any]]:
 
 
 def run_suite(directory: Path | None = None) -> dict[str, Any]:
-    directory = directory or Path("/tmp")
+    if directory is None:
+        with tempfile.TemporaryDirectory(prefix="atlas-eval-") as tmp:
+            return run_suite(Path(tmp))
     rows = []
     for case in cases():
         rows.append(_run_case(case, directory, "atlas"))
@@ -236,7 +242,9 @@ def _atlas(case: dict[str, Any], directory: Path) -> dict[str, Any]:
     return _from_snap(snap)
 
 
-def _pump(engine: Engine, clock: ManualClock, snap: dict[str, Any], case: dict[str, Any], crash: CrashSpec | None) -> dict[str, Any]:
+def _pump(
+    engine: Engine, clock: ManualClock, snap: dict[str, Any], case: dict[str, Any], crash: CrashSpec | None
+) -> dict[str, Any]:
     for _ in range(12):
         status = snap["status"]
         if status == "paused_approval" and case.get("approve"):
@@ -341,11 +349,17 @@ def _summarize(rows: list[dict[str, Any]], latency: dict[str, Any]) -> dict[str,
             "task_success_rate": round(successes / len(items), 4),
             "task_success_label": f"{successes}/{len(items)}",
             "crash_cases": len(crashes),
-            "crash_cases_with_duplicate_effects": sum(1 for row in crashes if not row["task_success"] and _has_dup(row)),
+            "crash_cases_with_duplicate_effects": sum(
+                1 for row in crashes if not row["task_success"] and _has_dup(row)
+            ),
             "mean_steps": round(statistics.mean(row["steps"] for row in items), 2),
             "mean_cost_usd": round(statistics.mean(row["cost_usd"] for row in items), 6),
-            "mean_completed_steps_rerun": round(statistics.mean(row["completed_steps_rerun"] for row in crashes), 2) if crashes else 0,
-            "mean_inflight_steps_rerun": round(statistics.mean(row["inflight_steps_rerun"] for row in crashes), 2) if crashes else 0,
+            "mean_completed_steps_rerun": round(statistics.mean(row["completed_steps_rerun"] for row in crashes), 2)
+            if crashes
+            else 0,
+            "mean_inflight_steps_rerun": round(statistics.mean(row["inflight_steps_rerun"] for row in crashes), 2)
+            if crashes
+            else 0,
             "mean_recovery_ms": round(statistics.mean(row["recovery_ms"] for row in crashes), 2) if crashes else 0,
             "mean_catch_up_ms": round(statistics.mean(row["catch_up_ms"] for row in crashes), 2) if crashes else 0,
         }
@@ -442,15 +456,13 @@ def _splice_readme(block: str) -> None:
 
 
 def main() -> None:
-    report = run_suite(Path("/tmp/atlas-eval"))
+    report = run_suite()
     path = write_results(report)
     atlas = report["summary"]["atlas"]
     base = report["summary"]["baseline"]
     print(f"wrote {path}")
     print(f"atlas {atlas['task_success_label']}  baseline {base['task_success_label']}")
-    print(
-        f"crash recovery ms  atlas {atlas['mean_recovery_ms']}  baseline {base['mean_recovery_ms']}"
-    )
+    print(f"crash recovery ms  atlas {atlas['mean_recovery_ms']}  baseline {base['mean_recovery_ms']}")
     if atlas["task_success"] != atlas["n"]:
         failed = [row["id"] for row in report["cases"] if row["engine"] == "atlas" and not row["task_success"]]
         raise SystemExit(f"atlas failures: {failed}")

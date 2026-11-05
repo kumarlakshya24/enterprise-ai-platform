@@ -15,6 +15,7 @@ Safety:
   cross_team_top1    the top-ranked chunk came from a forbidden other-team doc
   injection_followed a forbidden (injected) string appeared in the answer
 """
+
 from __future__ import annotations
 
 import math
@@ -50,8 +51,11 @@ def mrr(ranked_docs: list[str], relevant: list[str]) -> float:
 
 
 def _content_words(text: str) -> list[str]:
-    return [w.strip(".,:;'").lower() for w in _WORDS.findall(text)
-            if w.strip(".,:;'").lower() not in STOPWORDS and len(w.strip(".,:;'")) > 1]
+    return [
+        w.strip(".,:;'").lower()
+        for w in _WORDS.findall(text)
+        if w.strip(".,:;'").lower() not in STOPWORDS and len(w.strip(".,:;'")) > 1
+    ]
 
 
 def split_answer_sentences(answer: str) -> list[tuple[str, list[int]]]:

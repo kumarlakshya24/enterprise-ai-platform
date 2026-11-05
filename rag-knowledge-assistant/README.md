@@ -5,7 +5,8 @@
 **A production-grade RAG system that answers employee questions from company documents,<br>
 with citations, access control, live document updates, and an eval suite that proves every claim.**
 
-[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](#quickstart)
+[![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](#-quickstart)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](app/main.py)
 [![PostgreSQL + pgvector](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)](app/db.py)
 [![Redis 8](https://img.shields.io/badge/Redis_8-semantic_cache-DC382D?logo=redis&logoColor=white)](app/caching/semantic_cache.py)
@@ -13,7 +14,7 @@ with citations, access control, live document updates, and an eval suite that pr
 [![Tests](https://img.shields.io/badge/tests-52_passing-3fb950)](tests/)
 [![Eval](https://img.shields.io/badge/eval-46_questions-8957e5)](eval/dataset.yaml)
 
-[**Quickstart**](#-quickstart) · [**Demo**](#-see-it-in-action) · [**How it works**](#-how-it-works) · [**Results**](#-results) · [**Architecture**](ARCHITECTURE.md) · [**5-min video**](docs/assets/lumen-walkthrough.mp4)
+[**Quickstart**](#-quickstart) · [**Demo**](#-see-it-in-action) · [**How it works**](#-how-it-works) · [**Results**](#-results) · [**Architecture**](ARCHITECTURE.md) · [**Where it fits**](#-where-it-fits-in-the-platform) · [**5-min video**](docs/assets/lumen-walkthrough.mp4)
 
 <img src="docs/assets/architecture.gif" width="900" alt="Animated architecture: ingestion lane, query lane, and a request travelling through cache, hybrid retrieval, injection guard, cross-encoder, evidence gate and generator with measured latencies">
 
@@ -192,6 +193,27 @@ rag-knowledge-assistant/
 ├── tools/demo-video/   scripts that render the walkthrough video and GIFs
 └── web/                single-file demo UI
 ```
+
+## 🔗 Where it fits in the platform
+
+Lumen is the platform's source of truth for "what do our documents actually say". People ask it directly,
+and agents ask it before they act.
+
+```mermaid
+flowchart LR
+  U([Employees]) --> LUM[🔦 Lumen<br/>cited answers · access control · cache]
+  ATL[🧭 Atlas agents] -. "what does the refund policy allow?" .-> LUM
+  LUM -. "retrieval and answer spans" .-> LENS[🔬 Lens]
+  style LUM fill:#bf8700,color:#fff,stroke:#bf8700
+```
+
+| Neighbour | What flows across it | Status today |
+|:--|:--|:--|
+| [🧭 Atlas](../atlas/) | A policy question → a cited answer, or a refusal that stops the workflow step | ⚠️ Atlas calls the same `POST /ask` contract but is tested against an offline stub. Going live needs a service identity for Atlas in Lumen's ACL and Atlas's policy documents in the corpus. |
+| [🔬 Lens](../lens/) | Retrieval, re-rank and answer events → faithfulness, refusal and safety judgments, drift and SLOs | ⚠️ Lens has a Lumen adapter and synthetic traces; Lumen doesn't export that event schema yet. |
+| [🛡️ Aegis](../secure-ai-gateway/) | Shared ideas, separate code: PII redaction, prompt-injection stripping, refusing when evidence is missing | Independent by design; each project runs and is tested on its own. |
+
+<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
 
 ## 📚 Documentation
 

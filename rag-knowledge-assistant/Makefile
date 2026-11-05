@@ -1,4 +1,4 @@
-.PHONY: setup models up down test eval demo calibrate
+.PHONY: setup models up down test lint eval demo calibrate
 export APP_UID := $(shell id -u)
 export APP_GID := $(shell id -g)
 
@@ -16,6 +16,10 @@ down:
 
 test:             ## unit + integration tests (needs db + redis running)
 	docker compose run --rm api pytest -q
+
+lint:             ## Ruff lint + format check (same settings as the sibling projects)
+	$(or $(PY),python3) -m ruff check app tests scripts
+	$(or $(PY),python3) -m ruff format --check app tests scripts
 
 eval:             ## full evaluation suite -> eval_results/latest
 	docker compose run --rm api python -m app.evaluation.runner

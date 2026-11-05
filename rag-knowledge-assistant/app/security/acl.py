@@ -7,6 +7,7 @@ Two distinct mechanisms, both enforced in SQL *before* ranking:
     policy may be readable by everyone, but should not answer a Finance
     analyst's question. Applied as a metadata filter, overridable per request.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -31,7 +32,9 @@ def get_principal(user_id: str, users_file: Path) -> Principal:
     if user_id not in users:
         raise UnknownUser(user_id)
     u = users[user_id]
-    return Principal(user_id=user_id, team=u["team"], roles=list(u["roles"]), display_name=u.get("display_name", user_id))
+    return Principal(
+        user_id=user_id, team=u["team"], roles=list(u["roles"]), display_name=u.get("display_name", user_id)
+    )
 
 
 def list_users(users_file: Path) -> dict:
@@ -40,8 +43,10 @@ def list_users(users_file: Path) -> dict:
 
 def acl_sql(alias: str = "c") -> str:
     """SQL predicate for document visibility. Params: %(acl_team)s, %(acl_roles)s."""
-    return (f"({alias}.visibility = 'public' OR ({alias}.visibility = 'team' AND {alias}.team = %(acl_team)s) "
-            f"OR ({alias}.visibility = 'restricted' AND {alias}.allowed_roles && %(acl_roles)s::text[]))")
+    return (
+        f"({alias}.visibility = 'public' OR ({alias}.visibility = 'team' AND {alias}.team = %(acl_team)s) "
+        f"OR ({alias}.visibility = 'restricted' AND {alias}.allowed_roles && %(acl_roles)s::text[]))"
+    )
 
 
 def can_read(principal: Principal, visibility: str, team: str, allowed_roles: list[str]) -> bool:

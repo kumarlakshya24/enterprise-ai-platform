@@ -1,0 +1,41 @@
+name: switchboard
+
+on:
+  push:
+    paths: ["switchboard/**", ".github/workflows/switchboard.yml"]
+  pull_request:
+    paths: ["switchboard/**", ".github/workflows/switchboard.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: switchboard
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: switchboard/requirements-dev.txt
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Lint
+        run: make lint PY=python
+      - name: Tests
+        run: make test PY=python
+      - name: Demo scenarios (10 locked routing decisions)
+        run: make demo PY=python
+      - name: Eval corpus
+        run: make eval PY=python
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: switchboard-reports
+          path: switchboard/reports/

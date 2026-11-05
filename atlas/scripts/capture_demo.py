@@ -1,4 +1,4 @@
-"""Capture the kill-and-resume UI. Requires the demo server on :8095 and Chrome."""
+"""Capture the kill-and-resume UI. Requires the demo server on :8096 and Chrome."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "assets"
 RAW = ROOT / "docs" / "demo-video" / "raw"
-URL = "http://127.0.0.1:8095/"
+URL = "http://127.0.0.1:8096/"
 
 
 def main() -> None:

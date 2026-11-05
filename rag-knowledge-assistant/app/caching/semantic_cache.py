@@ -14,6 +14,7 @@ Correctness rules, in order of importance:
      embeddings are nearly identical.
   4. *TTL* bounds staleness for anything rules 2-3 cannot see.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -60,8 +61,12 @@ class SemanticCache:
             self.r.ft(self.index).info()
         except redis.ResponseError:
             self.r.ft(self.index).create_index(
-                [TagField("part"), TextField("q"), NumericField("created"),
-                 VectorField("vec", "HNSW", {"TYPE": "FLOAT32", "DIM": self.dim, "DISTANCE_METRIC": "COSINE"})],
+                [
+                    TagField("part"),
+                    TextField("q"),
+                    NumericField("created"),
+                    VectorField("vec", "HNSW", {"TYPE": "FLOAT32", "DIM": self.dim, "DISTANCE_METRIC": "COSINE"}),
+                ],
                 definition=IndexDefinition(prefix=[self.prefix], index_type=IndexType.HASH),
             )
 
@@ -71,8 +76,12 @@ class SemanticCache:
         return hashlib.sha1(raw.encode()).hexdigest()
 
     def lookup(self, qvec: np.ndarray, question: str, part: str) -> CacheHit | None:
-        q = (Query(f"(@part:{{{part}}})=>[KNN 3 @vec $v AS dist]")
-             .return_fields("q", "answer", "spec", "created", "dist").sort_by("dist").dialect(2))
+        q = (
+            Query(f"(@part:{{{part}}})=>[KNN 3 @vec $v AS dist]")
+            .return_fields("q", "answer", "spec", "created", "dist")
+            .sort_by("dist")
+            .dialect(2)
+        )
         res = self.r.ft(self.index).search(q, query_params={"v": np.asarray(qvec, dtype=np.float32).tobytes()})
         want = specific_tokens(question)
         for doc in res.docs:
@@ -91,11 +100,18 @@ class SemanticCache:
         key = self.prefix + uuid.uuid4().hex
         deps = sorted(set(doc_ids)) or [ANY_DOC]
         pipe = self.r.pipeline()
-        pipe.hset(key, mapping={
-            "part": part, "q": question, "vec": np.asarray(qvec, dtype=np.float32).tobytes(),
-            "answer": json.dumps(answer, default=str), "spec": json.dumps(sorted(specific_tokens(question))),
-            "docs": ",".join(deps), "created": time.time(),
-        })
+        pipe.hset(
+            key,
+            mapping={
+                "part": part,
+                "q": question,
+                "vec": np.asarray(qvec, dtype=np.float32).tobytes(),
+                "answer": json.dumps(answer, default=str),
+                "spec": json.dumps(sorted(specific_tokens(question))),
+                "docs": ",".join(deps),
+                "created": time.time(),
+            },
+        )
         pipe.expire(key, self.ttl)
         for d in deps:
             pipe.sadd(f"{self.ns}:doc:{d}", key)
@@ -124,9 +140,16 @@ class SemanticCache:
         g = lambda k: int(self.r.get(f"{self.ns}:stats:{k}") or 0)  # noqa: E731
         hits, misses = g("hits"), g("misses")
         info = self.r.ft(self.index).info()
-        return {"hits": hits, "misses": misses, "hit_rate": round(hits / (hits + misses), 4) if hits + misses else 0.0,
-                "guard_rejects": g("guard_rejects"), "invalidated": g("invalidated"),
-                "entries": int(info.get("num_docs", 0)), "threshold": self.threshold, "ttl_s": self.ttl}
+        return {
+            "hits": hits,
+            "misses": misses,
+            "hit_rate": round(hits / (hits + misses), 4) if hits + misses else 0.0,
+            "guard_rejects": g("guard_rejects"),
+            "invalidated": g("invalidated"),
+            "entries": int(info.get("num_docs", 0)),
+            "threshold": self.threshold,
+            "ttl_s": self.ttl,
+        }
 
     def ping(self) -> bool:
         return bool(self.r.ping())

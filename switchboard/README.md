@@ -1,4 +1,34 @@
-# Switchboard: an offline model router
+<div align="center">
+
+# 🔀 Switchboard
+
+### Pick the cheapest model that is good enough, for every request, and say why
+
+[![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-29%20passing-2ea44f)
+![Savings](https://img.shields.io/badge/vs%20always--premium-65%25%20cheaper-2ea44f)
+![Overhead](https://img.shields.io/badge/router%20p95-0.079%20ms-0969da)
+![Offline](https://img.shields.io/badge/API%20key-not%20needed-6e7781)
+
+[**Results**](#results-measured-regenerated-by-the-code) ·
+[**60-second demo**](#60-second-demo) ·
+[Setup](#setup) ·
+[Architecture](#architecture) ·
+[Where it fits](#-where-it-fits-in-the-platform) ·
+[ADRs](docs/adr)
+
+<img src="docs/assets/switchboard-demo.gif" alt="Switchboard demo: four policies on one prompt, hard math to Premium, a 100 ms rejection, and a confidential note pinned to local" width="100%">
+
+<sub>One prompt under four policies, a hard proof that only the premium model can take, a request rejected because no capable model meets a 100 ms budget, and a confidential note that never leaves the local model.</sub>
+
+</div>
+
+---
+
+## In plain English
+
 
 A team that sends every prompt to one flagship model pays flagship prices for "what is a load balancer?"
 A team that sends every prompt to the cheap model gets a cheap answer on a proof and a 100 ms budget
@@ -50,9 +80,7 @@ legal model is Fast Cheap or Balanced.
 
 ## 60-second demo
 
-![Switchboard demo: four policies on one prompt, hard math to Premium, a 100 ms rejection, and a confidential note pinned to local](docs/assets/switchboard-demo.gif)
-
-Same silent clip as video: [`switchboard-demo.mp4`](docs/assets/switchboard-demo.mp4) (six frames, three seconds each).
+The clip at the top of this page is the same flow. As a video: [`switchboard-demo.mp4`](docs/assets/switchboard-demo.mp4) (six frames, three seconds each).
 
 ![Same prompt under four policies](docs/assets/compare.png)
 
@@ -184,6 +212,23 @@ switchboard/
 ├── reports/                       generated eval and latency
 └── docs/                          ADRs, failure modes, interview track, demo script, screenshots
 ```
+
+## 🔗 Where it fits in the platform
+
+```mermaid
+flowchart LR
+  U([Employee or agent]) --> AEG[🛡️ Aegis<br/>who is asking, what may leave]
+  AEG -. "then: which model?" .-> SW[🔀 Switchboard<br/>cost, latency, capability]
+  SW --> M[("hosted or local model")]
+  style SW fill:#0969da,color:#fff,stroke:#0969da
+```
+
+| Neighbour | Relationship | Status today |
+|:--|:--|:--|
+| [🛡️ Aegis](../secure-ai-gateway/) | Aegis makes the security decision (identity, PII, prompt injection) first; Switchboard then chooses the model. Both pin confidential text to a local model, so the two layers agree on what "sensitive" means. | ⚠️ Not wired. Aegis calls any OpenAI-compatible endpoint; Switchboard routes between in-process mock models. Switchboard deliberately stays out of the auth path ([ADR 0001](docs/adr/0001-route-in-one-process.md)). |
+| [🔬 Lens](../lens/) | Routing decisions (model, alternatives, spend, overhead) are exactly the kind of span Lens samples and judges. | ⚠️ Not wired. Switchboard writes its own SQLite decision log today. |
+
+<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
 
 ## More
 

@@ -5,6 +5,7 @@ for SSNs) so they are fast enough to run on every chunk sent to an external mode
 Redaction events record *types and counts only*; the matched values are never
 logged or persisted.
 """
+
 from __future__ import annotations
 
 import re
@@ -64,11 +65,13 @@ def redact(text: str, allowlist: frozenset[str] = DEFAULT_ALLOWLIST) -> Redactio
     counts: Counter = Counter()
     out = text
     for label, pat, validator in PATTERNS:
+
         def sub(m: re.Match, label=label, validator=validator) -> str:
             val = m.group(0)
             if val.strip() in allowlist or (validator and not validator(val)):  # type: ignore[operator]
                 return val
             counts[label] += 1
             return f"[{label}]"
+
         out = pat.sub(sub, out)
     return RedactionResult(out, counts)

@@ -1,0 +1,38 @@
+name: forge
+
+on:
+  push:
+    paths: ["forge/**", ".github/workflows/forge.yml"]
+  pull_request:
+    paths: ["forge/**", ".github/workflows/forge.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: forge
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: forge/requirements-dev.txt
+      - name: Install
+        run: make install PY=python
+      - name: Lint
+        run: make lint PY=python
+      - name: Tests
+        run: make test PY=python
+      - name: Demo scenarios, including the regression gate
+        run: make demo PY=python
+      - name: Eval corpus and regression gate (fails if protection regresses)
+        run: make regression PY=python
+      - name: Security check (no secrets, no shell=True)
+        run: make security-check PY=python
