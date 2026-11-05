@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # --- reranker: onnx | none
     reranker_provider: str = "onnx"
     # int8 dynamic-quantized export (scripts/fetch_models.py builds it from the verified fp32 weights):
-    # same end-to-end eval score as fp32, ~40% lower p95 (see eval_results/runs/*-int8-reranker).
+    # same end-to-end eval score as fp32, ~40% lower p95 (see eval_results/experiments/reranker-fp32-vs-int8).
     reranker_model_dir: Path = ROOT / "models" / "ms-marco-MiniLM-L-6-v2-int8"
     reranker_max_length: int = 320
 

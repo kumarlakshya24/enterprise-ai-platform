@@ -8,7 +8,8 @@ import path from 'node:path';
 const here = path.dirname(new URL(import.meta.url).pathname);
 const OUT = path.join(here, 'build'); fs.mkdirSync(OUT, { recursive: true });
 const FPS = 30;
-const url = id => 'file://' + path.join(here, 'scenes.html') + '?scene=' + id;
+const STATIC = process.argv.includes('--static-bg'); // GIF variants: still background compresses far better
+const url = id => 'file://' + path.join(here, 'scenes.html') + '?scene=' + id + (STATIC ? '&staticbg=1' : '');
 
 async function open(browser, id) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
@@ -20,7 +21,7 @@ async function renderScene(browser, id) {
   const page = await open(browser, id);
   const dur = await page.evaluate(() => window.__duration);
   const cdp = await page.context().newCDPSession(page);
-  const out = path.join(OUT, `scene_${id}.mp4`);
+  const out = path.join(OUT, `scene_${id}${STATIC ? '_still' : ''}.mp4`);
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', '-',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(FPS), '-movflags', '+faststart', out]);
   const n = Math.round(dur * FPS);
@@ -33,7 +34,7 @@ async function renderScene(browser, id) {
   await page.close(); console.log(`scene ${id}: ${n} frames → ${path.basename(out)}`);
 }
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2).filter(a => a !== '--static-bg');
 const browser = await chromium.launch();
 if (args[0] === '--preview') {
   const [, id, ...ts] = args; const page = await open(browser, id);
