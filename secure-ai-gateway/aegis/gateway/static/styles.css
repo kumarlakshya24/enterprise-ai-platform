@@ -63,3 +63,4 @@ h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: v
 footer { padding: 16px; text-align: center; }
 .hosted { margin: 0; padding: 0 16px; background: var(--warn-bg); color: var(--warn); }
 .hosted:not(:empty) { padding: 8px 16px; }
+#tab-audit .grid td:nth-child(-n+3), #tab-audit .grid th { white-space: nowrap; }
