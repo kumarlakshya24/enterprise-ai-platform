@@ -1,0 +1,53 @@
+# Forge default policy. Hard denials (os, socket, open, path escape, shell)
+# live in code and are not switches in this file.
+version: forge-1
+network: deny
+ceilings:
+  timeout_ms: 5000
+  max_memory_mb: 512
+  max_output_bytes: 65536
+  max_code_bytes: 8000
+  max_write_bytes: 65536
+tools:
+  python:
+    enabled: true
+    timeout_ms: 1500
+    max_memory_mb: 256
+    max_output_bytes: 8192
+    max_code_bytes: 4000
+  read_file:
+    enabled: true
+    max_output_bytes: 8192
+  write_file:
+    enabled: true
+    max_write_bytes: 8192
+  list_dir:
+    enabled: true
+  shell:
+    enabled: false
+imports:
+  allow:
+    - math
+    - json
+    - statistics
+    - decimal
+    - fractions
+    - datetime
+    - collections
+    - itertools
+    - functools
+    - re
+    - string
+    - textwrap
+    - dataclasses
+    - enum
+    - copy
+    - numbers
+    - operator
+    - abc
+    - typing
+  deny:
+    - pathlib
+    - sqlite3
+    - glob
+    - tempfile

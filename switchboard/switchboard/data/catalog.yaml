@@ -1,0 +1,84 @@
+# Published model sheet. The router, the cost-optimal oracle, and the demo UI
+# all read this file. Prices are synthetic showback rates, not a vendor invoice.
+# Latency is a catalog estimate used for SLO checks. It is not wall-clock time.
+version: "2026.11.05"
+tasks: [chat, code, summarize, extract, math]
+# Estimated completion length as a fraction of input tokens.
+output_tokens_ratio:
+  chat: 0.70
+  summarize: 0.30
+  extract: 0.22
+  code: 1.00
+  math: 0.40
+min_output_tokens: 32
+# required capability = base + complexity * span
+requirements:
+  chat: {base: 0.50, span: 0.30}
+  summarize: {base: 0.52, span: 0.28}
+  extract: {base: 0.55, span: 0.30}
+  code: {base: 0.60, span: 0.34}
+  math: {base: 0.64, span: 0.32}
+models:
+  - id: fast-cheap
+    display_name: Fast Cheap
+    tier: economy
+    peer: true
+    price_per_1k: {input: 0.00015, output: 0.00060}
+    latency_ms: {base: 42, per_1k_input: 6}
+    capability:
+      chat: 0.58
+      summarize: 0.60
+      extract: 0.50
+      code: 0.42
+      math: 0.34
+    notes: >
+      Hosted small model. Lowest marginal cost and latency. Drops out when the
+      capability floor rises above it, which is the usual case for code, math,
+      and extraction.
+  - id: balanced
+    display_name: Balanced
+    tier: standard
+    peer: true
+    price_per_1k: {input: 0.0025, output: 0.010}
+    latency_ms: {base: 210, per_1k_input: 22}
+    capability:
+      chat: 0.82
+      summarize: 0.84
+      extract: 0.78
+      code: 0.76
+      math: 0.72
+    notes: >
+      Hosted mid-tier model. Default when the small model misses the floor and
+      the task is not hard enough to need the flagship.
+  - id: premium
+    display_name: Premium
+    tier: flagship
+    peer: true
+    price_per_1k: {input: 0.015, output: 0.060}
+    latency_ms: {base: 680, per_1k_input: 35}
+    capability:
+      chat: 0.96
+      summarize: 0.95
+      extract: 0.93
+      code: 0.94
+      math: 0.97
+    notes: >
+      Hosted flagship. Clears hard code and math. Catalog latency is several
+      times the others, and the output price dominates the bill.
+  - id: local
+    display_name: Local
+    tier: on-prem
+    peer: false
+    price_per_1k: {input: 0.0004, output: 0.0016}
+    latency_ms: {base: 250, per_1k_input: 30}
+    capability:
+      chat: 0.66
+      summarize: 0.63
+      extract: 0.58
+      code: 0.64
+      math: 0.52
+    notes: >
+      On-prem model. Not a peer in normal scoring, so a $0 showback cannot
+      vacuum up every request. Pinned for confidential and restricted prompts.
+      Used as a degraded escape hatch only after a hosted call has already
+      failed and the policy allows it. The price is an internal showback rate.

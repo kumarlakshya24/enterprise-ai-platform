@@ -1,0 +1,502 @@
+{
+  "cases": 55,
+  "passed": 55,
+  "pass_rate": 1.0,
+  "results": [
+    {
+      "id": "util-sum",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-math",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-json",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-statistics",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-datetime",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-collections",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-re",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-decimal",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-textwrap",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-function",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "util-read-notes",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "util-read-metrics",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "util-write",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "util-list",
+      "class": "utility",
+      "expect": "allow",
+      "outcome": "allow",
+      "rule": "R-ALLOW",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-trav-dotdot",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-TRAVERSAL",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-trav-nested",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-TRAVERSAL",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-abs-tmp",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-ABSOLUTE",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-abs-hostname",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-ABSOLUTE",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-null",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-INVALID",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-empty",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-INVALID",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-space-pad",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-INVALID",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-backslash",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-INVALID",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-write-trav",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-TRAVERSAL",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-write-abs",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-PATH-ABSOLUTE",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-os",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-sys",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-subprocess",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-socket",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-ctypes",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-pickle",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-shutil",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-urllib",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-http",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-requests",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-from-os",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-HARD-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-builtin-eval",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-builtin-exec",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-builtin-open",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-builtin-compile",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-dunder-import",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-attr-class",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-ATTR-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-attr-globals",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-ATTR-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-attr-subclasses",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-ATTR-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-name-builtins",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-NAME-DENIED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-pathlib",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-sqlite3",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-DENY",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-import-csv",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-NOT-ALLOWLISTED",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-relative-import",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-IMPORT-RELATIVE",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-shell",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-TOOL-NO-EXECUTOR",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-unknown",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-TOOL-UNKNOWN",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-tool-case",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-TOOL-UNKNOWN",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-code-size",
+      "class": "protection",
+      "expect": "deny",
+      "outcome": "deny",
+      "rule": "R-LIMIT-CODE",
+      "ok": true,
+      "spawned": false
+    },
+    {
+      "id": "prot-output",
+      "class": "protection",
+      "expect": "limited",
+      "outcome": "limited",
+      "rule": "R-LIMIT-OUTPUT",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "prot-wall",
+      "class": "protection",
+      "expect": "limited",
+      "outcome": "limited",
+      "rule": "R-LIMIT-WALL",
+      "ok": true,
+      "spawned": true
+    },
+    {
+      "id": "prot-memory",
+      "class": "protection",
+      "expect": "limited",
+      "outcome": "limited",
+      "rule": "R-LIMIT-MEMORY",
+      "ok": true,
+      "spawned": true
+    }
+  ]
+}
