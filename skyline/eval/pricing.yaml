@@ -1,0 +1,51 @@
+# Illustrative us-east-1 list prices, frozen so the demo is reproducible.
+# They follow the public shape of the price list and they are not a quote:
+# NAT per hour and per GB, interface endpoints per AZ-hour and per GB, KMS per
+# CMK-month and per 10k requests, Fargate per vCPU-hour and per GB-hour, ALB per
+# hour and per LCU-hour, Transit Gateway per attachment-hour and per GB,
+# on-demand models per million tokens, Guardrails per thousand text units
+# (1 text unit = 1,000 characters). Replace this file before using it for a budget.
+currency: USD
+bytes_per_token: 4
+text_unit_chars: 1000
+hours_per_day: 24
+days_per_month: 30
+assumed_lcus: 1
+# Envelope encryption: one GenerateDataKey per 100 requests. The other 99 are cache hits.
+data_keys_per_request: "0.01"
+rates:
+  nat_gateway_hour: "0.045"
+  nat_gb: "0.045"
+  interface_endpoint_az_hour: "0.01"
+  interface_endpoint_gb: "0.01"
+  cmk_month: "1.00"
+  kms_per_10k_requests: "0.03"
+  fargate_vcpu_hour: "0.04048"
+  fargate_gb_hour: "0.004445"
+  alb_hour: "0.0225"
+  alb_lcu_hour: "0.008"
+  tgw_attachment_hour: "0.05"
+  tgw_gb: "0.02"
+  guardrail_content_per_1k_units: "0.75"
+  guardrail_topic_per_1k_units: "1.00"
+  guardrail_pii_per_1k_units: "0.10"
+models:
+  haiku:
+    label: Haiku-class
+    input_per_mtok: "0.80"
+    output_per_mtok: "4.00"
+  sonnet:
+    label: Sonnet-class
+    input_per_mtok: "3.00"
+    output_per_mtok: "15.00"
+  local:
+    label: Local
+    input_per_mtok: "0"
+    output_per_mtok: "0"
+# The counterfactual is the same three services on a public path.
+# One NAT gateway, one shared CMK, no transit gateway, no guardrail, always Sonnet
+# except where the workload names a naive model explicitly.
+naive:
+  nat_gateways: 1
+  cmks: 1
+  guardrail: false

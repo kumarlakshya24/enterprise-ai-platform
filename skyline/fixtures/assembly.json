@@ -1,0 +1,3758 @@
+{
+  "manifest": {
+    "accounts": [
+      {
+        "blurb": "Transit gateway. No tasks, no Bedrock, no keys.",
+        "id": "100000000010",
+        "name": "network"
+      },
+      {
+        "blurb": "Aegis, the guardrail, tenant keys, the internal load balancer.",
+        "id": "100000000020",
+        "name": "security"
+      },
+      {
+        "blurb": "Knowledge assistant and one document bucket per tenant.",
+        "id": "100000000030",
+        "name": "lumen"
+      },
+      {
+        "blurb": "Model router. No Bedrock permission and no data bucket.",
+        "id": "100000000040",
+        "name": "switchboard"
+      },
+      {
+        "blurb": "Organization trail, with file validation.",
+        "id": "100000000050",
+        "name": "log-archive"
+      },
+      {
+        "blurb": "The monthly budget the console is priced against.",
+        "id": "100000000060",
+        "name": "finops"
+      }
+    ],
+    "corporateCidr": "10.8.0.0/16",
+    "disclaimer": "Synthetic account ids. This file is a fixture, not a live deployment.",
+    "name": "skyline",
+    "region": "us-east-1",
+    "synth": "fixture-cdk",
+    "tenants": [
+      {
+        "display": "Northwind",
+        "id": "northwind"
+      },
+      {
+        "display": "Helix",
+        "id": "helix"
+      },
+      {
+        "display": "Brightline",
+        "id": "brightline"
+      }
+    ],
+    "tgwId": "tgw-skyline0001"
+  },
+  "stacks": {
+    "finops": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The monthly budget the console is priced against.",
+      "Metadata": {
+        "Skyline": {
+          "account": "finops",
+          "accountId": "100000000060",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {},
+      "Resources": {
+        "PlatformBudget": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "budget",
+              "note": "Illustrative ceiling, not a forecast."
+            }
+          },
+          "Properties": {
+            "Budget": {
+              "BudgetLimit": {
+                "Amount": "250",
+                "Unit": "USD"
+              },
+              "BudgetName": "skyline-platform-monthly",
+              "BudgetType": "COST",
+              "TimeUnit": "MONTHLY"
+            }
+          },
+          "Type": "AWS::Budgets::Budget"
+        }
+      }
+    },
+    "log-archive": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "Organization trail, with file validation.",
+      "Metadata": {
+        "Skyline": {
+          "account": "log-archive",
+          "accountId": "100000000050",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {},
+      "Resources": {
+        "OrgTrail": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "org-trail"
+            }
+          },
+          "Properties": {
+            "EnableLogFileValidation": true,
+            "IncludeGlobalServiceEvents": true,
+            "IsLogging": true,
+            "IsMultiRegionTrail": true,
+            "IsOrganizationTrail": true,
+            "KMSKeyId": {
+              "Ref": "TrailKey"
+            },
+            "S3BucketName": {
+              "Ref": "TrailBucket"
+            },
+            "TrailName": "skyline-org"
+          },
+          "Type": "AWS::CloudTrail::Trail"
+        },
+        "TrailBucket": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "kind": "trail-bucket"
+            }
+          },
+          "Properties": {
+            "BucketEncryption": {
+              "ServerSideEncryptionConfiguration": [
+                {
+                  "BucketKeyEnabled": true,
+                  "ServerSideEncryptionByDefault": {
+                    "KMSMasterKeyID": "arn:aws:kms:us-east-1:100000000050:key/skyline-trail",
+                    "SSEAlgorithm": "aws:kms"
+                  }
+                }
+              ]
+            },
+            "BucketName": "skyline-log-archive-trail",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            },
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            }
+          },
+          "Type": "AWS::S3::Bucket"
+        },
+        "TrailBucketPolicy": {
+          "Properties": {
+            "Bucket": {
+              "Ref": "TrailBucket"
+            },
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "s3:GetBucketAcl",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Resource": "arn:aws:s3:::skyline-log-archive-trail",
+                  "Sid": "CloudTrailAcl"
+                },
+                {
+                  "Action": "s3:PutObject",
+                  "Condition": {
+                    "StringEquals": {
+                      "s3:x-amz-acl": "bucket-owner-full-control"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Resource": "arn:aws:s3:::skyline-log-archive-trail/AWSLogs/*",
+                  "Sid": "CloudTrailWrite"
+                }
+              ],
+              "Version": "2012-10-17"
+            }
+          },
+          "Type": "AWS::S3::BucketPolicy"
+        },
+        "TrailKey": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-trail",
+              "kind": "trail-cmk"
+            }
+          },
+          "Properties": {
+            "Description": "CloudTrail log encryption. Not a tenant key.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000050:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:DescribeKey",
+                    "kms:GenerateDataKey*"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:SourceArn": "arn:aws:cloudtrail:us-east-1:100000000050:trail/skyline-org"
+                    },
+                    "StringLike": {
+                      "kms:EncryptionContext:aws:cloudtrail:arn": "arn:aws:cloudtrail:*:100000000050:trail/*"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "cloudtrail.amazonaws.com"
+                  },
+                  "Resource": "*",
+                  "Sid": "AllowCloudTrail"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT"
+          },
+          "Type": "AWS::KMS::Key"
+        }
+      }
+    },
+    "lumen": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "Knowledge assistant and one document bucket per tenant.",
+      "Metadata": {
+        "Skyline": {
+          "account": "lumen",
+          "accountId": "100000000030",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {},
+      "Resources": {
+        "DocBucketBrightline": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "kind": "tenant-bucket",
+              "tenant": "brightline"
+            }
+          },
+          "Properties": {
+            "BucketEncryption": {
+              "ServerSideEncryptionConfiguration": [
+                {
+                  "BucketKeyEnabled": true,
+                  "ServerSideEncryptionByDefault": {
+                    "KMSMasterKeyID": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-brightline",
+                    "SSEAlgorithm": "aws:kms"
+                  }
+                }
+              ]
+            },
+            "BucketName": "skyline-lumen-brightline-docs",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            },
+            "Tags": [
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "brightline"
+              }
+            ],
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            }
+          },
+          "Type": "AWS::S3::Bucket"
+        },
+        "DocBucketHelix": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "kind": "tenant-bucket",
+              "tenant": "helix"
+            }
+          },
+          "Properties": {
+            "BucketEncryption": {
+              "ServerSideEncryptionConfiguration": [
+                {
+                  "BucketKeyEnabled": true,
+                  "ServerSideEncryptionByDefault": {
+                    "KMSMasterKeyID": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-helix",
+                    "SSEAlgorithm": "aws:kms"
+                  }
+                }
+              ]
+            },
+            "BucketName": "skyline-lumen-helix-docs",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            },
+            "Tags": [
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "helix"
+              }
+            ],
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            }
+          },
+          "Type": "AWS::S3::Bucket"
+        },
+        "DocBucketNorthwind": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "kind": "tenant-bucket",
+              "tenant": "northwind"
+            }
+          },
+          "Properties": {
+            "BucketEncryption": {
+              "ServerSideEncryptionConfiguration": [
+                {
+                  "BucketKeyEnabled": true,
+                  "ServerSideEncryptionByDefault": {
+                    "KMSMasterKeyID": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-northwind",
+                    "SSEAlgorithm": "aws:kms"
+                  }
+                }
+              ]
+            },
+            "BucketName": "skyline-lumen-northwind-docs",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            },
+            "Tags": [
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "northwind"
+              }
+            ],
+            "VersioningConfiguration": {
+              "Status": "Enabled"
+            }
+          },
+          "Type": "AWS::S3::Bucket"
+        },
+        "LumenCluster": {
+          "Properties": {
+            "ClusterName": "skyline-lumen"
+          },
+          "Type": "AWS::ECS::Cluster"
+        },
+        "LumenEcrApiEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.api"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.api",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenEcrDkrEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.dkr"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.dkr",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenEndpointSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "endpoint-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "lumen interface endpoints",
+            "SecurityGroupEgress": [],
+            "SecurityGroupIngress": [
+              {
+                "Description": "tasks in this VPC",
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                  "Ref": "LumenSecurityGroup"
+                },
+                "ToPort": 443
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "LumenExecutionRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000030:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000030"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "ecr:GetAuthorizationToken",
+                      "Effect": "Allow",
+                      "Resource": "*",
+                      "Sid": "EcrAuthToken"
+                    },
+                    {
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:ecr:us-east-1:100000000030:repository/skyline/*",
+                      "Sid": "EcrPull"
+                    },
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000030:log-group:/skyline/lumen:*",
+                      "Sid": "Logs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "execute"
+              }
+            ],
+            "RoleName": "LumenExecutionRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "LumenFlowLog": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "flow-log"
+            }
+          },
+          "Properties": {
+            "DeliverLogsPermissionArn": {
+              "Fn::GetAtt": [
+                "LumenFlowLogRole",
+                "Arn"
+              ]
+            },
+            "LogGroupName": {
+              "Ref": "LumenFlowLogGroup"
+            },
+            "ResourceId": {
+              "Ref": "LumenVpc"
+            },
+            "ResourceType": "VPC",
+            "TrafficType": "ALL"
+          },
+          "Type": "AWS::EC2::FlowLog"
+        },
+        "LumenFlowLogGroup": {
+          "Properties": {
+            "LogGroupName": "/skyline/flow/lumen",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "LumenFlowLogRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "vpc-flow-logs.amazonaws.com"
+                  }
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000030:log-group:/skyline/flow/lumen:*"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "flow-logs"
+              }
+            ],
+            "RoleName": "LumenFlowLogRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "LumenKmsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "kms"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.kms",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenLogGroup": {
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "KmsKeyId": "arn:aws:kms:us-east-1:100000000030:key/skyline-ops-lumen",
+            "LogGroupName": "/skyline/lumen",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "LumenLogsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "logs"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.logs",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenMonitoringEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "monitoring"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.monitoring",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenPrivateSubnetAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1a",
+            "CidrBlock": "10.30.1.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-lumen-private-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "LumenPrivateSubnetAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1b",
+            "CidrBlock": "10.30.2.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-lumen-private-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "LumenRouteAssocAz1": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "LumenRouteTableAz1"
+            },
+            "SubnetId": {
+              "Ref": "LumenPrivateSubnetAz1"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "LumenRouteAssocAz2": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "LumenRouteTableAz2"
+            },
+            "SubnetId": {
+              "Ref": "LumenPrivateSubnetAz2"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "LumenRouteTableAz1": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-lumen-rt-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "LumenRouteTableAz2": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-lumen-rt-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "LumenRouteToPlatformAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "LumenRouteTableAz1"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "LumenRouteToPlatformAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "LumenRouteTableAz2"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "LumenS3Endpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "gateway-endpoint",
+              "service": "s3"
+            }
+          },
+          "Properties": {
+            "RouteTableIds": [
+              {
+                "Ref": "LumenRouteTableAz1"
+              },
+              {
+                "Ref": "LumenRouteTableAz2"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.s3",
+            "VpcEndpointType": "Gateway",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "task-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "Lumen tasks. Egress to Aegis and to this VPC's endpoints.",
+            "SecurityGroupEgress": [
+              {
+                "CidrIp": "10.20.0.0/16",
+                "Description": "Aegis over the transit gateway",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              },
+              {
+                "Description": "local interface endpoints",
+                "DestinationSecurityGroupId": {
+                  "Ref": "LumenEndpointSecurityGroup"
+                },
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "ToPort": 443
+              }
+            ],
+            "SecurityGroupIngress": [
+              {
+                "CidrIp": "10.20.0.0/16",
+                "Description": "Aegis",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              }
+            ],
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "LumenService": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "service"
+            }
+          },
+          "Properties": {
+            "Cluster": {
+              "Ref": "LumenCluster"
+            },
+            "DesiredCount": 2,
+            "LaunchType": "FARGATE",
+            "NetworkConfiguration": {
+              "AwsvpcConfiguration": {
+                "AssignPublicIp": "DISABLED",
+                "SecurityGroups": [
+                  {
+                    "Ref": "LumenSecurityGroup"
+                  }
+                ],
+                "Subnets": [
+                  {
+                    "Ref": "LumenPrivateSubnetAz1"
+                  },
+                  {
+                    "Ref": "LumenPrivateSubnetAz2"
+                  }
+                ]
+              }
+            },
+            "TaskDefinition": {
+              "Ref": "LumenTaskDefinition"
+            }
+          },
+          "Type": "AWS::ECS::Service"
+        },
+        "LumenStsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "sts"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "LumenEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.sts",
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LumenTaskDefinition": {
+          "Properties": {
+            "ContainerDefinitions": [
+              {
+                "Environment": [
+                  {
+                    "Name": "AEGIS_URL",
+                    "Value": "https://aegis.security.skyline.internal:8443"
+                  },
+                  {
+                    "Name": "SKYLINE_PROVIDER",
+                    "Value": "fixture"
+                  }
+                ],
+                "Essential": true,
+                "Image": "100000000030.dkr.ecr.us-east-1.amazonaws.com/skyline/lumen:fixture",
+                "LogConfiguration": {
+                  "LogDriver": "awslogs",
+                  "Options": {
+                    "awslogs-group": {
+                      "Ref": "LumenLogGroup"
+                    },
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "lumen"
+                  }
+                },
+                "Name": "lumen",
+                "PortMappings": [
+                  {
+                    "ContainerPort": 8443,
+                    "Protocol": "tcp"
+                  }
+                ]
+              }
+            ],
+            "Cpu": "256",
+            "ExecutionRoleArn": {
+              "Fn::GetAtt": [
+                "LumenExecutionRole",
+                "Arn"
+              ]
+            },
+            "Family": "skyline-lumen",
+            "Memory": "512",
+            "NetworkMode": "awsvpc",
+            "RequiresCompatibilities": [
+              "FARGATE"
+            ],
+            "TaskRoleArn": {
+              "Fn::GetAtt": [
+                "LumenTaskRole",
+                "Arn"
+              ]
+            }
+          },
+          "Type": "AWS::ECS::TaskDefinition"
+        },
+        "LumenTaskRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000030:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000030"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "bedrock:*",
+                      "Effect": "Deny",
+                      "Resource": "*",
+                      "Sid": "DenyBedrock"
+                    },
+                    {
+                      "Action": [
+                        "kms:Decrypt",
+                        "kms:DescribeKey",
+                        "kms:Encrypt",
+                        "kms:GenerateDataKey"
+                      ],
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:EncryptionContext:tenant": [
+                            "northwind",
+                            "helix",
+                            "brightline"
+                          ]
+                        }
+                      },
+                      "Effect": "Allow",
+                      "Resource": [
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-northwind",
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-helix",
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-brightline"
+                      ],
+                      "Sid": "TenantKeys"
+                    },
+                    {
+                      "Action": [
+                        "s3:GetObject",
+                        "s3:PutObject"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": [
+                        "arn:aws:s3:::skyline-lumen-northwind-docs/*",
+                        "arn:aws:s3:::skyline-lumen-helix-docs/*",
+                        "arn:aws:s3:::skyline-lumen-brightline-docs/*"
+                      ],
+                      "Sid": "TenantDocs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "lumen"
+              }
+            ],
+            "RoleName": "LumenTaskRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "LumenTgwAttachment": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "tgw-attachment"
+            }
+          },
+          "Properties": {
+            "SubnetIds": [
+              {
+                "Ref": "LumenPrivateSubnetAz1"
+              },
+              {
+                "Ref": "LumenPrivateSubnetAz2"
+              }
+            ],
+            "TransitGatewayId": "tgw-skyline0001",
+            "VpcId": {
+              "Ref": "LumenVpc"
+            }
+          },
+          "Type": "AWS::EC2::TransitGatewayAttachment"
+        },
+        "LumenVpc": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "vpc"
+            }
+          },
+          "Properties": {
+            "CidrBlock": "10.30.0.0/16",
+            "EnableDnsHostnames": true,
+            "EnableDnsSupport": true,
+            "InstanceTenancy": "default",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-lumen"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ]
+          },
+          "Type": "AWS::EC2::VPC"
+        },
+        "OpsKey": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-ops-lumen",
+              "kind": "ops-cmk"
+            }
+          },
+          "Properties": {
+            "Description": "Operational logs only. Not a tenant data key.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000030:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey",
+                    "kms:ReEncrypt*"
+                  ],
+                  "Condition": {
+                    "ArnLike": {
+                      "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:us-east-1:100000000030:*"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "logs.us-east-1.amazonaws.com"
+                  },
+                  "Resource": "*",
+                  "Sid": "AllowCloudWatchLogs"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT"
+          },
+          "Type": "AWS::KMS::Key"
+        }
+      }
+    },
+    "network": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "Transit gateway. No tasks, no Bedrock, no keys.",
+      "Metadata": {
+        "Skyline": {
+          "account": "network",
+          "accountId": "100000000010",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {
+        "TransitGatewayId": {
+          "Description": "Stable fixture id. Real TGW ids are assigned at create time.",
+          "Value": "tgw-skyline0001"
+        }
+      },
+      "Resources": {
+        "HubFlowLog": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "flow-log"
+            }
+          },
+          "Properties": {
+            "DeliverLogsPermissionArn": {
+              "Fn::GetAtt": [
+                "HubFlowLogRole",
+                "Arn"
+              ]
+            },
+            "LogGroupName": {
+              "Ref": "HubFlowLogGroup"
+            },
+            "ResourceId": {
+              "Ref": "HubVpc"
+            },
+            "ResourceType": "VPC",
+            "TrafficType": "ALL"
+          },
+          "Type": "AWS::EC2::FlowLog"
+        },
+        "HubFlowLogGroup": {
+          "Properties": {
+            "LogGroupName": "/skyline/flow/network",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "HubFlowLogRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "vpc-flow-logs.amazonaws.com"
+                  }
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000010:log-group:/skyline/flow/network:*"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "flow-logs"
+              }
+            ],
+            "RoleName": "HubFlowLogRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "HubPrivateSubnetAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1a",
+            "CidrBlock": "10.10.1.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-network-private-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "HubPrivateSubnetAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1b",
+            "CidrBlock": "10.10.2.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-network-private-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "HubRouteAssocAz1": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "HubRouteTableAz1"
+            },
+            "SubnetId": {
+              "Ref": "HubPrivateSubnetAz1"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "HubRouteAssocAz2": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "HubRouteTableAz2"
+            },
+            "SubnetId": {
+              "Ref": "HubPrivateSubnetAz2"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "HubRouteTableAz1": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-network-rt-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "HubRouteTableAz2": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-network-rt-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "HubRouteToPlatformAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "HubRouteTableAz1"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "HubRouteToPlatformAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "HubRouteTableAz2"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "HubS3Endpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "gateway-endpoint",
+              "service": "s3"
+            }
+          },
+          "Properties": {
+            "RouteTableIds": [
+              {
+                "Ref": "HubRouteTableAz1"
+              },
+              {
+                "Ref": "HubRouteTableAz2"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.s3",
+            "VpcEndpointType": "Gateway",
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "HubTgwAttachment": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "tgw-attachment"
+            }
+          },
+          "Properties": {
+            "SubnetIds": [
+              {
+                "Ref": "HubPrivateSubnetAz1"
+              },
+              {
+                "Ref": "HubPrivateSubnetAz2"
+              }
+            ],
+            "TransitGatewayId": "tgw-skyline0001",
+            "VpcId": {
+              "Ref": "HubVpc"
+            }
+          },
+          "Type": "AWS::EC2::TransitGatewayAttachment"
+        },
+        "HubVpc": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "vpc"
+            }
+          },
+          "Properties": {
+            "CidrBlock": "10.10.0.0/16",
+            "EnableDnsHostnames": true,
+            "EnableDnsSupport": true,
+            "InstanceTenancy": "default",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-network"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ]
+          },
+          "Type": "AWS::EC2::VPC"
+        },
+        "TransitGateway": {
+          "Metadata": {
+            "Skyline": {
+              "corporateCidr": "10.8.0.0/16",
+              "fixtureId": "tgw-skyline0001",
+              "kind": "tgw"
+            }
+          },
+          "Properties": {
+            "AmazonSideAsn": 64512,
+            "AutoAcceptSharedAttachments": "disable",
+            "DefaultRouteTableAssociation": "enable",
+            "DefaultRouteTablePropagation": "enable",
+            "DnsSupport": "enable",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-hub"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpnEcmpSupport": "enable"
+          },
+          "Type": "AWS::EC2::TransitGateway"
+        }
+      }
+    },
+    "security": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "Aegis, the guardrail, tenant keys, the internal load balancer.",
+      "Metadata": {
+        "Skyline": {
+          "account": "security",
+          "accountId": "100000000020",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {
+        "GuardrailName": {
+          "Description": "Guardrail the Aegis task is pinned to",
+          "Value": "skyline-platform"
+        },
+        "TenantKeyBrightline": {
+          "Description": "CMK for brightline",
+          "Value": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-brightline"
+        },
+        "TenantKeyHelix": {
+          "Description": "CMK for helix",
+          "Value": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-helix"
+        },
+        "TenantKeyNorthwind": {
+          "Description": "CMK for northwind",
+          "Value": "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-northwind"
+        }
+      },
+      "Resources": {
+        "AegisCluster": {
+          "Properties": {
+            "ClusterName": "skyline-aegis"
+          },
+          "Type": "AWS::ECS::Cluster"
+        },
+        "AegisExecutionRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000020:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000020"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "ecr:GetAuthorizationToken",
+                      "Effect": "Allow",
+                      "Resource": "*",
+                      "Sid": "EcrAuthToken"
+                    },
+                    {
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:ecr:us-east-1:100000000020:repository/skyline/*",
+                      "Sid": "EcrPull"
+                    },
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000020:log-group:/skyline/aegis:*",
+                      "Sid": "Logs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "execute"
+              }
+            ],
+            "RoleName": "AegisExecutionRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "AegisLogGroup": {
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "KmsKeyId": "arn:aws:kms:us-east-1:100000000020:key/skyline-ops-security",
+            "LogGroupName": "/skyline/aegis",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "AegisSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "task-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "Aegis tasks. No path from the internet.",
+            "SecurityGroupEgress": [
+              {
+                "Description": "interface endpoints, including Bedrock",
+                "DestinationSecurityGroupId": {
+                  "Ref": "SecurityEndpointSecurityGroup"
+                },
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "ToPort": 443
+              },
+              {
+                "CidrIp": "10.30.0.0/16",
+                "Description": "Lumen",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              },
+              {
+                "CidrIp": "10.40.0.0/16",
+                "Description": "Switchboard",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              }
+            ],
+            "SecurityGroupIngress": [
+              {
+                "Description": "internal ALB",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                  "Ref": "AlbSecurityGroup"
+                },
+                "ToPort": 8443
+              },
+              {
+                "CidrIp": "10.30.0.0/16",
+                "Description": "Lumen calls Aegis, not Bedrock",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              },
+              {
+                "CidrIp": "10.40.0.0/16",
+                "Description": "Switchboard calls Aegis",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "AegisService": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "service"
+            }
+          },
+          "Properties": {
+            "Cluster": {
+              "Ref": "AegisCluster"
+            },
+            "DesiredCount": 2,
+            "LaunchType": "FARGATE",
+            "NetworkConfiguration": {
+              "AwsvpcConfiguration": {
+                "AssignPublicIp": "DISABLED",
+                "SecurityGroups": [
+                  {
+                    "Ref": "AegisSecurityGroup"
+                  }
+                ],
+                "Subnets": [
+                  {
+                    "Ref": "SecurityPrivateSubnetAz1"
+                  },
+                  {
+                    "Ref": "SecurityPrivateSubnetAz2"
+                  }
+                ]
+              }
+            },
+            "TaskDefinition": {
+              "Ref": "AegisTaskDefinition"
+            }
+          },
+          "Type": "AWS::ECS::Service"
+        },
+        "AegisTargetGroup": {
+          "Properties": {
+            "HealthCheckPath": "/healthz",
+            "Port": 8443,
+            "Protocol": "HTTPS",
+            "TargetType": "ip",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::ElasticLoadBalancingV2::TargetGroup"
+        },
+        "AegisTaskDefinition": {
+          "Properties": {
+            "ContainerDefinitions": [
+              {
+                "Environment": [
+                  {
+                    "Name": "GUARDRAIL_ID",
+                    "Value": "skyline-platform"
+                  },
+                  {
+                    "Name": "SKYLINE_PROVIDER",
+                    "Value": "fixture"
+                  },
+                  {
+                    "Name": "SWITCHBOARD_URL",
+                    "Value": "https://switchboard.switchboard.skyline.internal:8443"
+                  },
+                  {
+                    "Name": "LUMEN_URL",
+                    "Value": "https://lumen.lumen.skyline.internal:8443"
+                  }
+                ],
+                "Essential": true,
+                "Image": "100000000020.dkr.ecr.us-east-1.amazonaws.com/skyline/aegis:fixture",
+                "LogConfiguration": {
+                  "LogDriver": "awslogs",
+                  "Options": {
+                    "awslogs-group": {
+                      "Ref": "AegisLogGroup"
+                    },
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "aegis"
+                  }
+                },
+                "Name": "aegis",
+                "PortMappings": [
+                  {
+                    "ContainerPort": 8443,
+                    "Protocol": "tcp"
+                  }
+                ]
+              }
+            ],
+            "Cpu": "256",
+            "ExecutionRoleArn": {
+              "Fn::GetAtt": [
+                "AegisExecutionRole",
+                "Arn"
+              ]
+            },
+            "Family": "skyline-aegis",
+            "Memory": "512",
+            "NetworkMode": "awsvpc",
+            "RequiresCompatibilities": [
+              "FARGATE"
+            ],
+            "TaskRoleArn": {
+              "Fn::GetAtt": [
+                "AegisTaskRole",
+                "Arn"
+              ]
+            }
+          },
+          "Type": "AWS::ECS::TaskDefinition"
+        },
+        "AegisTaskRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000020:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000020"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "bedrock:ApplyGuardrail",
+                        "bedrock:InvokeModel"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": [
+                        "arn:aws:bedrock:us-east-1::foundation-model/skyline.haiku",
+                        "arn:aws:bedrock:us-east-1::foundation-model/skyline.sonnet",
+                        "arn:aws:bedrock:us-east-1:100000000020:guardrail/skyline-platform"
+                      ],
+                      "Sid": "InvokeWithNamedModels"
+                    },
+                    {
+                      "Action": [
+                        "kms:Decrypt",
+                        "kms:DescribeKey",
+                        "kms:Encrypt",
+                        "kms:GenerateDataKey"
+                      ],
+                      "Condition": {
+                        "StringEquals": {
+                          "kms:EncryptionContext:tenant": [
+                            "northwind",
+                            "helix",
+                            "brightline"
+                          ]
+                        }
+                      },
+                      "Effect": "Allow",
+                      "Resource": [
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-northwind",
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-helix",
+                        "arn:aws:kms:us-east-1:100000000020:key/skyline-tenant-brightline"
+                      ],
+                      "Sid": "TenantKeys"
+                    },
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000020:log-group:/skyline/aegis:*",
+                      "Sid": "Logs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "aegis"
+              }
+            ],
+            "RoleName": "AegisTaskRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "AlbSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "alb-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "Internal ALB. Corporate clients only.",
+            "SecurityGroupEgress": [
+              {
+                "Description": "Aegis tasks",
+                "DestinationSecurityGroupId": {
+                  "Ref": "AegisSecurityGroup"
+                },
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              }
+            ],
+            "SecurityGroupIngress": [
+              {
+                "CidrIp": "10.8.0.0/16",
+                "Description": "corporate aggregate over the transit gateway",
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "ToPort": 443
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "BedrockPrivateZone": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "bedrock-private-zone"
+            }
+          },
+          "Properties": {
+            "HostedZoneConfig": {
+              "Comment": "Bedrock private DNS. Security VPC only."
+            },
+            "Name": "bedrock-runtime.us-east-1.amazonaws.com.",
+            "VPCs": [
+              {
+                "VPCId": {
+                  "Ref": "SecurityVpc"
+                },
+                "VPCRegion": "us-east-1"
+              }
+            ]
+          },
+          "Type": "AWS::Route53::HostedZone"
+        },
+        "BedrockRuntimeEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "bedrock-endpoint",
+              "service": "bedrock-runtime"
+            }
+          },
+          "Properties": {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "bedrock:ApplyGuardrail",
+                    "bedrock:InvokeModel"
+                  ],
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000020:role/AegisTaskRole"
+                  },
+                  "Resource": [
+                    "arn:aws:bedrock:us-east-1::foundation-model/skyline.haiku",
+                    "arn:aws:bedrock:us-east-1::foundation-model/skyline.sonnet",
+                    "arn:aws:bedrock:us-east-1:100000000020:guardrail/skyline-platform"
+                  ],
+                  "Sid": "AegisOnly"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.bedrock-runtime",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "EcrApiEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.api"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.api",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "EcrDkrEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.dkr"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.dkr",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "Guardrail": {
+          "Metadata": {
+            "Skyline": {
+              "doesNotScan": [
+                "retrieved-context"
+              ],
+              "kind": "guardrail",
+              "promptAttackPhrases": [
+                "ignore previous instructions",
+                "reveal the system prompt",
+                "you are now"
+              ],
+              "scans": [
+                "user-turn",
+                "model-output"
+              ],
+              "stubBlindFilters": [
+                "HATE",
+                "INSULTS",
+                "MISCONDUCT"
+              ],
+              "stubKeywords": {
+                "credential-request": [
+                  "password is",
+                  "api key is"
+                ],
+                "financial-advice": [
+                  "buy the stock",
+                  "price target",
+                  "guaranteed return"
+                ]
+              }
+            }
+          },
+          "Properties": {
+            "BlockedInputMessaging": "Blocked by the Skyline guardrail.",
+            "BlockedOutputsMessaging": "Blocked by the Skyline guardrail.",
+            "ContentPolicyConfig": {
+              "FiltersConfig": [
+                {
+                  "InputStrength": "HIGH",
+                  "OutputStrength": "HIGH",
+                  "Type": "HATE"
+                },
+                {
+                  "InputStrength": "HIGH",
+                  "OutputStrength": "HIGH",
+                  "Type": "INSULTS"
+                },
+                {
+                  "InputStrength": "HIGH",
+                  "OutputStrength": "HIGH",
+                  "Type": "MISCONDUCT"
+                },
+                {
+                  "InputStrength": "HIGH",
+                  "OutputStrength": "NONE",
+                  "Type": "PROMPT_ATTACK"
+                }
+              ]
+            },
+            "Description": "Platform guardrail. User turn and model output, not retrieved context.",
+            "Name": "skyline-platform",
+            "SensitiveInformationPolicyConfig": {
+              "PiiEntitiesConfig": [
+                {
+                  "Action": "BLOCK",
+                  "Type": "EMAIL"
+                },
+                {
+                  "Action": "BLOCK",
+                  "Type": "PHONE"
+                },
+                {
+                  "Action": "BLOCK",
+                  "Type": "CREDIT_DEBIT_CARD_NUMBER"
+                },
+                {
+                  "Action": "BLOCK",
+                  "Type": "AWS_ACCESS_KEY"
+                }
+              ]
+            },
+            "Tags": [
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "RegionNote",
+                "Value": "us-east-1"
+              }
+            ],
+            "TopicPolicyConfig": {
+              "TopicsConfig": [
+                {
+                  "Definition": "Telling someone to buy or sell a security, or promising a return.",
+                  "Examples": [
+                    "you should buy the stock today"
+                  ],
+                  "Name": "financial-advice",
+                  "Type": "DENY"
+                },
+                {
+                  "Definition": "Asking for or repeating a password or an API key.",
+                  "Examples": [
+                    "the password is swordfish"
+                  ],
+                  "Name": "credential-request",
+                  "Type": "DENY"
+                }
+              ]
+            }
+          },
+          "Type": "AWS::Bedrock::Guardrail"
+        },
+        "HttpsListener": {
+          "Properties": {
+            "DefaultActions": [
+              {
+                "TargetGroupArn": {
+                  "Ref": "AegisTargetGroup"
+                },
+                "Type": "forward"
+              }
+            ],
+            "LoadBalancerArn": {
+              "Ref": "InternalAlb"
+            },
+            "Port": 443,
+            "Protocol": "HTTPS"
+          },
+          "Type": "AWS::ElasticLoadBalancingV2::Listener"
+        },
+        "InternalAlb": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "internal-alb"
+            }
+          },
+          "Properties": {
+            "Name": "skyline-aegis",
+            "Scheme": "internal",
+            "SecurityGroups": [
+              {
+                "Ref": "AlbSecurityGroup"
+              }
+            ],
+            "Subnets": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "Type": "application"
+          },
+          "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer"
+        },
+        "KmsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "kms"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.kms",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "LogsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "logs"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.logs",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "MonitoringEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "monitoring"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.monitoring",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "OpsKey": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-ops-security",
+              "kind": "ops-cmk"
+            }
+          },
+          "Properties": {
+            "Description": "Operational logs only. Not a tenant data key.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000020:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey",
+                    "kms:ReEncrypt*"
+                  ],
+                  "Condition": {
+                    "ArnLike": {
+                      "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:us-east-1:100000000020:*"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "logs.us-east-1.amazonaws.com"
+                  },
+                  "Resource": "*",
+                  "Sid": "AllowCloudWatchLogs"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT"
+          },
+          "Type": "AWS::KMS::Key"
+        },
+        "SecurityEndpointSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "endpoint-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "security interface endpoints",
+            "SecurityGroupEgress": [],
+            "SecurityGroupIngress": [
+              {
+                "Description": "tasks in this VPC",
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                  "Ref": "AegisSecurityGroup"
+                },
+                "ToPort": 443
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "SecurityFlowLog": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "flow-log"
+            }
+          },
+          "Properties": {
+            "DeliverLogsPermissionArn": {
+              "Fn::GetAtt": [
+                "SecurityFlowLogRole",
+                "Arn"
+              ]
+            },
+            "LogGroupName": {
+              "Ref": "SecurityFlowLogGroup"
+            },
+            "ResourceId": {
+              "Ref": "SecurityVpc"
+            },
+            "ResourceType": "VPC",
+            "TrafficType": "ALL"
+          },
+          "Type": "AWS::EC2::FlowLog"
+        },
+        "SecurityFlowLogGroup": {
+          "Properties": {
+            "LogGroupName": "/skyline/flow/security",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "SecurityFlowLogRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "vpc-flow-logs.amazonaws.com"
+                  }
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000020:log-group:/skyline/flow/security:*"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "flow-logs"
+              }
+            ],
+            "RoleName": "SecurityFlowLogRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "SecurityPrivateSubnetAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1a",
+            "CidrBlock": "10.20.1.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-security-private-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "SecurityPrivateSubnetAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1b",
+            "CidrBlock": "10.20.2.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-security-private-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "SecurityRouteAssocAz1": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "SecurityRouteTableAz1"
+            },
+            "SubnetId": {
+              "Ref": "SecurityPrivateSubnetAz1"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "SecurityRouteAssocAz2": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "SecurityRouteTableAz2"
+            },
+            "SubnetId": {
+              "Ref": "SecurityPrivateSubnetAz2"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "SecurityRouteTableAz1": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-security-rt-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "SecurityRouteTableAz2": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-security-rt-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "SecurityRouteToPlatformAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "SecurityRouteTableAz1"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "SecurityRouteToPlatformAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "SecurityRouteTableAz2"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "SecurityS3Endpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "gateway-endpoint",
+              "service": "s3"
+            }
+          },
+          "Properties": {
+            "RouteTableIds": [
+              {
+                "Ref": "SecurityRouteTableAz1"
+              },
+              {
+                "Ref": "SecurityRouteTableAz2"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.s3",
+            "VpcEndpointType": "Gateway",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SecurityTgwAttachment": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "tgw-attachment"
+            }
+          },
+          "Properties": {
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "TransitGatewayId": "tgw-skyline0001",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::TransitGatewayAttachment"
+        },
+        "SecurityVpc": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "vpc"
+            }
+          },
+          "Properties": {
+            "CidrBlock": "10.20.0.0/16",
+            "EnableDnsHostnames": true,
+            "EnableDnsSupport": true,
+            "InstanceTenancy": "default",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-security"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ]
+          },
+          "Type": "AWS::EC2::VPC"
+        },
+        "StsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "sts"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SecurityEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.sts",
+            "SubnetIds": [
+              {
+                "Ref": "SecurityPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SecurityPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SecurityVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "TenantAliasBrightline": {
+          "Properties": {
+            "AliasName": "alias/skyline/brightline",
+            "TargetKeyId": {
+              "Ref": "TenantKeyBrightline"
+            }
+          },
+          "Type": "AWS::KMS::Alias"
+        },
+        "TenantAliasHelix": {
+          "Properties": {
+            "AliasName": "alias/skyline/helix",
+            "TargetKeyId": {
+              "Ref": "TenantKeyHelix"
+            }
+          },
+          "Type": "AWS::KMS::Alias"
+        },
+        "TenantAliasNorthwind": {
+          "Properties": {
+            "AliasName": "alias/skyline/northwind",
+            "TargetKeyId": {
+              "Ref": "TenantKeyNorthwind"
+            }
+          },
+          "Type": "AWS::KMS::Alias"
+        },
+        "TenantKeyBrightline": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-tenant-brightline",
+              "kind": "tenant-cmk",
+              "tenant": "brightline"
+            }
+          },
+          "Properties": {
+            "Description": "Tenant CMK for Brightline. Encryption context tenant=brightline.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000020:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:EncryptionContext:tenant": "brightline"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": [
+                      "arn:aws:iam::100000000020:role/AegisTaskRole",
+                      "arn:aws:iam::100000000030:role/LumenTaskRole"
+                    ]
+                  },
+                  "Resource": "*",
+                  "Sid": "UseWithTenantContext"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "alias/skyline/brightline"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "brightline"
+              }
+            ]
+          },
+          "Type": "AWS::KMS::Key"
+        },
+        "TenantKeyHelix": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-tenant-helix",
+              "kind": "tenant-cmk",
+              "tenant": "helix"
+            }
+          },
+          "Properties": {
+            "Description": "Tenant CMK for Helix. Encryption context tenant=helix.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000020:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:EncryptionContext:tenant": "helix"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": [
+                      "arn:aws:iam::100000000020:role/AegisTaskRole",
+                      "arn:aws:iam::100000000030:role/LumenTaskRole"
+                    ]
+                  },
+                  "Resource": "*",
+                  "Sid": "UseWithTenantContext"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "alias/skyline/helix"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "helix"
+              }
+            ]
+          },
+          "Type": "AWS::KMS::Key"
+        },
+        "TenantKeyNorthwind": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-tenant-northwind",
+              "kind": "tenant-cmk",
+              "tenant": "northwind"
+            }
+          },
+          "Properties": {
+            "Description": "Tenant CMK for Northwind. Encryption context tenant=northwind.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000020:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "kms:EncryptionContext:tenant": "northwind"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": [
+                      "arn:aws:iam::100000000020:role/AegisTaskRole",
+                      "arn:aws:iam::100000000030:role/LumenTaskRole"
+                    ]
+                  },
+                  "Resource": "*",
+                  "Sid": "UseWithTenantContext"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "alias/skyline/northwind"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tenant",
+                "Value": "northwind"
+              }
+            ]
+          },
+          "Type": "AWS::KMS::Key"
+        }
+      }
+    },
+    "switchboard": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "Model router. No Bedrock permission and no data bucket.",
+      "Metadata": {
+        "Skyline": {
+          "account": "switchboard",
+          "accountId": "100000000040",
+          "region": "us-east-1",
+          "synth": "fixture-cdk",
+          "version": 1
+        }
+      },
+      "Outputs": {},
+      "Resources": {
+        "OpsKey": {
+          "DeletionPolicy": "Retain",
+          "Metadata": {
+            "Skyline": {
+              "fixtureKeyId": "skyline-ops-switchboard",
+              "kind": "ops-cmk"
+            }
+          },
+          "Properties": {
+            "Description": "Operational logs only. Not a tenant data key.",
+            "EnableKeyRotation": true,
+            "KeyPolicy": {
+              "Statement": [
+                {
+                  "Action": "kms:*",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "AWS": "arn:aws:iam::100000000040:root"
+                  },
+                  "Resource": "*",
+                  "Sid": "EnableRoot"
+                },
+                {
+                  "Action": [
+                    "kms:Decrypt",
+                    "kms:DescribeKey",
+                    "kms:Encrypt",
+                    "kms:GenerateDataKey",
+                    "kms:ReEncrypt*"
+                  ],
+                  "Condition": {
+                    "ArnLike": {
+                      "kms:EncryptionContext:aws:logs:arn": "arn:aws:logs:us-east-1:100000000040:*"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "logs.us-east-1.amazonaws.com"
+                  },
+                  "Resource": "*",
+                  "Sid": "AllowCloudWatchLogs"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "KeySpec": "SYMMETRIC_DEFAULT",
+            "KeyUsage": "ENCRYPT_DECRYPT"
+          },
+          "Type": "AWS::KMS::Key"
+        },
+        "SwitchboardCluster": {
+          "Properties": {
+            "ClusterName": "skyline-switchboard"
+          },
+          "Type": "AWS::ECS::Cluster"
+        },
+        "SwitchboardEcrApiEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.api"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SwitchboardEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.api",
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardEcrDkrEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "ecr.dkr"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SwitchboardEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.ecr.dkr",
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardEndpointSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "endpoint-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "switchboard interface endpoints",
+            "SecurityGroupEgress": [],
+            "SecurityGroupIngress": [
+              {
+                "Description": "tasks in this VPC",
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "SourceSecurityGroupId": {
+                  "Ref": "SwitchboardSecurityGroup"
+                },
+                "ToPort": 443
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "SwitchboardExecutionRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000040:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000040"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "ecr:GetAuthorizationToken",
+                      "Effect": "Allow",
+                      "Resource": "*",
+                      "Sid": "EcrAuthToken"
+                    },
+                    {
+                      "Action": [
+                        "ecr:BatchGetImage",
+                        "ecr:GetDownloadUrlForLayer"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:ecr:us-east-1:100000000040:repository/skyline/*",
+                      "Sid": "EcrPull"
+                    },
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000040:log-group:/skyline/switchboard:*",
+                      "Sid": "Logs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "execute"
+              }
+            ],
+            "RoleName": "SwitchboardExecutionRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "SwitchboardFlowLog": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "flow-log"
+            }
+          },
+          "Properties": {
+            "DeliverLogsPermissionArn": {
+              "Fn::GetAtt": [
+                "SwitchboardFlowLogRole",
+                "Arn"
+              ]
+            },
+            "LogGroupName": {
+              "Ref": "SwitchboardFlowLogGroup"
+            },
+            "ResourceId": {
+              "Ref": "SwitchboardVpc"
+            },
+            "ResourceType": "VPC",
+            "TrafficType": "ALL"
+          },
+          "Type": "AWS::EC2::FlowLog"
+        },
+        "SwitchboardFlowLogGroup": {
+          "Properties": {
+            "LogGroupName": "/skyline/flow/switchboard",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "SwitchboardFlowLogRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "vpc-flow-logs.amazonaws.com"
+                  }
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000040:log-group:/skyline/flow/switchboard:*"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "flow-logs"
+              }
+            ],
+            "RoleName": "SwitchboardFlowLogRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "SwitchboardLogGroup": {
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "KmsKeyId": "arn:aws:kms:us-east-1:100000000040:key/skyline-ops-switchboard",
+            "LogGroupName": "/skyline/switchboard",
+            "RetentionInDays": 30
+          },
+          "Type": "AWS::Logs::LogGroup"
+        },
+        "SwitchboardLogsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "logs"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SwitchboardEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.logs",
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardMonitoringEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "monitoring"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SwitchboardEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.monitoring",
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardPrivateSubnetAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1a",
+            "CidrBlock": "10.40.1.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-switchboard-private-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "SwitchboardPrivateSubnetAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "private-subnet"
+            }
+          },
+          "Properties": {
+            "AvailabilityZone": "us-east-1b",
+            "CidrBlock": "10.40.2.0/24",
+            "MapPublicIpOnLaunch": false,
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-switchboard-private-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              },
+              {
+                "Key": "Tier",
+                "Value": "private"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::Subnet"
+        },
+        "SwitchboardRouteAssocAz1": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "SwitchboardRouteTableAz1"
+            },
+            "SubnetId": {
+              "Ref": "SwitchboardPrivateSubnetAz1"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "SwitchboardRouteAssocAz2": {
+          "Properties": {
+            "RouteTableId": {
+              "Ref": "SwitchboardRouteTableAz2"
+            },
+            "SubnetId": {
+              "Ref": "SwitchboardPrivateSubnetAz2"
+            }
+          },
+          "Type": "AWS::EC2::SubnetRouteTableAssociation"
+        },
+        "SwitchboardRouteTableAz1": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-switchboard-rt-1"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "SwitchboardRouteTableAz2": {
+          "Properties": {
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-switchboard-rt-2"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::RouteTable"
+        },
+        "SwitchboardRouteToPlatformAz1": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "SwitchboardRouteTableAz1"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "SwitchboardRouteToPlatformAz2": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "platform-route"
+            }
+          },
+          "Properties": {
+            "DestinationCidrBlock": "10.0.0.0/8",
+            "RouteTableId": {
+              "Ref": "SwitchboardRouteTableAz2"
+            },
+            "TransitGatewayId": "tgw-skyline0001"
+          },
+          "Type": "AWS::EC2::Route"
+        },
+        "SwitchboardS3Endpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "gateway-endpoint",
+              "service": "s3"
+            }
+          },
+          "Properties": {
+            "RouteTableIds": [
+              {
+                "Ref": "SwitchboardRouteTableAz1"
+              },
+              {
+                "Ref": "SwitchboardRouteTableAz2"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.s3",
+            "VpcEndpointType": "Gateway",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardSecurityGroup": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "task-sg"
+            }
+          },
+          "Properties": {
+            "GroupDescription": "Switchboard tasks. They choose a model. They do not call it.",
+            "SecurityGroupEgress": [
+              {
+                "CidrIp": "10.20.0.0/16",
+                "Description": "Aegis",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              },
+              {
+                "Description": "local interface endpoints",
+                "DestinationSecurityGroupId": {
+                  "Ref": "SwitchboardEndpointSecurityGroup"
+                },
+                "FromPort": 443,
+                "IpProtocol": "tcp",
+                "ToPort": 443
+              }
+            ],
+            "SecurityGroupIngress": [
+              {
+                "CidrIp": "10.20.0.0/16",
+                "Description": "Aegis asks for a route",
+                "FromPort": 8443,
+                "IpProtocol": "tcp",
+                "ToPort": 8443
+              }
+            ],
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::SecurityGroup"
+        },
+        "SwitchboardService": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "service"
+            }
+          },
+          "Properties": {
+            "Cluster": {
+              "Ref": "SwitchboardCluster"
+            },
+            "DesiredCount": 2,
+            "LaunchType": "FARGATE",
+            "NetworkConfiguration": {
+              "AwsvpcConfiguration": {
+                "AssignPublicIp": "DISABLED",
+                "SecurityGroups": [
+                  {
+                    "Ref": "SwitchboardSecurityGroup"
+                  }
+                ],
+                "Subnets": [
+                  {
+                    "Ref": "SwitchboardPrivateSubnetAz1"
+                  },
+                  {
+                    "Ref": "SwitchboardPrivateSubnetAz2"
+                  }
+                ]
+              }
+            },
+            "TaskDefinition": {
+              "Ref": "SwitchboardTaskDefinition"
+            }
+          },
+          "Type": "AWS::ECS::Service"
+        },
+        "SwitchboardStsEndpoint": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "interface-endpoint",
+              "service": "sts"
+            }
+          },
+          "Properties": {
+            "PrivateDnsEnabled": true,
+            "SecurityGroupIds": [
+              {
+                "Ref": "SwitchboardEndpointSecurityGroup"
+              }
+            ],
+            "ServiceName": "com.amazonaws.us-east-1.sts",
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "VpcEndpointType": "Interface",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::VPCEndpoint"
+        },
+        "SwitchboardTaskDefinition": {
+          "Properties": {
+            "ContainerDefinitions": [
+              {
+                "Environment": [
+                  {
+                    "Name": "AEGIS_URL",
+                    "Value": "https://aegis.security.skyline.internal:8443"
+                  },
+                  {
+                    "Name": "SKYLINE_PROVIDER",
+                    "Value": "fixture"
+                  }
+                ],
+                "Essential": true,
+                "Image": "100000000040.dkr.ecr.us-east-1.amazonaws.com/skyline/switchboard:fixture",
+                "LogConfiguration": {
+                  "LogDriver": "awslogs",
+                  "Options": {
+                    "awslogs-group": {
+                      "Ref": "SwitchboardLogGroup"
+                    },
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "switchboard"
+                  }
+                },
+                "Name": "switchboard",
+                "PortMappings": [
+                  {
+                    "ContainerPort": 8443,
+                    "Protocol": "tcp"
+                  }
+                ]
+              }
+            ],
+            "Cpu": "256",
+            "ExecutionRoleArn": {
+              "Fn::GetAtt": [
+                "SwitchboardExecutionRole",
+                "Arn"
+              ]
+            },
+            "Family": "skyline-switchboard",
+            "Memory": "512",
+            "NetworkMode": "awsvpc",
+            "RequiresCompatibilities": [
+              "FARGATE"
+            ],
+            "TaskRoleArn": {
+              "Fn::GetAtt": [
+                "SwitchboardTaskRole",
+                "Arn"
+              ]
+            }
+          },
+          "Type": "AWS::ECS::TaskDefinition"
+        },
+        "SwitchboardTaskRole": {
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sts:AssumeRole",
+                  "Condition": {
+                    "ArnLike": {
+                      "aws:SourceArn": "arn:aws:ecs:*:100000000040:task/*"
+                    },
+                    "StringEquals": {
+                      "aws:SourceAccount": "100000000040"
+                    }
+                  },
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "ecs-tasks.amazonaws.com"
+                  },
+                  "Sid": "EcsFromThisAccount"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "Policies": [
+              {
+                "PolicyDocument": {
+                  "Statement": [
+                    {
+                      "Action": "bedrock:*",
+                      "Effect": "Deny",
+                      "Resource": "*",
+                      "Sid": "DenyBedrock"
+                    },
+                    {
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                      ],
+                      "Effect": "Allow",
+                      "Resource": "arn:aws:logs:us-east-1:100000000040:log-group:/skyline/switchboard:*",
+                      "Sid": "Logs"
+                    }
+                  ],
+                  "Version": "2012-10-17"
+                },
+                "PolicyName": "switchboard"
+              }
+            ],
+            "RoleName": "SwitchboardTaskRole"
+          },
+          "Type": "AWS::IAM::Role"
+        },
+        "SwitchboardTgwAttachment": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "tgw-attachment"
+            }
+          },
+          "Properties": {
+            "SubnetIds": [
+              {
+                "Ref": "SwitchboardPrivateSubnetAz1"
+              },
+              {
+                "Ref": "SwitchboardPrivateSubnetAz2"
+              }
+            ],
+            "TransitGatewayId": "tgw-skyline0001",
+            "VpcId": {
+              "Ref": "SwitchboardVpc"
+            }
+          },
+          "Type": "AWS::EC2::TransitGatewayAttachment"
+        },
+        "SwitchboardVpc": {
+          "Metadata": {
+            "Skyline": {
+              "kind": "vpc"
+            }
+          },
+          "Properties": {
+            "CidrBlock": "10.40.0.0/16",
+            "EnableDnsHostnames": true,
+            "EnableDnsSupport": true,
+            "InstanceTenancy": "default",
+            "Tags": [
+              {
+                "Key": "Name",
+                "Value": "skyline-switchboard"
+              },
+              {
+                "Key": "Project",
+                "Value": "skyline"
+              }
+            ]
+          },
+          "Type": "AWS::EC2::VPC"
+        }
+      }
+    }
+  }
+}
