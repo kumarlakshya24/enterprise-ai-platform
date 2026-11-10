@@ -1,27 +1,21 @@
-<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/platform-banner-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/platform-banner-light.png">
+  <img alt="Enterprise AI Platform: 10 projects, 477 tests, runs offline. Aegis, Lumen, Switchboard, Forge, Atlas, Lens, Charter, Arena, Conduit, Skyline." src="docs/media/platform-banner-dark.png" width="100%">
+</picture>
 
-# 🏗️ The Enterprise AI Platform, built piece by piece
+<div align="center">
 
 **Ten production-style systems that answer one question:<br>
 how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, measurably, and in a way it can explain*?**
 
 Each project solves one hard part on its own, runs offline with one command, and proves its claims with a saved evaluation.
 
-![Projects](https://img.shields.io/badge/projects-10-0969da)
-![Automated tests](https://img.shields.io/badge/tests-477_passing-2ea44f)
-![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-6e7781)
-![Data](https://img.shields.io/badge/data-100%25_synthetic-8250df)
-![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![Aegis CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml)
-[![Lens CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml)
-[![Lumen CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml)
-[![Switchboard CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
-[![Forge CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
-[![Atlas CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
-[![Charter CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml)
-[![Arena CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml)
-[![Skyline CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml)
-[![Conduit CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml)
+![Projects](https://img.shields.io/badge/projects-10-6e56cf?labelColor=18181b)
+![Automated tests](https://img.shields.io/badge/tests-477_passing-30a46c?labelColor=18181b)
+![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-52525b?labelColor=18181b)
+![Data](https://img.shields.io/badge/data-100%25_synthetic-52525b?labelColor=18181b)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white&labelColor=18181b)
 
 [**The platform**](#-the-platform-in-three-views) · [**The ten projects**](#-the-ten-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
 
@@ -60,11 +54,11 @@ Ten projects are too many for one drawing, so the platform is shown as three vie
 %%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
 flowchart LR
   U(["Employees and AI agents"])
-  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
-  ATL["🧭 <b>Atlas</b><br/>agent workflows"]
-  FRG["⚒️ <b>Forge</b><br/>tool sandbox"]
-  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
-  SW["🔀 <b>Switchboard</b><br/>model router"]
+  LUM["<b>Lumen</b><br/>knowledge assistant"]
+  ATL["<b>Atlas</b><br/>agent workflows"]
+  FRG["<b>Forge</b><br/>tool sandbox"]
+  AEG["<b>Aegis</b><br/>security gateway"]
+  SW["<b>Switchboard</b><br/>model router"]
   LLM[("Hosted and local models")]
 
   U --> LUM
@@ -77,17 +71,17 @@ flowchart LR
   SW --> LLM
   AEG --> LLM
 
-  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
-  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
-  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
-  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
-  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
-  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
-  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
-  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
-  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
-  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
-  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  classDef aegis fill:#18181b,stroke:#e5484d,stroke-width:2.5px,color:#fafafa
+  classDef switchboard fill:#18181b,stroke:#3b9eff,stroke-width:2.5px,color:#fafafa
+  classDef lumen fill:#18181b,stroke:#e2a336,stroke-width:2.5px,color:#fafafa
+  classDef atlas fill:#18181b,stroke:#30a46c,stroke-width:2.5px,color:#fafafa
+  classDef forge fill:#18181b,stroke:#f76b15,stroke-width:2.5px,color:#fafafa
+  classDef lens fill:#18181b,stroke:#9e8cfc,stroke-width:2.5px,color:#fafafa
+  classDef charter fill:#18181b,stroke:#12a594,stroke-width:2.5px,color:#fafafa
+  classDef arena fill:#18181b,stroke:#e93d82,stroke-width:2.5px,color:#fafafa
+  classDef skyline fill:#18181b,stroke:#8b98a9,stroke-width:2.5px,color:#fafafa
+  classDef conduit fill:#18181b,stroke:#c08a5a,stroke-width:2.5px,color:#fafafa
+  classDef neutral fill:#27272a,stroke:#52525b,stroke-width:1.5px,color:#fafafa
   class U neutral
   class LUM lumen
   class ATL atlas
@@ -103,11 +97,11 @@ flowchart LR
 %%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
 flowchart LR
   DOCS[("Document changes")]
-  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
-  CON["🔌 <b>Conduit</b><br/>embedding pipeline"]
-  ARN["🏟️ <b>Arena</b><br/>fine-tune vs RAG vs prompt"]
-  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
-  SW["🔀 <b>Switchboard</b><br/>model router"]
+  AEG["<b>Aegis</b><br/>security gateway"]
+  CON["<b>Conduit</b><br/>embedding pipeline"]
+  ARN["<b>Arena</b><br/>fine-tune vs RAG vs prompt"]
+  LUM["<b>Lumen</b><br/>knowledge assistant"]
+  SW["<b>Switchboard</b><br/>model router"]
 
   DOCS --> CON
   AEG -. "redact before embed" .-> CON
@@ -115,17 +109,17 @@ flowchart LR
   ARN -. "RAG arm" .-> LUM
   ARN -. "which model serves the arm" .-> SW
 
-  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
-  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
-  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
-  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
-  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
-  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
-  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
-  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
-  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
-  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
-  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  classDef aegis fill:#18181b,stroke:#e5484d,stroke-width:2.5px,color:#fafafa
+  classDef switchboard fill:#18181b,stroke:#3b9eff,stroke-width:2.5px,color:#fafafa
+  classDef lumen fill:#18181b,stroke:#e2a336,stroke-width:2.5px,color:#fafafa
+  classDef atlas fill:#18181b,stroke:#30a46c,stroke-width:2.5px,color:#fafafa
+  classDef forge fill:#18181b,stroke:#f76b15,stroke-width:2.5px,color:#fafafa
+  classDef lens fill:#18181b,stroke:#9e8cfc,stroke-width:2.5px,color:#fafafa
+  classDef charter fill:#18181b,stroke:#12a594,stroke-width:2.5px,color:#fafafa
+  classDef arena fill:#18181b,stroke:#e93d82,stroke-width:2.5px,color:#fafafa
+  classDef skyline fill:#18181b,stroke:#8b98a9,stroke-width:2.5px,color:#fafafa
+  classDef conduit fill:#18181b,stroke:#c08a5a,stroke-width:2.5px,color:#fafafa
+  classDef neutral fill:#27272a,stroke:#52525b,stroke-width:1.5px,color:#fafafa
   class DOCS neutral
   class AEG aegis
   class CON conduit
@@ -139,12 +133,12 @@ flowchart LR
 ```mermaid
 %%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
 flowchart LR
-  SKY["🏙️ <b>Skyline</b><br/>cloud landing zone"]
-  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
-  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
-  SW["🔀 <b>Switchboard</b><br/>model router"]
-  CHR["📜 <b>Charter</b><br/>governance"]
-  LENS["🔬 <b>Lens</b><br/>observability and evaluation"]
+  SKY["<b>Skyline</b><br/>cloud landing zone"]
+  AEG["<b>Aegis</b><br/>security gateway"]
+  LUM["<b>Lumen</b><br/>knowledge assistant"]
+  SW["<b>Switchboard</b><br/>model router"]
+  CHR["<b>Charter</b><br/>governance"]
+  LENS["<b>Lens</b><br/>observability and evaluation"]
   CI{{"CI / release"}}
 
   SKY -. "account layout" .-> AEG
@@ -156,17 +150,17 @@ flowchart LR
   LENS -. "SLO snapshot" .-> CHR
   LENS -. "blocks a bad release" .-> CI
 
-  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
-  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
-  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
-  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
-  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
-  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
-  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
-  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
-  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
-  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
-  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  classDef aegis fill:#18181b,stroke:#e5484d,stroke-width:2.5px,color:#fafafa
+  classDef switchboard fill:#18181b,stroke:#3b9eff,stroke-width:2.5px,color:#fafafa
+  classDef lumen fill:#18181b,stroke:#e2a336,stroke-width:2.5px,color:#fafafa
+  classDef atlas fill:#18181b,stroke:#30a46c,stroke-width:2.5px,color:#fafafa
+  classDef forge fill:#18181b,stroke:#f76b15,stroke-width:2.5px,color:#fafafa
+  classDef lens fill:#18181b,stroke:#9e8cfc,stroke-width:2.5px,color:#fafafa
+  classDef charter fill:#18181b,stroke:#12a594,stroke-width:2.5px,color:#fafafa
+  classDef arena fill:#18181b,stroke:#e93d82,stroke-width:2.5px,color:#fafafa
+  classDef skyline fill:#18181b,stroke:#8b98a9,stroke-width:2.5px,color:#fafafa
+  classDef conduit fill:#18181b,stroke:#c08a5a,stroke-width:2.5px,color:#fafafa
+  classDef neutral fill:#27272a,stroke:#52525b,stroke-width:1.5px,color:#fafafa
   class SKY skyline
   class AEG aegis
   class LUM lumen
@@ -344,6 +338,19 @@ openly rather than hidden.
 ## 📐 Engineering standards
 
 Every project is held to the same bar, so a reviewer can trust the numbers without reading the code first.
+
+Each project's workflow runs on every push:
+
+[![Aegis CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml)
+[![Lens CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml)
+[![Lumen CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml)
+[![Switchboard CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
+[![Forge CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
+[![Atlas CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
+[![Charter CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml)
+[![Arena CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml)
+[![Skyline CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml)
+[![Conduit CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml)
 
 | | Aegis | Lumen | Switchboard | Forge | Atlas | Lens | Charter | Arena | Skyline | Conduit |
 |:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
