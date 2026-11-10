@@ -1,0 +1,7 @@
+# Projection only. make eval does not call a provider. This is not an invoice.
+note: projection, not an invoice. Prices are stand-ins for a strong review model.
+compliance_review:
+  input_tokens: 8000
+  output_tokens: 2000
+  usd_per_million_in: 3.0
+  usd_per_million_out: 15.0

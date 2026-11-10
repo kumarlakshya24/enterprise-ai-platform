@@ -1,0 +1,132 @@
+# Synthetic model inventory. No real provider, no real weights.
+models:
+  - id: atlas-eu-mini
+    provider: local
+    version: "2026.10"
+    region: eu-central-1
+    risk_tier: limited
+    status: active
+    purpose: customer_support
+    intended_use: Draft replies to support tickets after Aegis has tokenized contact data. English only.
+    out_of_scope:
+      - Credit decisions
+      - Medical advice
+      - Anything marked RESTRICTED
+    owner: ml-platform
+    training_data: Synthetic support tickets. No customer payload is retained in the card.
+    task_accuracy: 0.86
+    known_limitations:
+      - Does not cite sources
+      - English only
+    card_complete: true
+    human_oversight: true
+    provider_reviewed: true
+    logging: Aegis audit log plus the Charter decision record
+
+  - id: frontier-us-large
+    provider: hosted
+    version: "2026.09"
+    region: us-east-1
+    risk_tier: limited
+    status: active
+    purpose: customer_support
+    intended_use: Public FAQ and internal drafting when the data class is allowed to leave the EU.
+    out_of_scope:
+      - EU confidential or restricted payloads
+      - High-risk decisions about a person
+    owner: ml-platform
+    training_data: Vendor-reported public web mix. Charter does not have the vendor's dataset.
+    task_accuracy: 0.91
+    known_limitations:
+      - Hosted in us-east-1
+      - Provider review is not signed
+      - Not a residency boundary
+    card_complete: true
+    human_oversight: true
+    provider_reviewed: false
+    logging: Vendor retention is unknown. Aegis records the route. That is not the same as a DPA.
+
+  - id: credit-eu-scorer
+    provider: local
+    version: "2026.08"
+    region: eu-central-1
+    risk_tier: high
+    status: active
+    purpose: credit_decision
+    intended_use: Score an existing application against the written credit policy. A person decides.
+    out_of_scope:
+      - Fully automated refusal
+      - Use outside the EU residency boundary
+    owner: risk-modeling
+    training_data: Synthetic applications with the same schema as the production form. Labels are synthetic.
+    task_accuracy: 0.81
+    known_limitations:
+      - Worse on thin files
+      - Not a substitute for the written policy
+    card_complete: true
+    human_oversight: true
+    provider_reviewed: true
+    logging: Decision id, model version, and the reviewer's id are kept with the application.
+
+  - id: claims-triage-eu
+    provider: local
+    version: "2026.07"
+    region: eu-central-1
+    risk_tier: high
+    status: active
+    purpose: claims_triage
+    intended_use: Rank insurance claims. The card says a reviewer is required. The deployment has none.
+    out_of_scope:
+      - Denying a claim without a person
+    owner: claims-ml
+    training_data: Synthetic claim summaries. No real claimant data.
+    task_accuracy: 0.74
+    known_limitations:
+      - No reviewer is assigned
+      - The permit would allow it. R-OVERSIGHT is what stops invocation.
+    card_complete: true
+    human_oversight: false
+    provider_reviewed: true
+    logging: Aegis would see the call. Nobody is on the hook to read the queue.
+
+  - id: social-ranker
+    provider: hosted
+    version: "2026.04"
+    region: us-east-1
+    risk_tier: unacceptable
+    status: proposed
+    purpose: ranking
+    intended_use: Score people from observed behavior. This is the prohibited example. It is not active.
+    out_of_scope:
+      - Any production use
+    owner: rejected-proposal
+    training_data: Not collected. The proposal stopped at the registry.
+    task_accuracy: null
+    known_limitations:
+      - Unacceptable tier
+      - R-PROHIBITED denies every action on this id
+    card_complete: true
+    human_oversight: false
+    provider_reviewed: false
+    logging: Registry entry only.
+
+  - id: draft-eu-experimental
+    provider: local
+    version: "2026.11-draft"
+    region: eu-central-1
+    risk_tier: limited
+    status: proposed
+    purpose: customer_support
+    intended_use: Experiment. The card is not signed.
+    out_of_scope:
+      - Any production traffic
+    owner: ml-platform
+    training_data: Undeclared. That is why the card is incomplete.
+    task_accuracy: null
+    known_limitations:
+      - card_complete is false
+      - R-CARD-INCOMPLETE denies invocation
+    card_complete: false
+    human_oversight: false
+    provider_reviewed: true
+    logging: Not in the production audit path.
