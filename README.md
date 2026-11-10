@@ -208,6 +208,8 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 
 ## 🧭 Where to start
 
+A static write-up of the same six systems, for a hiring review, is in [portfolio-site/](portfolio-site/).
+
 | If you are… | Spend | Read |
 |:--|:--|:--|
 | **A recruiter** | 2 minutes | This page, then the GIF at the top of any project |

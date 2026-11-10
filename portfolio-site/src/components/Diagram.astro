@@ -1,0 +1,64 @@
+---
+import type { Diagram } from "../data/projects";
+
+interface Props {
+  diagram: Diagram;
+}
+
+const { diagram } = Astro.props;
+const headingId = `diagram-${diagram.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+---
+
+<figure class="plate" aria-labelledby={headingId}>
+  <div class="flow">
+    {
+      diagram.blocks.map((block) => {
+        if (block.type === "node") {
+          return (
+            <div class:list={["node", "spine", `tone-${block.tone ?? "plain"}`]}>
+              <span class="node-title">{block.title}</span>
+              {block.detail && <span class="node-detail">{block.detail}</span>}
+            </div>
+          );
+        }
+        if (block.type === "down") {
+          return (
+            <div class="down" aria-hidden="true">
+              <span class="down-stem" />
+              {block.label && <span class="down-label">{block.label}</span>}
+              <span class="down-stem" />
+              <span class="down-head" />
+            </div>
+          );
+        }
+        if (block.type === "split") {
+          return (
+            <div class="split" data-count={block.arms.length}>
+              <div class="split-bus" aria-hidden="true" />
+              {block.arms.map((arm) => (
+                <div class="arm">
+                  <span class="arm-tick" aria-hidden="true" />
+                  <span class="arm-label">{arm.label}</span>
+                  <div
+                    class:list={[
+                      "node",
+                      `tone-${arm.dashed ? "dashed" : arm.tone ?? "plain"}`,
+                    ]}
+                  >
+                    <span class="node-title">{arm.title}</span>
+                    {arm.detail && <span class="node-detail">{arm.detail}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        }
+        return <p class="flow-note">{block.text}</p>;
+      })
+    }
+  </div>
+  <figcaption id={headingId}>
+    <span class="figlabel">Figure</span>
+    {diagram.caption}
+  </figcaption>
+</figure>

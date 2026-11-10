@@ -1,0 +1,116 @@
+---
+import Base from "../layouts/Base.astro";
+import CaseStudy from "../components/CaseStudy.astro";
+import Diagram from "../components/Diagram.astro";
+import {
+  githubProfile,
+  platform,
+  shipped,
+  waveTwo,
+} from "../data/projects";
+
+const title = "Lakshya Kumar · Applied AI architect";
+const description =
+  "Six offline systems for using language models safely, cheaply, and with a number you can check. Portfolio of Lakshya Kumar.";
+---
+
+<Base title={title} description={description}>
+  <header class="mast">
+    <a class="brand" href="#content">
+      <span class="brand-mark" aria-hidden="true">Lk</span>
+      <span>
+        <span class="brand-name">Lakshya Kumar</span>
+        <span class="brand-role">Applied AI architect</span>
+      </span>
+    </a>
+    <div class="mast-actions">
+      <a class="text-link" href={githubProfile}>GitHub · kumarlakshya24</a>
+      <button type="button" id="theme-toggle" aria-pressed="false">
+        <span class="when-light">Dark mode</span>
+        <span class="when-dark">Light mode</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="kicker">Portfolio · controls for language models</p>
+      <h1 id="hero-title">
+        How a company uses models without leaking data, overspending, or shipping a quiet regression.
+      </h1>
+      <p class="lede">
+        Six systems, each able to run alone, offline, on synthetic data. The seams between them are documented contracts. Every number on this page is copied from a committed evaluation. Nothing here was re-measured for the site.
+      </p>
+      <nav class="jump" aria-label="Projects">
+        <ol>
+          {
+            shipped.map((project) => (
+              <li>
+                <a href={`#${project.slug}`}>
+                  <span>{project.index}</span>
+                  {project.name}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href="#wave-2">
+              <span>07–10</span>
+              Wave 2
+            </a>
+          </li>
+        </ol>
+      </nav>
+    </section>
+
+    <section class="platform" id="platform" aria-labelledby="platform-title">
+      <div class="section-intro">
+        <h2 id="platform-title">The platform</h2>
+        <p>
+          Aegis is the trust boundary. Switchboard chooses a model after that decision. Lumen answers from documents. Atlas runs the multi-step work. Forge is where untrusted code would execute. Lens watches the others and can block a release. Dashed boxes are contracts that are specified, and not fully wired, today.
+        </p>
+      </div>
+      <Diagram diagram={platform} />
+    </section>
+
+    <div class="cases">
+      {shipped.map((project) => <CaseStudy project={project} />)}
+    </div>
+
+    <section class="wave" id="wave-2" aria-labelledby="wave-title">
+      <div class="section-intro">
+        <h2 id="wave-title">Wave 2</h2>
+        <p>
+          Four systems are in progress and are not on main. No architecture, no decisions, and no numbers until the work is committed. The one-line descriptions are the brief for each branch.
+        </p>
+      </div>
+      <ul class="wave-grid">
+        {
+          waveTwo.map((project) => (
+            <li>
+              <article aria-labelledby={`${project.slug}-title`}>
+                <p class="index">{project.index}</p>
+                <h3 id={`${project.slug}-title`}>{project.name}</h3>
+                <p>{project.summary}</p>
+                <p class="status">
+                  <span class="status-mark" aria-hidden="true" />
+                  In progress
+                  {project.branch && <code>{project.branch}</code>}
+                </p>
+              </article>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </main>
+
+  <footer class="colophon">
+    <p>
+      Lakshya Kumar · <a href={githubProfile}>github.com/kumarlakshya24</a>
+    </p>
+    <p>
+      Names, emails, card numbers, keys, and documents in the projects are synthetic. Figures are copied from each project’s README or committed report.
+    </p>
+  </footer>
+</Base>
