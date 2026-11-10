@@ -2,13 +2,13 @@
 
 # 🏗️ The Enterprise AI Platform, built piece by piece
 
-**Six production-style systems that answer one question:<br>
+**Seven production-style systems that answer one question:<br>
 how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, and measurably*?**
 
 Each project solves one hard part on its own, runs offline with one command, and proves its claims with a saved evaluation.
 
-![Projects](https://img.shields.io/badge/projects-6-0969da)
-![Automated tests](https://img.shields.io/badge/tests-388_passing-2ea44f)
+![Projects](https://img.shields.io/badge/projects-7-0969da)
+![Automated tests](https://img.shields.io/badge/tests-412_passing-2ea44f)
 ![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-6e7781)
 ![Data](https://img.shields.io/badge/data-100%25_synthetic-8250df)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
@@ -18,8 +18,9 @@ Each project solves one hard part on its own, runs offline with one command, and
 [![Switchboard CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
 [![Forge CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 [![Atlas CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
+[![Skyline CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml)
 
-[**The platform**](#-the-platform-in-one-picture) · [**The six projects**](#-the-six-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
+[**The platform**](#-the-platform-in-one-picture) · [**The seven projects**](#-the-seven-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
 
 </div>
 
@@ -28,7 +29,7 @@ Each project solves one hard part on its own, runs offline with one command, and
 ## 💡 The problem in plain English
 
 Every company wants its employees and its AI agents to use the best language models. The moment they do,
-six things go wrong:
+seven things go wrong:
 
 | What goes wrong | Example | Which project fixes it |
 |:--|:--|:--|
@@ -38,6 +39,7 @@ six things go wrong:
 | **An agent's code does something it shouldn't** | A generated script reads `../../secrets` or loops until the machine stalls | ⚒️ [**Forge**](forge/) |
 | **A multi-step agent crashes halfway** | The refund is charged, the worker dies, and the retry charges the customer twice | 🧭 [**Atlas**](atlas/) |
 | **Quality quietly gets worse and nobody notices** | A prompt change drops answer accuracy from 97% to 55% on part of the traffic | 🔬 [**Lens**](lens/) |
+| **The platform has nowhere private to land** | Three products, one shared KMS key, and a public load balancer, because that was the tutorial | 🏙️ [**Skyline**](skyline/) |
 
 Each project takes one of these problems and solves it the way a production team would: with a clear
 architecture, a measured result, honest limitations, and a test that fails if the protection ever regresses.
@@ -68,14 +70,18 @@ flowchart LR
   ATL -. "run untrusted code" .-> FRG
 
   LENS["🔬 <b>Lens</b><br/>observability & evaluation<br/><sub>traces · judge · drift · SLOs · CI gate</sub>"]
+  SKY["🏙️ <b>Skyline</b><br/>where they land<br/><sub>private net · tenant keys · FinOps</sub>"]
   AEG -. traces .-> LENS
   LUM -. traces .-> LENS
   LENS -. "blocks a bad release" .-> CI{{"CI / release"}}
+  SKY -. "account layout" .-> AEG
+  SKY -. "account layout" .-> LUM
+  SKY -. "account layout" .-> SW
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>
 
-## 🧩 The six projects
+## 🧩 The seven projects
 
 <table>
 <tr>
@@ -156,6 +162,20 @@ Judge agreement **κ 0.76** with hand labels · a seeded regression is **blocked
 
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top">
+
+### 🏙️ [Skyline](skyline/) · where the platform lands
+
+<a href="skyline/"><img src="skyline/docs/assets/skyline-demo.gif" alt="Skyline: six accounts, the cost per thousand requests as volume changes, then a security group opened to the world failing the gate" width="100%"></a>
+
+The account layout for Aegis, Lumen, and Switchboard: no public subnet, a KMS key per tenant,
+Bedrock only from Aegis, and a price per thousand requests that shows the private network is not the saving.
+
+**$6.26** per 1,000 requests at 100k/day, against **$9.20** for always-premium · **$22.28** at 1k/day, where the endpoints cost more · **20/20** invariants · 24 tests
+
+</td>
+</tr>
 </table>
 
 <sub>Every number above is produced by the project's own code and committed in its <code>reports/</code> or <code>eval_results/</code> folder. Test counts are from running each suite.</sub>
@@ -175,6 +195,7 @@ independently testable, and makes the seams between them explicit.
 | **Aegis → Switchboard** | After the security decision, choose which model answers | ⚠️ Not wired. Aegis calls any OpenAI-compatible endpoint; Switchboard routes between in-process mock models. They share the same idea of sensitivity: confidential text is pinned to a local model in both. |
 | **Atlas → Forge** | Agent tools that run code or touch files | ⚠️ Not wired. Forge is the intended executor for code-running tools; Atlas's demo tools are ledger, email, pager and webhook calls. |
 | **Switchboard, Forge ↔ Aegis** | Identity and prompt-injection defence | By design: both stay out of the auth path and rely on Aegis at the boundary (documented in their architecture decisions). |
+| **Skyline → Aegis, Lumen, Switchboard** | The account layout: private network, tenant keys, who may call Bedrock | ✅ Fixture synth and a diff. ⚠️ Not a live account, and the three products are not imported. The task images are `…:fixture`. |
 
 **What “fully wired” would take** is small and well-defined: an authenticated tool-guard endpoint in Aegis,
 a service identity plus three policy documents in Lumen, an event exporter in Aegis and Lumen, Switchboard
@@ -185,18 +206,18 @@ openly rather than hidden.
 
 Every project is held to the same bar, so a reviewer can trust the numbers without reading the code first.
 
-| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens |
-|:--|:-:|:-:|:-:|:-:|:-:|:-:|
-| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 |
-| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ |
-| Strict type check (mypy) | ✅ | | | | | ✅ |
-| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ |
-| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate |
-| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs |
-| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
+| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens | Skyline |
+|:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 | 24 |
+| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ | ✅ |
+| Strict type check (mypy) | ✅ | | | | | ✅ | ✅ |
+| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ | synth diff · unit cost |
+| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate | ✅ architecture gate |
+| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs | ✅ + 4 ADRs |
+| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
 
 **Shared principles**
 
@@ -217,7 +238,7 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 <details>
 <summary><b>Run everything locally</b></summary>
 
-Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas and Lens; Aegis and
+Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas, Lens and Skyline; Aegis and
 Lumen also run with Docker Compose. Ports don't collide, so they can all run side by side.
 
 | Project | Run | UI |
@@ -228,6 +249,7 @@ Lumen also run with Docker Compose. Ports don't collide, so they can all run sid
 | Forge | `cd forge && make install && make up` | http://127.0.0.1:8095 |
 | Atlas | `cd atlas && make install && make up` | http://127.0.0.1:8096 |
 | Lens | `cd lens && make install && make eval && make up` | http://127.0.0.1:8088 |
+| Skyline | `cd skyline && make install && make eval && make up` | http://127.0.0.1:8097 |
 
 </details>
 
@@ -236,7 +258,7 @@ Lumen also run with Docker Compose. Ports don't collide, so they can all run sid
 
 Python 3.12 · FastAPI · PostgreSQL + pgvector · Redis 8 · SQLite · ONNX Runtime (MiniLM embeddings,
 MS MARCO cross-encoder) · spaCy · scikit-learn · OpenTelemetry-style tracing · Docker Compose ·
-GitHub Actions · Playwright (demo capture) · Mermaid
+GitHub Actions · Playwright (demo capture) · Mermaid · fixture CloudFormation synth (Skyline)
 
 </details>
 
