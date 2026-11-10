@@ -42,33 +42,33 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
   then confirm every `<img>` is present and no expected media is missing.
 
 ## State as of Nov 10, 2026 (verified)
-- Main is at `24635d1` (diagram colours, PR #11).
+- Main is at `9050874` (README polish, PR #17).
 - On main: Aegis (`secure-ai-gateway/`), Lumen (`rag-knowledge-assistant/`), Switchboard, Forge, Atlas, Lens, Charter, Arena, Skyline, Conduit.
-- Merged since the last handoff: **#11** (diagrams, one colour per project) and **#15** (Conduit).
+- Merged since the Nov 9 handoff: **#11** (diagram colours), **#15** (Conduit), **#17** (README polish).
 - Open PRs:
-  - **#17** README polish, branch `docs/readme-polish`. Main is merged in. Waiting on the license decision below.
   - **#18** Portfolio site, branch `feat/portfolio-site`. Not reviewed. Not deployed.
-- No README uses a `<video>` tag. `scripts/check_docs.py` covers the root README and all ten project READMEs.
+- All ten project READMEs follow the shared section order. No README uses a `<video>` tag. `scripts/check_docs.py` covers the root README and all ten project READMEs.
+- Root README counts: 10 projects, 477 tests (the sum of the per-project row in its standards table).
+- Still open: the license decision in item 1.
 
 ## Work queue
 
-### 1. Finish and merge PR #17 (README polish)
-Work on `docs/readme-polish`. Merge main in first.
+### 1. PR #17 (README polish): merged, one decision left
 - [x] Replace the `<video>` tags in `forge`, `atlas`, `lens`, `charter`, and `arena` READMEs (also `skyline` and `conduit`) with a poster image linking to the MP4. Update the nearby sentences that say "the clip at the top of this page and this video".
 - [x] Bring `arena/README.md` and `skyline/README.md` into the shared section order, with the same badge row and anchor table of contents as the others.
 - [x] Remove the `## Interview` section from `skyline/README.md`. Move the link into the Documentation table as "Design walkthrough", matching the other projects.
 - [x] Add `arena/README.md` and `skyline/README.md` to the file list in `scripts/check_docs.py` (and `conduit/README.md`).
 - [ ] License badges: each `pyproject.toml` declares MIT but the repo has no `LICENSE` file. Ask me whether to add a root MIT `LICENSE` or drop the badges. Do not decide alone.
-- [ ] Run `python scripts/check_docs.py`, render each README through the GitHub API, then merge if the merge rules pass.
+- [x] `check_docs.py` passed and #17 merged on Nov 10. The GitHub-API render check was not run from the cloud session, which cannot call that endpoint.
 
 ### 2. PR #11 (diagrams, one colour per project): done
 - [x] Merged on Nov 10 before #17. The conflicts were resolved on `docs/readme-polish` instead: #17's structure, #11's diagrams.
-- [ ] Conduit has no accent colour yet. Give it one when it is added to the root diagram (item 3).
+- [x] Conduit has its own accent colour (item 3).
 
-### 3. Conduit follow-up (PR #15 is merged)
-- [ ] Check it has an architecture doc, ADRs, an offline demo, tests, and its own CI workflow.
-- [ ] Bring `conduit/README.md` into the shared section order. Its `<video>` tag is already gone.
-- [ ] Add Conduit to the root README (project table, badges, project and test counts).
+### 3. Conduit follow-up: done
+- [x] It has an architecture doc, four ADRs, an offline demo that prints PASS, 17 tests, and its own CI workflow.
+- [x] `conduit/README.md` follows the shared section order.
+- [x] Conduit is in the root README (project table, badges, counts) and has its own colour (brown `#8a6238`) in the root diagram and its "Where it fits" diagram.
 
 ### 4. PR #18 (portfolio site)
 - [ ] `cd portfolio-site && npm ci && npm run build` must pass.

@@ -108,6 +108,7 @@ flowchart LR
   classDef charter fill:#1b7c83,stroke:#136061,color:#fff
   classDef arena fill:#bf3989,stroke:#99286e,color:#fff
   classDef skyline fill:#57606a,stroke:#424a53,color:#fff
+  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
   classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
   class AEG aegis
   class SW switchboard
@@ -118,9 +119,11 @@ flowchart LR
   class CHR charter
   class ARN arena
   class SKY skyline
-  class U,LLM,CI neutral
+  class CON conduit
+  class U,LLM,CI,DOCS neutral
   style EDGE fill:transparent,stroke:#cf222e,stroke-dasharray:6 4
   style WORK fill:transparent,stroke:#1a7f37,stroke-dasharray:6 4
+  style DATA fill:transparent,stroke:#8a6238,stroke-dasharray:6 4
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>
