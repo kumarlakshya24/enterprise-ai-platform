@@ -117,7 +117,7 @@ Search drops scores under 0.25. On this dimension that band is a shared function
 
 | Figure | Value | Kind |
 |--------|-------|------|
-| Apply p50 / p95 / p99 | 0.3475 / 0.4222 / 0.5312 ms | Measured, n=221, fake embedder, no network |
+| Apply p50 / p95 / p99 | 0.3435 / 0.4614 / 0.5956 ms | Measured, n=221, fake embedder, no network |
 | Tokens per synthetic doc | 160.12 (`chars/4`) | Measured on the indexed corpus |
 | $ / M docs at that size, $0.02 / M tokens | 3.2024 | Projection |
 | $ / M docs, 2,000-token memo, same price | 40 | Projection, token count assumed |

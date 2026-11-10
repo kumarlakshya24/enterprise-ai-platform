@@ -24,9 +24,9 @@
   "resurrected_links_after_rebuild": 0,
   "exclusive_doc_absent_after_rebuild": true,
   "lag_ms": {
-    "p50": 0.3475,
-    "p95": 0.4222,
-    "p99": 0.5312,
+    "p50": 0.3435,
+    "p95": 0.4614,
+    "p99": 0.5956,
     "n": 221
   },
   "embedded_chars_after_rebuild": 108570,

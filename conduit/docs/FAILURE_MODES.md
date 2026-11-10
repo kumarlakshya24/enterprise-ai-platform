@@ -48,7 +48,7 @@ What this does not fix: quality of a hosted model. The OpenAI adapter is not cal
 
 ## Latency has no network in it
 
-p50 0.3475 ms and p95 0.4222 ms are the in-process apply of 221 events on the machine that wrote `reports/eval.json`. A hosted embedder adds its own RTT, and the dual-write adds a second call. Those are not in the measurement.
+p50 0.3435 ms and p95 0.4614 ms are the in-process apply of 221 events on the machine that wrote `reports/eval.json`. A hosted embedder adds its own RTT, and the dual-write adds a second call. Those are not in the measurement.
 
 Mitigation: the JSON labels the embedder, and the cost file is a projection. The p95 gate is "under 100 ms," which only catches a hang, not a regression of a tenth of a millisecond.
 

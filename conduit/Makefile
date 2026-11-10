@@ -9,8 +9,8 @@ help:            ## Show targets
 install:         ## Install runtime and dev dependencies
 	$(PY) -m pip install -r requirements-dev.txt
 
-up:              ## Serve the demo UI on http://127.0.0.1:8097
-	$(PY) -m conduit.cli serve --port $${CONDUIT_PORT:-8097}
+up:              ## Serve the demo UI on http://127.0.0.1:8098
+	$(PY) -m conduit.cli serve --port $${CONDUIT_PORT:-8098}
 
 test:            ## Unit tests. No network, no API key.
 	$(PY) -m pytest -q -W ignore::DeprecationWarning

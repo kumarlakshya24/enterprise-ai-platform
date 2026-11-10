@@ -43,7 +43,7 @@ make test
 make eval
 make demo
 make up
-# http://127.0.0.1:8097  → Play demo
+# http://127.0.0.1:8098  → Play demo
 ```
 
 What you should see:
@@ -64,13 +64,13 @@ Prove:
 * Migration does 570 embed calls and reuses 60 inside the new model. The shadow ends at 516 chunks, which is 172 surviving docs times 3 chunks. Eight docs were embedded and then deleted.
 * Three poison events are quarantined and none of them are in the index.
 * After forgetting two subjects, zero links remain, the exclusive document is absent from a rebuilt generation, and the other person on the mixed document is still linked.
-* Apply latency on the committed run is p50 0.3475 ms, p95 0.4222 ms, p99 0.5312 ms, n=221. That is the fake embedder in-process.
+* Apply latency on the committed run is p50 0.3435 ms, p95 0.4614 ms, p99 0.5956 ms, n=221. That is the fake embedder in-process.
 * At the measured 160.12 tokens per doc and a $0.02 per million token list price, a million docs is $3.2024. A 2,000-token memo is $40 at that price. An 8,000-token policy is $160, or $1040 at $0.13. Those last three hold the token count fixed. They are not a measurement of a memo.
 
 Do not prove:
 
 * That a neural embedder retrieves paraphrases. The hash embedder retrieves shared tokens. Say `fake-hash` when you say 100%.
-* That a hosted embedder adds 0.42 ms. It adds its own latency. We did not call one.
+* That a hosted embedder adds 0.46 ms. It adds its own latency. We did not call one.
 * That $3.2024 is a bill. It is `160.12 * 0.02`.
 * That Aegis was on the path. The stand-in was. Aegis does not serve `/v1/redact`.
 * That the person is gone from the source system or from this git tree. They are gone from this database.

@@ -22,7 +22,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     sub.add_parser("interview")
     serve = sub.add_parser("serve")
     serve.add_argument("--host", default="127.0.0.1")
-    serve.add_argument("--port", type=int, default=8097)
+    serve.add_argument("--port", type=int, default=8098)
     args = parser.parse_args(argv)
     if args.cmd == "eval":
         return _cmd_eval()

@@ -2,13 +2,13 @@
 
 # 🏗️ The Enterprise AI Platform, built piece by piece
 
-**Seven production-style systems that answer one question:<br>
-how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, and measurably*?**
+**Eight production-style systems that answer one question:<br>
+how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, measurably, and in a way it can explain*?**
 
 Each project solves one hard part on its own, runs offline with one command, and proves its claims with a saved evaluation.
 
-![Projects](https://img.shields.io/badge/projects-7-0969da)
-![Automated tests](https://img.shields.io/badge/tests-405_passing-2ea44f)
+![Projects](https://img.shields.io/badge/projects-8-0969da)
+![Automated tests](https://img.shields.io/badge/tests-425_passing-2ea44f)
 ![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-6e7781)
 ![Data](https://img.shields.io/badge/data-100%25_synthetic-8250df)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
@@ -18,9 +18,10 @@ Each project solves one hard part on its own, runs offline with one command, and
 [![Switchboard CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
 [![Forge CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 [![Atlas CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
+[![Charter CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml)
 [![Conduit CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml)
 
-[**The platform**](#-the-platform-in-one-picture) · [**The seven projects**](#-the-seven-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
+[**The platform**](#-the-platform-in-one-picture) · [**The eight projects**](#-the-eight-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
 
 </div>
 
@@ -29,7 +30,7 @@ Each project solves one hard part on its own, runs offline with one command, and
 ## 💡 The problem in plain English
 
 Every company wants its employees and its AI agents to use the best language models. The moment they do,
-seven things go wrong:
+eight things go wrong:
 
 | What goes wrong | Example | Which project fixes it |
 |:--|:--|:--|
@@ -39,6 +40,7 @@ seven things go wrong:
 | **An agent's code does something it shouldn't** | A generated script reads `../../secrets` or loops until the machine stalls | ⚒️ [**Forge**](forge/) |
 | **A multi-step agent crashes halfway** | The refund is charged, the worker dies, and the retry charges the customer twice | 🧭 [**Atlas**](atlas/) |
 | **Quality quietly gets worse and nobody notices** | A prompt change drops answer accuracy from 97% to 55% on part of the traffic | 🔬 [**Lens**](lens/) |
+| **Nobody can prove which model was allowed to run** | An auditor asks whether EU customer data stayed in the EU, and the answer is a Slack thread | 📜 [**Charter**](charter/) |
 | **The search index mixes two embedding models, or still holds someone who asked to be forgotten** | A model upgrade writes new vectors beside the old ones, and a deleted customer's text is still a nearest neighbour | 🔌 [**Conduit**](conduit/) |
 
 Each project takes one of these problems and solves it the way a production team would: with a clear
@@ -78,14 +80,18 @@ flowchart LR
   CON -. "one active index" .-> LUM
 
   LENS["🔬 <b>Lens</b><br/>observability & evaluation<br/><sub>traces · judge · drift · SLOs · CI gate</sub>"]
+  CHR["📜 <b>Charter</b><br/>governance control plane<br/><sub>policies · model cards<br/>residency · evidence</sub>"]
+
   AEG -. traces .-> LENS
   LUM -. traces .-> LENS
   LENS -. "blocks a bad release" .-> CI{{"CI / release"}}
+  AEG -. "audit stub" .-> CHR
+  LENS -. "SLO snapshot" .-> CHR
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>
 
-## 🧩 The seven projects
+## 🧩 The eight projects
 
 <table>
 <tr>
@@ -167,7 +173,18 @@ Judge agreement **κ 0.76** with hand labels · a seeded regression is **blocked
 </td>
 </tr>
 <tr>
-<td colspan="2" valign="top">
+<td valign="top">
+
+### 📜 [Charter](charter/) · AI governance control plane
+
+<a href="charter/"><img src="charter/docs/assets/charter-demo.gif" alt="Charter: the auditor desk, a residency deny on the US model, the same request allowed after the residency file is removed, and the control matrix" width="100%"></a>
+
+Decides which model may run on which data in which region, with Cedar-style policies a reviewer can diff, and writes an evidence pack an auditor can open. The pack is fed by an Aegis-shaped audit log and a Lens-shaped SLO snapshot.
+
+**10 met · 4 partial · 3 gaps** on the control matrix · residency deny in **12 µs** p95 · deleting the residency file **fails the gate** · 20 tests
+
+</td>
+<td valign="top">
 
 ### 🔌 [Conduit](conduit/) · embedding CDC
 
@@ -198,30 +215,33 @@ independently testable, and makes the seams between them explicit.
 | **Aegis → Switchboard** | After the security decision, choose which model answers | ⚠️ Not wired. Aegis calls any OpenAI-compatible endpoint; Switchboard routes between in-process mock models. They share the same idea of sensitivity: confidential text is pinned to a local model in both. |
 | **Atlas → Forge** | Agent tools that run code or touch files | ⚠️ Not wired. Forge is the intended executor for code-running tools; Atlas's demo tools are ledger, email, pager and webhook calls. |
 | **Switchboard, Forge ↔ Aegis** | Identity and prompt-injection defence | By design: both stay out of the auth path and rely on Aegis at the boundary (documented in their architecture decisions). |
+| **Aegis → Charter** | Audit events (types, routes, labels, HMAC chain) → residency findings and the record-keeping control | ✅ Tested against an offline Aegis-shaped stub. ⚠️ Aegis does not export to Charter. Region and data residency are join fields on the stub. |
+| **Lens → Charter** | SLO targets and status (`within_budget`, `ticket`, `page`) → the accuracy and monitoring controls | ✅ Targets match Lens. ⚠️ The snapshot is hand-shaped, not a live Lens export. Quality is paging on purpose so the pack cannot pretend accuracy is fine. |
 | **Aegis → Conduit** | Identifiers replaced before a chunk is embedded | ✅ Tested against an offline Aegis-shaped redactor. ⚠️ Aegis has no `POST /v1/redact` yet, so HTTP mode fails closed: the event is quarantined, not embedded. |
 | **Conduit → Lumen** | One active index generation, one embedding model, search hits | ✅ Offline read port. Content-hash reuse matches Lumen's indexer. ⚠️ Lumen still embeds into its own Postgres and does not call Conduit. |
 
 **What “fully wired” would take** is small and well-defined: an authenticated tool-guard endpoint in Aegis,
 a service identity plus three policy documents in Lumen, an event exporter in Aegis and Lumen, Switchboard
-as Aegis's model endpoint, and Forge behind Atlas's code-running tools. Those are the next steps, listed
+as Aegis's model endpoint, Forge behind Atlas's code-running tools, and an audit export plus a signed
+policy bundle between Aegis and Charter. Those are the next steps, listed
 openly rather than hidden.
 
 ## 📐 Engineering standards
 
 Every project is held to the same bar, so a reviewer can trust the numbers without reading the code first.
 
-| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens | Conduit |
-|:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 | 17 |
-| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ | ✅ |
-| Strict type check (mypy) | ✅ | | | | | ✅ | ✅ |
-| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ | recall · reuse · RTBF |
-| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate | ✅ eval gates |
-| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs | ✅ + 4 ADRs |
-| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
+| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens | Charter | Conduit |
+|:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 | 20 | 17 |
+| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ | ✅ | ✅ |
+| Strict type check (mypy) | ✅ | | | | | ✅ | ✅ | ✅ |
+| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ | control matrix · residency gate | recall · reuse · RTBF |
+| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate | ✅ residency gate | ✅ eval gates |
+| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + 4 ADRs |
+| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
 
 **Shared principles**
 
@@ -242,7 +262,7 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 <details>
 <summary><b>Run everything locally</b></summary>
 
-Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas, Lens and Conduit; Aegis and
+Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas, Lens, Charter and Conduit; Aegis and
 Lumen also run with Docker Compose. Ports don't collide, so they can all run side by side.
 
 | Project | Run | UI |
@@ -253,7 +273,8 @@ Lumen also run with Docker Compose. Ports don't collide, so they can all run sid
 | Forge | `cd forge && make install && make up` | http://127.0.0.1:8095 |
 | Atlas | `cd atlas && make install && make up` | http://127.0.0.1:8096 |
 | Lens | `cd lens && make install && make eval && make up` | http://127.0.0.1:8088 |
-| Conduit | `cd conduit && make install && make up` | http://127.0.0.1:8097 |
+| Charter | `cd charter && make install && make eval && make up` | http://127.0.0.1:8097 |
+| Conduit | `cd conduit && make install && make up` | http://127.0.0.1:8098 |
 
 </details>
 

@@ -48,7 +48,7 @@ No API key. No network. The corpus is synthetic.
 | Model migration | **570** embed calls on the new model, **60** of them reused inside that model, **516** chunks left in the shadow after deletes | same file |
 | Right to be forgotten | **0** subject links remain. A full rebuild from the scrubbed log restores **0**. The other person on a mixed ticket is still there | same file |
 | Poison events | **3 quarantined, 0 indexed** | same file |
-| Apply latency | p50 **0.3475 ms**, p95 **0.4222 ms**, p99 **0.5312 ms** (n=221), fake embedder, this machine | `lag_ms` in the JSON |
+| Apply latency | p50 **0.3435 ms**, p95 **0.4614 ms**, p99 **0.5956 ms** (n=221), fake embedder, this machine | `lag_ms` in the JSON |
 | Cost projection | Measured size (**160.12** tokens/doc): **$3.2024 / M docs** at a $0.02 / M token list price. A 2,000-token memo is **$40**. An 8,000-token policy is **$160**. Local CPU API cost is **$0** | `eval/pricing.yaml`, labeled as a projection |
 | Tests | **17** | `make test` |
 
@@ -68,7 +68,7 @@ The clip and the video are the same UI session: the stream lands, PII is replace
 cd conduit
 make install
 make demo          # the story, in the terminal
-make up            # http://127.0.0.1:8097
+make up            # http://127.0.0.1:8098
 ```
 
 1. **Play demo** appends ten synthetic events and applies them one at a time. Ticket 441 shows the raw email, phone, and card, and the placeholders the embedder actually sees.
@@ -99,7 +99,7 @@ make interview
 make up
 ```
 
-`make up` serves the UI on `127.0.0.1:8097`. Copy `.env.example` only if you want a different embedder or an Aegis URL. The default is the in-process fake embedder. Nothing in `make test`, `make eval`, or `make demo` reads a key.
+`make up` serves the UI on `127.0.0.1:8098`, so it can run beside Charter on 8097. Copy `.env.example` only if you want a different embedder or an Aegis URL. The default is the in-process fake embedder. Nothing in `make test`, `make eval`, or `make demo` reads a key.
 
 | Target | What it does |
 |--------|----------------|
