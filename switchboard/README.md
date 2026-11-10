@@ -6,7 +6,7 @@ Pick the cheapest model that is good enough, for every request, and say why.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![Tests](https://img.shields.io/badge/tests-29%20passing-2ea44f)
 ![Savings](https://img.shields.io/badge/vs%20always--premium-65%25%20cheaper-2ea44f)

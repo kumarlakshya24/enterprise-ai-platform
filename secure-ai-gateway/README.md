@@ -6,7 +6,7 @@ A security gateway between your people, your AI agents, and third-party LLMs.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-200%20passing-2ea44f)
