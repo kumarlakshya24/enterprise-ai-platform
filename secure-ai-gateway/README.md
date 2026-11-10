@@ -164,7 +164,29 @@ left:
 
 For agents, the same pipeline wraps the tool loop. Every tool call passes the **tool guard** and every
 tool output passes the **injection detector** before the model sees it. The full design, with trust
-boundaries and failure modes, is in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+boundaries and failure modes, is in [`ARCHITECTURE.md`](ARCHITECTURE.md). The static diagram is the
+Mermaid figure in this section. The animated version is the GIF above it.
+
+## Stack
+
+Python 3.11+, FastAPI, spaCy (`en_core_web_sm`), a scikit-learn classifier exported to JSON, an
+AES-256-GCM vault, PostgreSQL, Redis, and Docker Compose. Offline, with no API key:
+`make install`, `make test` (in-memory SQLite and vault), and `make run-local` (gateway on
+port 8080). `make demo` checks a gateway that is already up, from `make up` or `make run-local`.
+`make redteam`, `make regression`, and `make benchmark` write the reports under `reports/`.
+
+## Key trade-offs
+
+| Decision | Record |
+|---|---|
+| Enforce DLP in a gateway proxy, not in the client | [ADR 0001](docs/adr/0001-gateway-proxy-not-client-side-filtering.md) |
+| Reversible placeholders, not deletion | [ADR 0002](docs/adr/0002-placeholder-tokenization-not-deletion.md) |
+| A private classifier labels context and picks the route | [ADR 0003](docs/adr/0003-private-classifier-for-label-and-route.md) |
+| A deterministic tool guard with taint, not model self-defense | [ADR 0004](docs/adr/0004-deterministic-tool-guard-with-taint.md) |
+| A hash-chained, redacted audit log | [ADR 0005](docs/adr/0005-tamper-evident-redacted-audit-log.md) |
+
+The index is [`docs/adr/README.md`](docs/adr/README.md). Measured gaps are in
+[`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md).
 
 ## Features
 

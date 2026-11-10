@@ -162,6 +162,26 @@ sequenceDiagram
 | [`lens/synthetic/`](lens/synthetic/) | Seeded 14-day trace log. Not a recording of a live system. |
 | [`lens/dashboard/`](lens/dashboard/) | Static HTML rendered from the report. |
 
+The request path is the flowchart above. The sample-and-gate sequence is the diagram under it.
+Both are Mermaid in this file. [`ARCHITECTURE.md`](ARCHITECTURE.md) has the longer drawings.
+
+## Stack
+
+Python 3.12, a static dashboard, and OpenTelemetry-style spans. No Docker. The default judge
+is the offline heuristic, so `make eval` needs no API key. Offline targets: `make install`,
+`make test`, `make eval`, `make demo`, `make gate` (clean candidate, exit 0),
+`make gate-seeded` (seeded bad prompt, exit 1 on purpose), `make dashboard`,
+`make interview`, and `make up` (dashboard at `http://127.0.0.1:8088`).
+
+## Key trade-offs
+
+| Decision | Record |
+|---|---|
+| Sample off the request path: tail plus a stratified hash | [ADR 0001](docs/adr/0001-sample-off-the-request-path.md) |
+| A heuristic judge, admitted by Cohen's kappa against hand labels | [ADR 0002](docs/adr/0002-heuristic-judge-with-a-kappa-floor.md) |
+| Four SLOs and multi-window burn rates, not one blended score | [ADR 0003](docs/adr/0003-split-slos-and-burn-rates.md) |
+| The CI gate locks a baseline. Drift does not block the deploy | [ADR 0004](docs/adr/0004-gate-locks-a-baseline.md) |
+
 ## Results
 
 Every number between the markers is written by `make eval` from `reports/latest/summary.md`.
