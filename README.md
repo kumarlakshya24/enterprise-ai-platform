@@ -98,6 +98,29 @@ flowchart LR
   SKY -. "account layout" .-> AEG
   SKY -. "account layout" .-> LUM
   SKY -. "account layout" .-> SW
+
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
+  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
+  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
+  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  class AEG aegis
+  class SW switchboard
+  class LUM lumen
+  class ATL atlas
+  class FRG forge
+  class LENS lens
+  class CHR charter
+  class ARN arena
+  class SKY skyline
+  class U,LLM,CI neutral
+  style EDGE fill:transparent,stroke:#cf222e,stroke-dasharray:6 4
+  style WORK fill:transparent,stroke:#1a7f37,stroke-dasharray:6 4
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>

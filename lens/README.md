@@ -299,7 +299,15 @@ flowchart LR
   LUM[🔦 Lumen] -- "retrieval and answer events" --> AD
   AD --> L[🔬 Lens<br/>sample · judge · drift · SLOs]
   L -- "exit 1 names the regressed ids" --> CI{{CI / release}}
-  style L fill:#8250df,color:#fff,stroke:#8250df
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class AEG aegis
+  class LUM lumen
+  class L lens
 ```
 
 Aegis and Lumen each prove themselves with their own eval suites. Lens watches them *after* they ship:

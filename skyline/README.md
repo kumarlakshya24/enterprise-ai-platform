@@ -238,6 +238,21 @@ Skyline does not call Aegis, Lumen, or Switchboard, and they do not call Skyline
 layout those three would share. The images in the task definitions are `…/skyline/<service>:fixture`.
 Nothing is pulled.
 
+```mermaid
+flowchart LR
+  SKY[🏙️ Skyline<br/>private net · tenant keys · FinOps] -. "account layout (fixture)" .-> AEG[🛡️ Aegis]
+  SKY -. "account layout (fixture)" .-> LUM[🔦 Lumen]
+  SKY -. "account layout (fixture)" .-> SW[🔀 Switchboard]
+  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  class SKY skyline
+  class AEG aegis
+  class LUM lumen
+  class SW switchboard
+```
+
 | Account | Runs | Does not run |
 |---|---|---|
 | network | Transit gateway, hub VPC | Tasks, keys, Bedrock |

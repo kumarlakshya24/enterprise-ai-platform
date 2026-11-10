@@ -178,6 +178,19 @@ What the $0.054 is: 8,000 input tokens and 2,000 output tokens at the stand-in p
 
 ## Where it fits
 
+```mermaid
+flowchart LR
+  AEG[🛡️ Aegis] -. "audit records (stub today)" .-> CHR[📜 Charter<br/>policies · model cards · evidence]
+  LENS[🔬 Lens] -. "SLO snapshot (stub today)" .-> CHR
+  CHR -. "may this model run here? (not wired)" .-> AEG
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
+  class AEG aegis
+  class LENS lens
+  class CHR charter
+```
+
 | Link | What crosses it | Status |
 |---|---|---|
 | Aegis → Charter | Audit records: event types, routes, labels, HMAC chain | ✅ Tested against a committed stub with Aegis's field names and hash construction. ⚠️ Aegis does not export to Charter. Region, model, and data residency are join fields on the stub. |

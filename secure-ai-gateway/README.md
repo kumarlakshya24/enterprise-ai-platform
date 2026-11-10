@@ -335,7 +335,16 @@ flowchart LR
   AEG -. "then: which model?" .-> SW[🔀 Switchboard]
   ATL[🧭 Atlas] -. "is this tool call allowed?" .-> AEG
   AEG -. "spans" .-> LENS[🔬 Lens]
-  style AEG fill:#cf222e,color:#fff,stroke:#cf222e
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class AEG aegis
+  class SW switchboard
+  class ATL atlas
+  class LENS lens
 ```
 
 | Neighbour | What flows across it | Status today |
