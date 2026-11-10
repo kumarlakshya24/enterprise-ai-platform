@@ -1,0 +1,15 @@
+version: "2026.11.10"
+# Task success is exact-phrase support on the labeled set, not a preference score.
+quality_floor: 0.80
+citation_floor: 0.80
+staleness_floor: 0.70
+tune_arms: [lora, distilled]
+# A fine-tune has to beat RAG on the frozen holdout by this much before quality
+# is a reason to freeze the weights. Cost can still win. Quality alone cannot.
+quality_margin_vs_rag: 0.03
+min_overlap: 2
+# Two content words, minimum. One shared word scores at most 3 (it is in the
+# train question and in the alias list) and must not retrieve a fact.
+lora_min_score: 4
+lora_keep_within: 1
+distill_min_train_count: 2

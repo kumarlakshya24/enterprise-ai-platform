@@ -119,6 +119,24 @@ flowchart LR
 
 The full design, trust boundaries, sandbox lifecycle, both sequences, STRIDE, and the decision table are in [`ARCHITECTURE.md`](ARCHITECTURE.md). Failure behavior is in [`FAILURE_MODES.md`](FAILURE_MODES.md). The interview script is [`docs/INTERVIEW_WALKTHROUGH.md`](docs/INTERVIEW_WALKTHROUGH.md).
 
+## Stack
+
+Python 3.11+, FastAPI, a short-lived `python -I` child, and an HMAC JSONL audit log.
+No Docker, no network, no API key. Offline targets: `make install`, `make test`, `make demo`,
+`make eval`, `make regression`, `make bench`, `make interview`, `make security-check`,
+and `make up` (UI on `http://127.0.0.1:8095`; `make serve` is the same target).
+
+## Key trade-offs
+
+| Decision | Record |
+|---|---|
+| A subprocess sandbox by default, not a container | [ADR 0001](docs/adr/0001-subprocess-not-container.md) |
+| Hard denials live in code. Policy can only shrink the allowlist | [ADR 0002](docs/adr/0002-hard-guards-not-switches.md) |
+| No shell executor, even if the YAML asks for one | [ADR 0003](docs/adr/0003-no-shell-executor.md) |
+| Append-only HMAC JSONL, not an ordinary log | [ADR 0004](docs/adr/0004-hmac-jsonl-audit.md) |
+| A regression gate locks the protected case ids | [ADR 0005](docs/adr/0005-regression-gate.md) |
+| The left pane previews a decision. It does not execute the call | [ADR 0006](docs/adr/0006-preview-not-execution.md) |
+
 ---
 
 ## What a call can do

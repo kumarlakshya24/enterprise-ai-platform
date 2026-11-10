@@ -1,0 +1,192 @@
+# Locked decisions. A change that flips one of these fails `make gate`.
+# `includes` is a rule that must be among the matched rule ids.
+cases:
+  - id: eu-support-local
+    title: EU confidential ticket on the EU model
+    note: The path that should be allowed.
+    request:
+      principal: acme/u-support
+      model: atlas-eu-mini
+      purpose: customer_support
+      data_class: CONFIDENTIAL
+      data_residency: EU
+    expect:
+      effect: allow
+      includes: [R-PERMIT-SUPPORT-EU]
+
+  - id: eu-support-us
+    title: Same EU ticket on the US model
+    note: The hosted permit matches. The residency forbid overrides it.
+    request:
+      principal: acme/u-support
+      model: frontier-us-large
+      purpose: customer_support
+      data_class: CONFIDENTIAL
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-RESIDENCY-EU]
+
+  - id: public-faq-us
+    title: Public FAQ on the US model
+    note: Public text may leave the EU. That is a written choice, not an accident.
+    request:
+      principal: acme/u-help
+      model: frontier-us-large
+      purpose: public_faq
+      data_class: PUBLIC
+      data_residency: EU
+    expect:
+      effect: allow
+      includes: [R-PERMIT-PUBLIC-US]
+
+  - id: internal-eu-on-us
+    title: EU internal text on the US model
+    note: INTERNAL is not in the residency forbid. The hosted permit allows it.
+    request:
+      principal: acme/u-eng
+      model: frontier-us-large
+      purpose: customer_support
+      data_class: INTERNAL
+      data_residency: EU
+    expect:
+      effect: allow
+      includes: [R-PERMIT-HOSTED-SUPPORT]
+
+  - id: restricted-local
+    title: Restricted data on the EU model
+    note: Aegis blocks RESTRICTED rather than sending it to a local model. Charter does too.
+    request:
+      principal: acme/u-support
+      model: atlas-eu-mini
+      purpose: customer_support
+      data_class: RESTRICTED
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-RESTRICTED-BLOCK]
+
+  - id: restricted-us
+    title: Restricted data on the US model
+    note: The wide hosted permit includes RESTRICTED. Two forbids match. The stricter one is primary.
+    request:
+      principal: acme/u-support
+      model: frontier-us-large
+      purpose: customer_support
+      data_class: RESTRICTED
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-RESTRICTED-BLOCK, R-RESIDENCY-EU]
+
+  - id: credit-with-oversight
+    title: EU credit scoring with a reviewer
+    request:
+      principal: acme/u-risk
+      model: credit-eu-scorer
+      purpose: credit_decision
+      data_class: CONFIDENTIAL
+      data_residency: EU
+    expect:
+      effect: allow
+      includes: [R-PERMIT-CREDIT]
+
+  - id: credit-us-subject
+    title: Credit model asked about a US subject
+    note: The permit requires EU residency. No forbid names this case, so it is a default deny.
+    request:
+      principal: acme/u-risk
+      model: credit-eu-scorer
+      purpose: credit_decision
+      data_class: CONFIDENTIAL
+      data_residency: US
+    expect:
+      effect: deny
+      includes: [R-DEFAULT-DENY]
+
+  - id: claims-no-oversight
+    title: High-risk claims model with no reviewer
+    note: The claims permit matches. R-OVERSIGHT still wins.
+    request:
+      principal: acme/u-claims
+      model: claims-triage-eu
+      purpose: claims_triage
+      data_class: INTERNAL
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-OVERSIGHT]
+
+  - id: social-ranker
+    title: Proposed social-scoring model
+    request:
+      principal: acme/u-risk
+      model: social-ranker
+      purpose: ranking
+      data_class: PUBLIC
+      data_residency: US
+    expect:
+      effect: deny
+      includes: [R-PROHIBITED]
+
+  - id: incomplete-card
+    title: Draft model whose card is not signed
+    request:
+      principal: acme/u-support
+      model: draft-eu-experimental
+      purpose: customer_support
+      data_class: INTERNAL
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-CARD-INCOMPLETE]
+
+  - id: unknown-model
+    title: Model id that is not in the registry
+    request:
+      principal: acme/u-support
+      model: no-such-model
+      purpose: customer_support
+      data_class: PUBLIC
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-MODEL-UNKNOWN]
+
+  - id: purpose-mismatch
+    title: EU support model asked to write poetry
+    request:
+      principal: acme/u-support
+      model: atlas-eu-mini
+      purpose: poetry
+      data_class: INTERNAL
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-DEFAULT-DENY]
+
+  - id: export-weights
+    title: Export action is not a permitted action
+    request:
+      principal: acme/u-admin
+      model: atlas-eu-mini
+      purpose: customer_support
+      data_class: INTERNAL
+      data_residency: EU
+      action: export_weights
+    expect:
+      effect: deny
+      includes: [R-DEFAULT-DENY]
+
+  - id: eu-confidential-faq-us
+    title: EU confidential text dressed up as a public FAQ
+    note: Purpose does not match the public permit, and residency still forbids the region.
+    request:
+      principal: acme/u-help
+      model: frontier-us-large
+      purpose: public_faq
+      data_class: CONFIDENTIAL
+      data_residency: EU
+    expect:
+      effect: deny
+      includes: [R-RESIDENCY-EU]

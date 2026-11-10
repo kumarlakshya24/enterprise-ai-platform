@@ -1,0 +1,47 @@
+version: "2026.11.10"
+scenarios:
+  - id: weekly-cited
+    title: Policies change weekly and every answer must cite a runbook
+    monthly_requests: 50000
+    change_rate: weekly
+    citations_required: true
+    latency_slo_ms: 2000
+    monthly_budget_usd: 800
+    scope: full
+    expect: rag
+  - id: high-volume-stable
+    title: Stable corpus, high volume, citations not required
+    monthly_requests: 2000000
+    change_rate: stable
+    citations_required: false
+    latency_slo_ms: 2000
+    monthly_budget_usd: 8000
+    scope: full
+    expect: lora
+  - id: narrow-fast
+    title: Common short answers only, 80 ms SLO
+    monthly_requests: 2000000
+    change_rate: stable
+    citations_required: false
+    latency_slo_ms: 80
+    monthly_budget_usd: 8000
+    scope: common_short
+    expect: distilled
+  - id: low-volume
+    title: Stable corpus, too little traffic to pay for a training program
+    monthly_requests: 2000
+    change_rate: stable
+    citations_required: false
+    latency_slo_ms: 2000
+    monthly_budget_usd: 500
+    scope: full
+    expect: rag
+  - id: cited-stable
+    title: Stable corpus, but every answer needs a citation
+    monthly_requests: 2000000
+    change_rate: stable
+    citations_required: true
+    latency_slo_ms: 2000
+    monthly_budget_usd: 20000
+    scope: full
+    expect: rag

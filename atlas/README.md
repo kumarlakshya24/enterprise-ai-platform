@@ -203,15 +203,27 @@ The clip at the top of this page is the same recording as this silent video, [at
 
 ![Resume heals the ledger step. Still one debit, now one email and one closed case.](docs/assets/04-resumed-one-debit.png)
 
+## Stack
+
+Python 3.12, FastAPI, two SQLite files (event log and effect store), and deterministic mock
+agents. No Docker and no API key. The trade-offs are the table in
+[Decisions at a glance](#decisions-at-a-glance), with the longer form in
+[ADR 0001](docs/adr/0001-event-log-and-replay.md),
+[ADR 0002](docs/adr/0002-idempotency-keys-not-at-most-once.md),
+[ADR 0003](docs/adr/0003-sagas-not-two-phase-commit.md), and
+[ADR 0004](docs/adr/0004-ports-for-aegis-and-lumen.md).
+The architecture diagram is the Mermaid figure under [System](#system).
+
 ## Run it
 
-Python 3.12. No Docker. No API key.
+Python 3.12. No Docker. No API key. These targets all run offline:
 
 ```bash
 cd atlas
 python -m venv .venv && . .venv/bin/activate
 make install
 make test          # includes the SIGKILL resume test
+make demo          # short happy-path trace
 make eval          # rewrites eval_results/latest and the Evidence table
 make kill-resume   # signal 9 after the debit
 make interview     # architecture-review script
