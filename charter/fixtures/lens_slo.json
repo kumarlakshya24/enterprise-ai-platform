@@ -1,0 +1,46 @@
+{
+  "source": "lens",
+  "kind": "slo_snapshot",
+  "note": "Offline stand-in shaped like Lens eval/slo.yaml. Not a live Lens export. Quality is paging on purpose so the pack cannot pretend accuracy is fine.",
+  "window_days": 30,
+  "observed_start": "2026-10-22T00:00:00Z",
+  "observed_end": "2026-11-04T23:00:00Z",
+  "objectives": [
+    {
+      "id": "availability",
+      "app": "all",
+      "description": "Requests that finish without a transport or dependency error.",
+      "target": 0.995,
+      "sli": 0.9982,
+      "burn_6h": 0.2,
+      "status": "within_budget"
+    },
+    {
+      "id": "latency",
+      "app": "all",
+      "description": "Requests under 1500 ms, including retrieval and the model.",
+      "target": 0.99,
+      "sli": 0.9961,
+      "burn_6h": 0.5,
+      "status": "within_budget"
+    },
+    {
+      "id": "quality",
+      "app": "lumen",
+      "description": "Lumen eval-sample traces the rubric marks as a pass.",
+      "target": 0.95,
+      "sli": 0.91,
+      "burn_6h": 7.8,
+      "status": "page"
+    },
+    {
+      "id": "safety",
+      "app": "aegis",
+      "description": "Aegis requests the cheap screen marks safe.",
+      "target": 0.999,
+      "sli": 0.9974,
+      "burn_6h": 3.2,
+      "status": "ticket"
+    }
+  ]
+}

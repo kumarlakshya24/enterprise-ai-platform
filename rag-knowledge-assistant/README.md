@@ -99,7 +99,14 @@ make eval        # full eval suite → eval_results/latest/; then python scripts
 make demo        # same 5 questions through baseline and full pipeline → eval_results/demo_output.md
 make calibrate   # re-derive refusal thresholds from the held-out calibration set
 ```
-Local API without Docker: `make setup`, `docker compose up -d db redis`, then `.venv/bin/uvicorn app.main:app --reload`.
+
+`make test`, `make eval`, `make demo`, and `make calibrate` all run inside Docker Compose
+(`docker compose run`). There is no Compose-free `make` target for them. `make setup` only
+creates the venv. `make models` runs `scripts/fetch_models.py`. `make lint` is local.
+`make up` / `make down` start and stop Postgres, Redis, and the API. The default generator
+is the offline extractive one, so none of these need an API key.
+
+Local API on the host: `make setup`, `docker compose up -d db redis`, then `.venv/bin/uvicorn app.main:app --reload`.
 </details>
 
 ## 🧠 How it works
@@ -135,6 +142,26 @@ flowchart LR
 | 9 | **Cache** | Redis HNSW, partitioned by access scope, specificity guard, provenance invalidation | ~5 ms repeats, never across permission boundaries |
 
 Every decision, tradeoff, and what breaks at 10× scale: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+The diagram for this section is the Mermaid figure above, and the animated cut is
+[`docs/assets/architecture.gif`](docs/assets/architecture.gif).
+
+## Stack
+
+Python 3.12, FastAPI, PostgreSQL + pgvector, Redis 8, ONNX Runtime (`all-MiniLM-L6-v2` embeddings,
+int8 MS MARCO cross-encoder), and Docker Compose. See the badges at the top for the same list.
+
+## Key trade-offs
+
+Lumen has no `docs/adr/` directory. The decisions and the alternatives they rejected are
+[ARCHITECTURE.md §4](ARCHITECTURE.md#4-decisions):
+
+| Decision | Where it is written down |
+|---|---|
+| Structure-aware chunks, not fixed windows | [§4.1](ARCHITECTURE.md#41-parsing-and-chunking) |
+| BM25 fused with vectors. On this small corpus, hybrid does not move end-to-end accuracy | [§4.2](ARCHITECTURE.md#42-retrieval-vector-bm25-fusion-multi-query) |
+| Cross-encoder re-rank; int8 for latency | [§4.4](ARCHITECTURE.md#44-re-ranking) |
+| Refuse when the evidence score is below a calibrated threshold | [§4.5](ARCHITECTURE.md#45-evidence-gate-generation-and-citations) |
+| Semantic cache partitioned by access scope | [§4.7](ARCHITECTURE.md#47-semantic-cache) |
 
 ## 📊 Results
 

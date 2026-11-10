@@ -1,0 +1,1153 @@
+{
+  "tenant": "acme",
+  "window": {
+    "start": "2026-10-22T00:00:00Z",
+    "end": "2026-11-04T23:00:00Z"
+  },
+  "classification": "synthetic \u2014 not a legal opinion and not a certification",
+  "policy_digest": "94bac4e49b4ecedba6c33f03f47c4a287865119d76969d1d123f16a00bf3ce5b",
+  "policy_files": [
+    {
+      "name": "001-safety.cedar",
+      "text": "// Models that must not be invoked, whatever the request says.\n// A missing card, a prohibited tier, or a high-risk deployment with no reviewer\n// is a forbid. A permit later in the bundle cannot override these.\n\n// @id R-PROHIBITED\n// @controls EU-5\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.risk_tier == \"unacceptable\"\n};\n\n// @id R-CARD-INCOMPLETE\n// @controls EU-11\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.card_complete == false\n};\n\n// @id R-OVERSIGHT\n// @controls EU-14\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.risk_tier == \"high\" && resource.human_oversight == false\n};\n\n// @id R-RESTRICTED-BLOCK\n// @controls EU-10\nforbid (\n  principal,\n  action == Action::\"invoke\",\n  resource\n)\nwhen {\n  context.data_class == \"RESTRICTED\"\n};\n"
+    },
+    {
+      "name": "002-residency.cedar",
+      "text": "// EU confidential and restricted payloads stay in eu-central-1.\n// This file is the one a weakened candidate deletes. The permit in\n// 003-permits.cedar would allow the US model for customer support.\n// Forbid wins while this file is loaded. Without it, that permit allows\n// the EU confidential ticket to leave the region.\n\n// @id R-RESIDENCY-EU\n// @controls EU-10\nforbid (\n  principal,\n  action == Action::\"invoke\",\n  resource\n)\nwhen {\n  context.data_residency == \"EU\" &&\n  resource.region != \"eu-central-1\" &&\n  context.data_class in [\"CONFIDENTIAL\", \"RESTRICTED\"]\n};\n"
+    },
+    {
+      "name": "003-permits.cedar",
+      "text": "// Permits are narrow on purpose, except the hosted support permit, which is\n// deliberately wide so the residency forbid has something to override.\n// No matching permit is a deny (R-DEFAULT-DENY). There is no \"allow all\".\n\n// @id R-PERMIT-SUPPORT-EU\n// @controls EU-9\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"atlas-eu-mini\"\n)\nwhen {\n  context.purpose == \"customer_support\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\"]\n};\n\n// @id R-PERMIT-HOSTED-SUPPORT\n// @controls EU-9\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"frontier-us-large\"\n)\nwhen {\n  context.purpose == \"customer_support\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\", \"RESTRICTED\"]\n};\n\n// @id R-PERMIT-PUBLIC-US\n// @controls EU-13\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"frontier-us-large\"\n)\nwhen {\n  context.purpose == \"public_faq\" &&\n  context.data_class == \"PUBLIC\"\n};\n\n// @id R-PERMIT-CREDIT\n// @controls EU-14\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"credit-eu-scorer\"\n)\nwhen {\n  context.purpose == \"credit_decision\" &&\n  context.data_residency == \"EU\" &&\n  context.data_class in [\"INTERNAL\", \"CONFIDENTIAL\"]\n};\n\n// @id R-PERMIT-CLAIMS\n// @controls EU-14\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"claims-triage-eu\"\n)\nwhen {\n  context.purpose == \"claims_triage\" &&\n  context.data_residency == \"EU\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\"]\n};\n"
+    }
+  ],
+  "rules": [
+    {
+      "id": "R-PROHIBITED",
+      "effect": "forbid",
+      "controls": [
+        "EU-5"
+      ],
+      "file": "001-safety.cedar",
+      "line": 7,
+      "excerpt": "// @id R-PROHIBITED\n// @controls EU-5\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.risk_tier == \"unacceptable\"\n};"
+    },
+    {
+      "id": "R-CARD-INCOMPLETE",
+      "effect": "forbid",
+      "controls": [
+        "EU-11"
+      ],
+      "file": "001-safety.cedar",
+      "line": 18,
+      "excerpt": "// @id R-CARD-INCOMPLETE\n// @controls EU-11\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.card_complete == false\n};"
+    },
+    {
+      "id": "R-OVERSIGHT",
+      "effect": "forbid",
+      "controls": [
+        "EU-14"
+      ],
+      "file": "001-safety.cedar",
+      "line": 29,
+      "excerpt": "// @id R-OVERSIGHT\n// @controls EU-14\nforbid (\n  principal,\n  action,\n  resource\n)\nwhen {\n  resource.risk_tier == \"high\" && resource.human_oversight == false\n};"
+    },
+    {
+      "id": "R-RESTRICTED-BLOCK",
+      "effect": "forbid",
+      "controls": [
+        "EU-10"
+      ],
+      "file": "001-safety.cedar",
+      "line": 40,
+      "excerpt": "// @id R-RESTRICTED-BLOCK\n// @controls EU-10\nforbid (\n  principal,\n  action == Action::\"invoke\",\n  resource\n)\nwhen {\n  context.data_class == \"RESTRICTED\"\n};"
+    },
+    {
+      "id": "R-RESIDENCY-EU",
+      "effect": "forbid",
+      "controls": [
+        "EU-10"
+      ],
+      "file": "002-residency.cedar",
+      "line": 9,
+      "excerpt": "// @id R-RESIDENCY-EU\n// @controls EU-10\nforbid (\n  principal,\n  action == Action::\"invoke\",\n  resource\n)\nwhen {\n  context.data_residency == \"EU\" &&\n  resource.region != \"eu-central-1\" &&\n  context.data_class in [\"CONFIDENTIAL\", \"RESTRICTED\"]\n};"
+    },
+    {
+      "id": "R-PERMIT-SUPPORT-EU",
+      "effect": "permit",
+      "controls": [
+        "EU-9"
+      ],
+      "file": "003-permits.cedar",
+      "line": 7,
+      "excerpt": "// @id R-PERMIT-SUPPORT-EU\n// @controls EU-9\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"atlas-eu-mini\"\n)\nwhen {\n  context.purpose == \"customer_support\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\"]\n};"
+    },
+    {
+      "id": "R-PERMIT-HOSTED-SUPPORT",
+      "effect": "permit",
+      "controls": [
+        "EU-9"
+      ],
+      "file": "003-permits.cedar",
+      "line": 19,
+      "excerpt": "// @id R-PERMIT-HOSTED-SUPPORT\n// @controls EU-9\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"frontier-us-large\"\n)\nwhen {\n  context.purpose == \"customer_support\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\", \"RESTRICTED\"]\n};"
+    },
+    {
+      "id": "R-PERMIT-PUBLIC-US",
+      "effect": "permit",
+      "controls": [
+        "EU-13"
+      ],
+      "file": "003-permits.cedar",
+      "line": 31,
+      "excerpt": "// @id R-PERMIT-PUBLIC-US\n// @controls EU-13\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"frontier-us-large\"\n)\nwhen {\n  context.purpose == \"public_faq\" &&\n  context.data_class == \"PUBLIC\"\n};"
+    },
+    {
+      "id": "R-PERMIT-CREDIT",
+      "effect": "permit",
+      "controls": [
+        "EU-14"
+      ],
+      "file": "003-permits.cedar",
+      "line": 43,
+      "excerpt": "// @id R-PERMIT-CREDIT\n// @controls EU-14\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"credit-eu-scorer\"\n)\nwhen {\n  context.purpose == \"credit_decision\" &&\n  context.data_residency == \"EU\" &&\n  context.data_class in [\"INTERNAL\", \"CONFIDENTIAL\"]\n};"
+    },
+    {
+      "id": "R-PERMIT-CLAIMS",
+      "effect": "permit",
+      "controls": [
+        "EU-14"
+      ],
+      "file": "003-permits.cedar",
+      "line": 56,
+      "excerpt": "// @id R-PERMIT-CLAIMS\n// @controls EU-14\npermit (\n  principal,\n  action == Action::\"invoke\",\n  resource == Model::\"claims-triage-eu\"\n)\nwhen {\n  context.purpose == \"claims_triage\" &&\n  context.data_residency == \"EU\" &&\n  context.data_class in [\"PUBLIC\", \"INTERNAL\", \"CONFIDENTIAL\"]\n};"
+    }
+  ],
+  "models": [
+    {
+      "id": "atlas-eu-mini",
+      "provider": "local",
+      "version": "2026.10",
+      "region": "eu-central-1",
+      "risk_tier": "limited",
+      "status": "active",
+      "purpose": "customer_support",
+      "intended_use": "Draft replies to support tickets after Aegis has tokenized contact data. English only.",
+      "out_of_scope": [
+        "Credit decisions",
+        "Medical advice",
+        "Anything marked RESTRICTED"
+      ],
+      "owner": "ml-platform",
+      "training_data": "Synthetic support tickets. No customer payload is retained in the card.",
+      "task_accuracy": 0.86,
+      "known_limitations": [
+        "Does not cite sources",
+        "English only"
+      ],
+      "card_complete": true,
+      "human_oversight": true,
+      "provider_reviewed": true,
+      "logging": "Aegis audit log plus the Charter decision record"
+    },
+    {
+      "id": "frontier-us-large",
+      "provider": "hosted",
+      "version": "2026.09",
+      "region": "us-east-1",
+      "risk_tier": "limited",
+      "status": "active",
+      "purpose": "customer_support",
+      "intended_use": "Public FAQ and internal drafting when the data class is allowed to leave the EU.",
+      "out_of_scope": [
+        "EU confidential or restricted payloads",
+        "High-risk decisions about a person"
+      ],
+      "owner": "ml-platform",
+      "training_data": "Vendor-reported public web mix. Charter does not have the vendor's dataset.",
+      "task_accuracy": 0.91,
+      "known_limitations": [
+        "Hosted in us-east-1",
+        "Provider review is not signed",
+        "Not a residency boundary"
+      ],
+      "card_complete": true,
+      "human_oversight": true,
+      "provider_reviewed": false,
+      "logging": "Vendor retention is unknown. Aegis records the route. That is not the same as a DPA."
+    },
+    {
+      "id": "credit-eu-scorer",
+      "provider": "local",
+      "version": "2026.08",
+      "region": "eu-central-1",
+      "risk_tier": "high",
+      "status": "active",
+      "purpose": "credit_decision",
+      "intended_use": "Score an existing application against the written credit policy. A person decides.",
+      "out_of_scope": [
+        "Fully automated refusal",
+        "Use outside the EU residency boundary"
+      ],
+      "owner": "risk-modeling",
+      "training_data": "Synthetic applications with the same schema as the production form. Labels are synthetic.",
+      "task_accuracy": 0.81,
+      "known_limitations": [
+        "Worse on thin files",
+        "Not a substitute for the written policy"
+      ],
+      "card_complete": true,
+      "human_oversight": true,
+      "provider_reviewed": true,
+      "logging": "Decision id, model version, and the reviewer's id are kept with the application."
+    },
+    {
+      "id": "claims-triage-eu",
+      "provider": "local",
+      "version": "2026.07",
+      "region": "eu-central-1",
+      "risk_tier": "high",
+      "status": "active",
+      "purpose": "claims_triage",
+      "intended_use": "Rank insurance claims. The card says a reviewer is required. The deployment has none.",
+      "out_of_scope": [
+        "Denying a claim without a person"
+      ],
+      "owner": "claims-ml",
+      "training_data": "Synthetic claim summaries. No real claimant data.",
+      "task_accuracy": 0.74,
+      "known_limitations": [
+        "No reviewer is assigned",
+        "The permit would allow it. R-OVERSIGHT is what stops invocation."
+      ],
+      "card_complete": true,
+      "human_oversight": false,
+      "provider_reviewed": true,
+      "logging": "Aegis would see the call. Nobody is on the hook to read the queue."
+    },
+    {
+      "id": "social-ranker",
+      "provider": "hosted",
+      "version": "2026.04",
+      "region": "us-east-1",
+      "risk_tier": "unacceptable",
+      "status": "proposed",
+      "purpose": "ranking",
+      "intended_use": "Score people from observed behavior. This is the prohibited example. It is not active.",
+      "out_of_scope": [
+        "Any production use"
+      ],
+      "owner": "rejected-proposal",
+      "training_data": "Not collected. The proposal stopped at the registry.",
+      "task_accuracy": null,
+      "known_limitations": [
+        "Unacceptable tier",
+        "R-PROHIBITED denies every action on this id"
+      ],
+      "card_complete": true,
+      "human_oversight": false,
+      "provider_reviewed": false,
+      "logging": "Registry entry only."
+    },
+    {
+      "id": "draft-eu-experimental",
+      "provider": "local",
+      "version": "2026.11-draft",
+      "region": "eu-central-1",
+      "risk_tier": "limited",
+      "status": "proposed",
+      "purpose": "customer_support",
+      "intended_use": "Experiment. The card is not signed.",
+      "out_of_scope": [
+        "Any production traffic"
+      ],
+      "owner": "ml-platform",
+      "training_data": "Undeclared. That is why the card is incomplete.",
+      "task_accuracy": null,
+      "known_limitations": [
+        "card_complete is false",
+        "R-CARD-INCOMPLETE denies invocation"
+      ],
+      "card_complete": false,
+      "human_oversight": false,
+      "provider_reviewed": true,
+      "logging": "Not in the production audit path."
+    }
+  ],
+  "matrix": {
+    "counts": {
+      "met": 10,
+      "partial": 4,
+      "gap": 3,
+      "unmapped": 0
+    },
+    "controls": [
+      {
+        "id": "EU-5",
+        "framework": "eu_ai_act",
+        "ref": "Art. 5",
+        "title": "Prohibited practices",
+        "statement": "A system that scores people from observed behavior is not deployed. The policy denies it even if someone asks.",
+        "treatment": "Keep unacceptable models at status proposed or delete them. Do not flip them to active in the same change as a policy edit.",
+        "status": "met",
+        "because": "No active model is unacceptable. Proposed and blocked by R-PROHIBITED: social-ranker."
+      },
+      {
+        "id": "EU-9",
+        "framework": "eu_ai_act",
+        "ref": "Art. 9",
+        "title": "Risk management",
+        "statement": "Risks that are known are written as versioned forbids, and a regression gate locks the decisions those forbids make.",
+        "treatment": "Add a case to eval/cases.yaml in the same commit as the rule. A rule with no case is not a control.",
+        "status": "met",
+        "because": "Versioned policies pass the locked decision cases, including the residency forbid."
+      },
+      {
+        "id": "EU-10",
+        "framework": "eu_ai_act",
+        "ref": "Art. 10",
+        "title": "Data governance and residency",
+        "statement": "EU confidential and restricted payloads are not a training set and are not a prompt for a model outside eu-central-1.",
+        "treatment": "Investigate req-leak-01. Redaction of the card number did not keep the request in region. Fix the route, then keep R-RESIDENCY-EU.",
+        "status": "gap",
+        "because": "1 Aegis routing decision sent EU RESTRICTED data on route allow to us-east-1 (frontier-us-large, req-leak-01). Redaction of the card is not a residency control."
+      },
+      {
+        "id": "EU-11",
+        "framework": "eu_ai_act",
+        "ref": "Art. 11",
+        "title": "Technical documentation",
+        "statement": "Every model that is active has a card with an owner, a purpose, training notes, and the limits the team will admit.",
+        "treatment": "Do not mark a model active while card_complete is false. R-CARD-INCOMPLETE is the backstop, not the process.",
+        "status": "met",
+        "because": "Every active model card has use, limits, training notes, and an owner. R-CARD-INCOMPLETE is loaded."
+      },
+      {
+        "id": "EU-12",
+        "framework": "eu_ai_act",
+        "ref": "Art. 12",
+        "title": "Record-keeping",
+        "statement": "Routing, DLP, and tool decisions are on an append-only hash chain an auditor can recompute.",
+        "treatment": "If the chain breaks, stop quoting the log. Restore from the last good head. Do not edit a line in place.",
+        "status": "met",
+        "because": "HMAC chain verifies across 38 Aegis-shaped events (9 routing decisions)."
+      },
+      {
+        "id": "EU-13",
+        "framework": "eu_ai_act",
+        "ref": "Art. 13",
+        "title": "Transparency",
+        "statement": "Each active model says what it is for and what it must not be asked to do, in the card a deployer can open.",
+        "treatment": "Fill intended use and out of scope before status changes to active.",
+        "status": "met",
+        "because": "Every active model card states intended use and what it must not be used for."
+      },
+      {
+        "id": "EU-14",
+        "framework": "eu_ai_act",
+        "ref": "Art. 14",
+        "title": "Human oversight",
+        "statement": "A high-risk model that can affect a person's claim or credit has a named reviewer. Blocking the call is not the same as staffing the review.",
+        "treatment": "Take claims-triage-eu out of active, or assign a reviewer and set human_oversight. Leave R-OVERSIGHT in the bundle either way.",
+        "status": "gap",
+        "because": "Active high-risk models with no human oversight: claims-triage-eu. R-OVERSIGHT denies invocation. The deployment is still active."
+      },
+      {
+        "id": "EU-15",
+        "framework": "eu_ai_act",
+        "ref": "Art. 15",
+        "title": "Accuracy, robustness, cybersecurity",
+        "statement": "Accuracy and abuse are measured on a schedule. A paging quality SLO means the accuracy claim is not currently true.",
+        "treatment": "Treat the Lens quality page as an accuracy failure. Do not close this control by editing the target in the same week as the drop.",
+        "status": "gap",
+        "because": "Lens quality is paging (SLI 0.91 vs target 0.95, 6h burn 7.8\u00d7). Article 15 accuracy is not met. Safety is ticket (SLI 0.9974)."
+      },
+      {
+        "id": "EU-26",
+        "framework": "eu_ai_act",
+        "ref": "Art. 26",
+        "title": "Deployer duties",
+        "statement": "The deployer keeps the logs and does not run a high-risk system without a person who can stop it.",
+        "treatment": "Logging already verifies. Staff the claims reviewer or retire the model. This stays partial until that is done.",
+        "status": "partial",
+        "because": "Logging verifies. Oversight does not: claims-triage-eu is active high-risk with no reviewer."
+      },
+      {
+        "id": "NIST-GV-1.1",
+        "framework": "nist_ai_rmf",
+        "ref": "GOVERN 1.1",
+        "title": "Legal requirements are documented",
+        "statement": "The articles this program claims to meet are each named by at least one policy rule.",
+        "treatment": "When a new article is added to the catalog, link a rule id the same day or the control goes partial.",
+        "status": "met",
+        "because": "Each enforceable article in this catalog is named by a policy rule."
+      },
+      {
+        "id": "NIST-GV-6.1",
+        "framework": "nist_ai_rmf",
+        "ref": "GOVERN 6.1",
+        "title": "Third-party risk",
+        "statement": "A hosted model is not \"reviewed\" because it has a card. Someone has to sign the provider review.",
+        "treatment": "Finish the review for frontier-us-large or stop using it for anything but public text. The permit is already wider than the review.",
+        "status": "partial",
+        "because": "Active hosted models with no provider review: frontier-us-large."
+      },
+      {
+        "id": "NIST-MP-1.1",
+        "framework": "nist_ai_rmf",
+        "ref": "MAP 1.1",
+        "title": "Intended purpose",
+        "statement": "The context the model will be used in is written down before it is active, including the one purpose the permit checks.",
+        "treatment": "One purpose per card. A second purpose is a second card, not a sentence in the description.",
+        "status": "met",
+        "because": "Every active model has an intended use and a single approved purpose."
+      },
+      {
+        "id": "NIST-MS-1.1",
+        "framework": "nist_ai_rmf",
+        "ref": "MEASURE 1.1",
+        "title": "Metrics selected",
+        "statement": "Availability, latency, quality, and safety each have a numeric target. One blended score is not a substitute.",
+        "treatment": "Keep the four Lens objectives. Do not replace them with a single health percentage.",
+        "status": "met",
+        "because": "Lens targets are present: availability 0.995, latency 0.99, quality 0.95, safety 0.999."
+      },
+      {
+        "id": "NIST-MS-2.6",
+        "framework": "nist_ai_rmf",
+        "ref": "MEASURE 2.6",
+        "title": "Safety evaluation",
+        "statement": "Safety is an SLO with a thin budget, watched on the same snapshot as quality, not a slide from last quarter.",
+        "treatment": "The safety objective is on a ticket. Clear the ticket or accept the partial in the pack. Do not mark it met while the status is ticket.",
+        "status": "partial",
+        "because": "Safety SLO is on a ticket (SLI 0.9974 vs 0.999, 6h burn 3.2x)."
+      },
+      {
+        "id": "NIST-MS-2.7",
+        "framework": "nist_ai_rmf",
+        "ref": "MEASURE 2.7",
+        "title": "Security evaluation",
+        "statement": "The gateway's DLP and tool blocks are evidence that security checks ran. A green chain with no blocks would only be partial.",
+        "treatment": "Keep request_blocked and tool_call_blocked in the exported slice. A log of only successes hides the control.",
+        "status": "met",
+        "because": "The stub records DLP outcomes and at least one blocked request or tool call."
+      },
+      {
+        "id": "NIST-MG-2.2",
+        "framework": "nist_ai_rmf",
+        "ref": "MANAGE 2.2",
+        "title": "Treatments documented",
+        "statement": "Every control in this catalog has a treatment a person can carry out. The decision gate is what shows the treatment is still loaded.",
+        "treatment": "If a treatment is \"we will look at it\", replace it with a model id, a rule id, or a request id.",
+        "status": "met",
+        "because": "Every gap and partial in this pack has a treatment, and the decision gate passes."
+      },
+      {
+        "id": "NIST-MG-4.1",
+        "framework": "nist_ai_rmf",
+        "ref": "MANAGE 4.1",
+        "title": "Post-deployment monitoring",
+        "statement": "After a model is active, the four SLOs keep running. A quiet availability line does not cancel a paging quality line.",
+        "treatment": "Page on quality stays visible next to the healthy latency line. Do not collapse them into one incident.",
+        "status": "partial",
+        "because": "Monitoring is on. Not quiet: quality, safety."
+      }
+    ]
+  },
+  "gaps": [
+    {
+      "id": "EU-10",
+      "framework": "eu_ai_act",
+      "ref": "Art. 10",
+      "title": "Data governance and residency",
+      "statement": "EU confidential and restricted payloads are not a training set and are not a prompt for a model outside eu-central-1.",
+      "treatment": "Investigate req-leak-01. Redaction of the card number did not keep the request in region. Fix the route, then keep R-RESIDENCY-EU.",
+      "status": "gap",
+      "because": "1 Aegis routing decision sent EU RESTRICTED data on route allow to us-east-1 (frontier-us-large, req-leak-01). Redaction of the card is not a residency control."
+    },
+    {
+      "id": "EU-14",
+      "framework": "eu_ai_act",
+      "ref": "Art. 14",
+      "title": "Human oversight",
+      "statement": "A high-risk model that can affect a person's claim or credit has a named reviewer. Blocking the call is not the same as staffing the review.",
+      "treatment": "Take claims-triage-eu out of active, or assign a reviewer and set human_oversight. Leave R-OVERSIGHT in the bundle either way.",
+      "status": "gap",
+      "because": "Active high-risk models with no human oversight: claims-triage-eu. R-OVERSIGHT denies invocation. The deployment is still active."
+    },
+    {
+      "id": "EU-15",
+      "framework": "eu_ai_act",
+      "ref": "Art. 15",
+      "title": "Accuracy, robustness, cybersecurity",
+      "statement": "Accuracy and abuse are measured on a schedule. A paging quality SLO means the accuracy claim is not currently true.",
+      "treatment": "Treat the Lens quality page as an accuracy failure. Do not close this control by editing the target in the same week as the drop.",
+      "status": "gap",
+      "because": "Lens quality is paging (SLI 0.91 vs target 0.95, 6h burn 7.8\u00d7). Article 15 accuracy is not met. Safety is ticket (SLI 0.9974)."
+    }
+  ],
+  "partials": [
+    {
+      "id": "EU-26",
+      "framework": "eu_ai_act",
+      "ref": "Art. 26",
+      "title": "Deployer duties",
+      "statement": "The deployer keeps the logs and does not run a high-risk system without a person who can stop it.",
+      "treatment": "Logging already verifies. Staff the claims reviewer or retire the model. This stays partial until that is done.",
+      "status": "partial",
+      "because": "Logging verifies. Oversight does not: claims-triage-eu is active high-risk with no reviewer."
+    },
+    {
+      "id": "NIST-GV-6.1",
+      "framework": "nist_ai_rmf",
+      "ref": "GOVERN 6.1",
+      "title": "Third-party risk",
+      "statement": "A hosted model is not \"reviewed\" because it has a card. Someone has to sign the provider review.",
+      "treatment": "Finish the review for frontier-us-large or stop using it for anything but public text. The permit is already wider than the review.",
+      "status": "partial",
+      "because": "Active hosted models with no provider review: frontier-us-large."
+    },
+    {
+      "id": "NIST-MS-2.6",
+      "framework": "nist_ai_rmf",
+      "ref": "MEASURE 2.6",
+      "title": "Safety evaluation",
+      "statement": "Safety is an SLO with a thin budget, watched on the same snapshot as quality, not a slide from last quarter.",
+      "treatment": "The safety objective is on a ticket. Clear the ticket or accept the partial in the pack. Do not mark it met while the status is ticket.",
+      "status": "partial",
+      "because": "Safety SLO is on a ticket (SLI 0.9974 vs 0.999, 6h burn 3.2x)."
+    },
+    {
+      "id": "NIST-MG-4.1",
+      "framework": "nist_ai_rmf",
+      "ref": "MANAGE 4.1",
+      "title": "Post-deployment monitoring",
+      "statement": "After a model is active, the four SLOs keep running. A quiet availability line does not cancel a paging quality line.",
+      "treatment": "Page on quality stays visible next to the healthy latency line. Do not collapse them into one incident.",
+      "status": "partial",
+      "because": "Monitoring is on. Not quiet: quality, safety."
+    }
+  ],
+  "counts": {
+    "met": 10,
+    "partial": 4,
+    "gap": 3,
+    "unmapped": 0
+  },
+  "decisions": [
+    {
+      "id": "eu-support-local",
+      "title": "EU confidential ticket on the EU model",
+      "note": "The path that should be allowed.",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "atlas-eu-mini",
+        "purpose": "customer_support",
+        "data_class": "CONFIDENTIAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "allow",
+        "includes": [
+          "R-PERMIT-SUPPORT-EU"
+        ]
+      },
+      "decision": {
+        "effect": "allow",
+        "rule_ids": [
+          "R-PERMIT-SUPPORT-EU"
+        ],
+        "primary_rule": "R-PERMIT-SUPPORT-EU",
+        "reason": "permit R-PERMIT-SUPPORT-EU matched and no forbid matched",
+        "model_id": "atlas-eu-mini",
+        "matched_permits": [
+          "R-PERMIT-SUPPORT-EU"
+        ],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "eu-support-us",
+      "title": "Same EU ticket on the US model",
+      "note": "The hosted permit matches. The residency forbid overrides it.",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "frontier-us-large",
+        "purpose": "customer_support",
+        "data_class": "CONFIDENTIAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-RESIDENCY-EU"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-RESIDENCY-EU"
+        ],
+        "primary_rule": "R-RESIDENCY-EU",
+        "reason": "forbid R-RESIDENCY-EU overrides 1 matching permit(s)",
+        "model_id": "frontier-us-large",
+        "matched_permits": [
+          "R-PERMIT-HOSTED-SUPPORT"
+        ],
+        "matched_forbids": [
+          "R-RESIDENCY-EU"
+        ]
+      }
+    },
+    {
+      "id": "public-faq-us",
+      "title": "Public FAQ on the US model",
+      "note": "Public text may leave the EU. That is a written choice, not an accident.",
+      "request": {
+        "principal": "acme/u-help",
+        "model_id": "frontier-us-large",
+        "purpose": "public_faq",
+        "data_class": "PUBLIC",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "allow",
+        "includes": [
+          "R-PERMIT-PUBLIC-US"
+        ]
+      },
+      "decision": {
+        "effect": "allow",
+        "rule_ids": [
+          "R-PERMIT-PUBLIC-US"
+        ],
+        "primary_rule": "R-PERMIT-PUBLIC-US",
+        "reason": "permit R-PERMIT-PUBLIC-US matched and no forbid matched",
+        "model_id": "frontier-us-large",
+        "matched_permits": [
+          "R-PERMIT-PUBLIC-US"
+        ],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "internal-eu-on-us",
+      "title": "EU internal text on the US model",
+      "note": "INTERNAL is not in the residency forbid. The hosted permit allows it.",
+      "request": {
+        "principal": "acme/u-eng",
+        "model_id": "frontier-us-large",
+        "purpose": "customer_support",
+        "data_class": "INTERNAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "allow",
+        "includes": [
+          "R-PERMIT-HOSTED-SUPPORT"
+        ]
+      },
+      "decision": {
+        "effect": "allow",
+        "rule_ids": [
+          "R-PERMIT-HOSTED-SUPPORT"
+        ],
+        "primary_rule": "R-PERMIT-HOSTED-SUPPORT",
+        "reason": "permit R-PERMIT-HOSTED-SUPPORT matched and no forbid matched",
+        "model_id": "frontier-us-large",
+        "matched_permits": [
+          "R-PERMIT-HOSTED-SUPPORT"
+        ],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "restricted-local",
+      "title": "Restricted data on the EU model",
+      "note": "Aegis blocks RESTRICTED rather than sending it to a local model. Charter does too.",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "atlas-eu-mini",
+        "purpose": "customer_support",
+        "data_class": "RESTRICTED",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-RESTRICTED-BLOCK"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-RESTRICTED-BLOCK"
+        ],
+        "primary_rule": "R-RESTRICTED-BLOCK",
+        "reason": "forbid R-RESTRICTED-BLOCK overrides 0 matching permit(s)",
+        "model_id": "atlas-eu-mini",
+        "matched_permits": [],
+        "matched_forbids": [
+          "R-RESTRICTED-BLOCK"
+        ]
+      }
+    },
+    {
+      "id": "restricted-us",
+      "title": "Restricted data on the US model",
+      "note": "The wide hosted permit includes RESTRICTED. Two forbids match. The stricter one is primary.",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "frontier-us-large",
+        "purpose": "customer_support",
+        "data_class": "RESTRICTED",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-RESTRICTED-BLOCK",
+          "R-RESIDENCY-EU"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-RESTRICTED-BLOCK",
+          "R-RESIDENCY-EU"
+        ],
+        "primary_rule": "R-RESTRICTED-BLOCK",
+        "reason": "forbid R-RESTRICTED-BLOCK overrides 1 matching permit(s)",
+        "model_id": "frontier-us-large",
+        "matched_permits": [
+          "R-PERMIT-HOSTED-SUPPORT"
+        ],
+        "matched_forbids": [
+          "R-RESTRICTED-BLOCK",
+          "R-RESIDENCY-EU"
+        ]
+      }
+    },
+    {
+      "id": "credit-with-oversight",
+      "title": "EU credit scoring with a reviewer",
+      "note": "",
+      "request": {
+        "principal": "acme/u-risk",
+        "model_id": "credit-eu-scorer",
+        "purpose": "credit_decision",
+        "data_class": "CONFIDENTIAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "allow",
+        "includes": [
+          "R-PERMIT-CREDIT"
+        ]
+      },
+      "decision": {
+        "effect": "allow",
+        "rule_ids": [
+          "R-PERMIT-CREDIT"
+        ],
+        "primary_rule": "R-PERMIT-CREDIT",
+        "reason": "permit R-PERMIT-CREDIT matched and no forbid matched",
+        "model_id": "credit-eu-scorer",
+        "matched_permits": [
+          "R-PERMIT-CREDIT"
+        ],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "credit-us-subject",
+      "title": "Credit model asked about a US subject",
+      "note": "The permit requires EU residency. No forbid names this case, so it is a default deny.",
+      "request": {
+        "principal": "acme/u-risk",
+        "model_id": "credit-eu-scorer",
+        "purpose": "credit_decision",
+        "data_class": "CONFIDENTIAL",
+        "data_residency": "US",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-DEFAULT-DENY"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-DEFAULT-DENY"
+        ],
+        "primary_rule": "R-DEFAULT-DENY",
+        "reason": "no permit matched",
+        "model_id": "credit-eu-scorer",
+        "matched_permits": [],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "claims-no-oversight",
+      "title": "High-risk claims model with no reviewer",
+      "note": "The claims permit matches. R-OVERSIGHT still wins.",
+      "request": {
+        "principal": "acme/u-claims",
+        "model_id": "claims-triage-eu",
+        "purpose": "claims_triage",
+        "data_class": "INTERNAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-OVERSIGHT"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-OVERSIGHT"
+        ],
+        "primary_rule": "R-OVERSIGHT",
+        "reason": "forbid R-OVERSIGHT overrides 1 matching permit(s)",
+        "model_id": "claims-triage-eu",
+        "matched_permits": [
+          "R-PERMIT-CLAIMS"
+        ],
+        "matched_forbids": [
+          "R-OVERSIGHT"
+        ]
+      }
+    },
+    {
+      "id": "social-ranker",
+      "title": "Proposed social-scoring model",
+      "note": "",
+      "request": {
+        "principal": "acme/u-risk",
+        "model_id": "social-ranker",
+        "purpose": "ranking",
+        "data_class": "PUBLIC",
+        "data_residency": "US",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-PROHIBITED"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-PROHIBITED"
+        ],
+        "primary_rule": "R-PROHIBITED",
+        "reason": "forbid R-PROHIBITED overrides 0 matching permit(s)",
+        "model_id": "social-ranker",
+        "matched_permits": [],
+        "matched_forbids": [
+          "R-PROHIBITED"
+        ]
+      }
+    },
+    {
+      "id": "incomplete-card",
+      "title": "Draft model whose card is not signed",
+      "note": "",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "draft-eu-experimental",
+        "purpose": "customer_support",
+        "data_class": "INTERNAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-CARD-INCOMPLETE"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-CARD-INCOMPLETE"
+        ],
+        "primary_rule": "R-CARD-INCOMPLETE",
+        "reason": "forbid R-CARD-INCOMPLETE overrides 0 matching permit(s)",
+        "model_id": "draft-eu-experimental",
+        "matched_permits": [],
+        "matched_forbids": [
+          "R-CARD-INCOMPLETE"
+        ]
+      }
+    },
+    {
+      "id": "unknown-model",
+      "title": "Model id that is not in the registry",
+      "note": "",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "no-such-model",
+        "purpose": "customer_support",
+        "data_class": "PUBLIC",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-MODEL-UNKNOWN"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-MODEL-UNKNOWN"
+        ],
+        "primary_rule": "R-MODEL-UNKNOWN",
+        "reason": "no-such-model is not in the registry",
+        "model_id": "no-such-model",
+        "matched_permits": [],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "purpose-mismatch",
+      "title": "EU support model asked to write poetry",
+      "note": "",
+      "request": {
+        "principal": "acme/u-support",
+        "model_id": "atlas-eu-mini",
+        "purpose": "poetry",
+        "data_class": "INTERNAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-DEFAULT-DENY"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-DEFAULT-DENY"
+        ],
+        "primary_rule": "R-DEFAULT-DENY",
+        "reason": "no permit matched",
+        "model_id": "atlas-eu-mini",
+        "matched_permits": [],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "export-weights",
+      "title": "Export action is not a permitted action",
+      "note": "",
+      "request": {
+        "principal": "acme/u-admin",
+        "model_id": "atlas-eu-mini",
+        "purpose": "customer_support",
+        "data_class": "INTERNAL",
+        "data_residency": "EU",
+        "action": "export_weights",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-DEFAULT-DENY"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-DEFAULT-DENY"
+        ],
+        "primary_rule": "R-DEFAULT-DENY",
+        "reason": "no permit matched",
+        "model_id": "atlas-eu-mini",
+        "matched_permits": [],
+        "matched_forbids": []
+      }
+    },
+    {
+      "id": "eu-confidential-faq-us",
+      "title": "EU confidential text dressed up as a public FAQ",
+      "note": "Purpose does not match the public permit, and residency still forbids the region.",
+      "request": {
+        "principal": "acme/u-help",
+        "model_id": "frontier-us-large",
+        "purpose": "public_faq",
+        "data_class": "CONFIDENTIAL",
+        "data_residency": "EU",
+        "action": "invoke",
+        "tenant": "acme"
+      },
+      "expect": {
+        "effect": "deny",
+        "includes": [
+          "R-RESIDENCY-EU"
+        ]
+      },
+      "decision": {
+        "effect": "deny",
+        "rule_ids": [
+          "R-RESIDENCY-EU"
+        ],
+        "primary_rule": "R-RESIDENCY-EU",
+        "reason": "forbid R-RESIDENCY-EU overrides 0 matching permit(s)",
+        "model_id": "frontier-us-large",
+        "matched_permits": [],
+        "matched_forbids": [
+          "R-RESIDENCY-EU"
+        ]
+      }
+    }
+  ],
+  "audit": {
+    "event_count": 38,
+    "chain_ok": true,
+    "chain_error": "",
+    "head_hash": "a935e9ef3415ef72e308acb2c8cb06e4a6cf63902465f21c2fd8c76bed3ecfc4",
+    "violation_count": 1,
+    "violations": [
+      {
+        "event_id": "evt-0023",
+        "request_id": "req-leak-01",
+        "ts": "2026-11-03T16:42:00Z",
+        "label": "RESTRICTED",
+        "route": "allow",
+        "region": "us-east-1",
+        "model": "frontier-us-large",
+        "data_residency": "EU"
+      }
+    ],
+    "by_type": {
+      "prompt_received": 9,
+      "dlp_redaction": 9,
+      "routing_decision": 9,
+      "llm_call": 6,
+      "request_blocked": 1,
+      "auth_failed": 1,
+      "tool_call": 1,
+      "tool_call_blocked": 1,
+      "llm_error": 1
+    },
+    "by_route": {
+      "local_only": 10,
+      "allow": 4,
+      "redact_and_continue": 2,
+      "block": 2,
+      "require_approval": 1
+    },
+    "by_outcome": {
+      "redacted": 7,
+      "local_only": 4,
+      "ok": 6,
+      "clean": 2,
+      "allow": 2,
+      "redact_and_continue": 1,
+      "block": 2,
+      "blocked": 2,
+      "denied": 1,
+      "require_approval": 1,
+      "error": 1
+    }
+  },
+  "slo": {
+    "source": "lens",
+    "note": "Offline stand-in shaped like Lens eval/slo.yaml. Not a live Lens export. Quality is paging on purpose so the pack cannot pretend accuracy is fine.",
+    "window_days": 30,
+    "observed_start": "2026-10-22T00:00:00Z",
+    "observed_end": "2026-11-04T23:00:00Z",
+    "objectives": [
+      {
+        "id": "availability",
+        "app": "all",
+        "target": 0.995,
+        "sli": 0.9982,
+        "status": "within_budget",
+        "burn_6h": 0.2
+      },
+      {
+        "id": "latency",
+        "app": "all",
+        "target": 0.99,
+        "sli": 0.9961,
+        "status": "within_budget",
+        "burn_6h": 0.5
+      },
+      {
+        "id": "quality",
+        "app": "lumen",
+        "target": 0.95,
+        "sli": 0.91,
+        "status": "page",
+        "burn_6h": 7.8
+      },
+      {
+        "id": "safety",
+        "app": "aegis",
+        "target": 0.999,
+        "sli": 0.9974,
+        "status": "ticket",
+        "burn_6h": 3.2
+      }
+    ]
+  },
+  "gate": {
+    "shipped": {
+      "ok": true,
+      "failures": []
+    },
+    "weakened": {
+      "ok": false,
+      "failures": [
+        "eu-support-us: effect allow != deny (R-PERMIT-HOSTED-SUPPORT)",
+        "restricted-us: missing R-RESIDENCY-EU; got R-RESTRICTED-BLOCK",
+        "eu-confidential-faq-us: missing R-RESIDENCY-EU; got R-DEFAULT-DENY"
+      ]
+    }
+  },
+  "latency": {
+    "rounds": 2000.0,
+    "p50_us": 9.9,
+    "p95_us": 11.8,
+    "p99_us": 14.3
+  },
+  "cost": {
+    "charter_usd": 0,
+    "projected_llm_review_usd": 0.054,
+    "label": "projection",
+    "input_tokens": 8000,
+    "output_tokens": 2000,
+    "note": "projection, not an invoice. Prices are stand-ins for a strong review model."
+  }
+}
