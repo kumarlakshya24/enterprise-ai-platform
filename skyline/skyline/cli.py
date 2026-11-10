@@ -62,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("demo", help="print the 60-second walkthrough")
 
     serve = sub.add_parser("serve", help="serve the console")
-    serve.add_argument("--port", type=int, default=int(os.environ.get("SKYLINE_PORT", "8097")))
+    serve.add_argument("--port", type=int, default=int(os.environ.get("SKYLINE_PORT", "8099")))
 
     args = parser.parse_args(argv)
     if args.cmd == "synth":
@@ -103,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
         state = build_state()
         finops = state["finops"]
         print("Skyline demo. No AWS account is contacted.")
-        print(f"Console: http://127.0.0.1:{os.environ.get('SKYLINE_PORT', '8097')}")
+        print(f"Console: http://127.0.0.1:{os.environ.get('SKYLINE_PORT', '8099')}")
         print(
             f"Hash {state['cleanHash'][:16]}  {state['violationCount']} invariant failures on the clean synth"
         )

@@ -279,7 +279,7 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 <summary><b>Run everything locally</b></summary>
 
 Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas, Lens, Charter, Arena and Skyline; Aegis and
-Lumen also run with Docker Compose. Switchboard, Forge, Atlas and Lens use distinct ports. Arena, Charter and Skyline all default to 8097; set `ARENA_PORT`, `CHARTER_PORT`, or `SKYLINE_PORT` to run more than one of them.
+Lumen also run with Docker Compose. Switchboard, Forge, Atlas, Lens and Skyline use distinct ports. Arena and Charter both default to 8097; set `ARENA_PORT` or `CHARTER_PORT` to run those two together. Skyline uses 8099.
 
 | Project | Run | UI |
 |:--|:--|:--|
@@ -291,7 +291,7 @@ Lumen also run with Docker Compose. Switchboard, Forge, Atlas and Lens use disti
 | Lens | `cd lens && make install && make eval && make up` | http://127.0.0.1:8088 |
 | Charter | `cd charter && make install && make eval && make up` | http://127.0.0.1:8097 |
 | Arena | `cd arena && make install && make up` | http://127.0.0.1:8097 |
-| Skyline | `cd skyline && make install && make eval && make up` | http://127.0.0.1:8097 |
+| Skyline | `cd skyline && make install && make eval && make up` | http://127.0.0.1:8099 |
 
 </details>
 

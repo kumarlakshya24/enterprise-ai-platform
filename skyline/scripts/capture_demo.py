@@ -1,7 +1,7 @@
 # ruff: noqa: S603, S607  — ffmpeg is a fixed argv, not user input.
 """Capture the console. Optional: needs Playwright and ffmpeg, not used by CI.
 
-python3 -m skyline serve --port 8097
+python3 -m skyline serve --port 8099
 python3 scripts/capture_demo.py
 """
 
@@ -17,7 +17,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "assets"
 RAW = ROOT / "build" / "capture"
-URL = "http://127.0.0.1:8097"
+URL = "http://127.0.0.1:8099"
 
 
 def main() -> int:

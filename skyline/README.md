@@ -43,7 +43,7 @@ cd skyline
 make test       # invariants, guardrail stub, the unit cost
 make eval       # synth, both gates, FinOps; rewrites the results below
 make gate-seeded  # open 0.0.0.0/0; exits 1
-make up         # console at http://127.0.0.1:8097
+make up         # console at http://127.0.0.1:8099
 ```
 
 ## Demo
@@ -52,7 +52,7 @@ Sixty seconds, from a clean synth.
 
 ```bash
 make up
-# http://127.0.0.1:8097
+# http://127.0.0.1:8099
 ```
 
 1. The skyline is six accounts. Security is the only one with a Bedrock endpoint, and the path under it is corporate network → internal ALB → Aegis → guardrail → Switchboard → that endpoint.

@@ -92,7 +92,7 @@ What you should see:
 * `make gate` exits 0.
 * `make gate-seeded` exits 1. The finding names `AegisSecurityGroup` and `0.0.0.0/0`.
 
-Then the console at <http://127.0.0.1:8097>:
+Then the console at <http://127.0.0.1:8099>:
 
 * Skyline of six accounts. Security is the tallest, because that is where Aegis, the keys, the
   guardrail, and the only Bedrock endpoint sit.
