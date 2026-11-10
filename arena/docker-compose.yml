@@ -1,0 +1,8 @@
+services:
+  arena:
+    build: .
+    ports:
+      - "8097:8097"
+    environment:
+      ARENA_HOST: 0.0.0.0
+      ARENA_PORT: "8097"
