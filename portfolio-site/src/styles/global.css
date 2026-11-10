@@ -744,7 +744,7 @@ h1 {
 
 .wave-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 0.8rem;
   margin: 0;
   padding: 0;

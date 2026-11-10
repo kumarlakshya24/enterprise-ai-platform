@@ -986,33 +986,298 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: "conduit",
+    slug: "charter",
     index: "07",
-    name: "Conduit",
-    role: "In progress",
-    summary: "Embedding CDC.",
-    status: "in-progress",
-    branch: "feat/conduit",
-    stack: [],
+    name: "Charter",
+    role: "Governance control plane",
+    summary:
+      "Decides which models may run, on whose data, in which region, and writes an evidence pack an auditor can diff.",
+    status: "main",
+    problem:
+      "Aegis decides one prompt. Lens says quality moved. Neither one can tell an auditor which models are allowed to run, where the data is allowed to go, and which control is actually failing. Charter is that control plane. It does not sit on the chat request, and it does not ask a model whether the request was compliant.",
+    diagram: {
+      title: "Charter control plane",
+      caption:
+        "Policies and model cards feed an in-process evaluator. The matrix reads Aegis-shaped and Lens-shaped stubs. Nothing on this path calls a model. Drawn from charter/ARCHITECTURE.md.",
+      blocks: [
+        {
+          type: "node",
+          title: "Operator or auditor",
+          detail: "Already inside the building. Charter is not an identity provider.",
+        },
+        { type: "down" },
+        {
+          type: "node",
+          tone: "emphasis",
+          title: "Evaluator",
+          detail: "Forbid wins. Else a permit. Else deny.",
+        },
+        {
+          type: "split",
+          arms: [
+            {
+              label: "parse or refuse",
+              title: "Policy bundle",
+              detail: "Cedar subset. Unknown syntax does not load.",
+            },
+            {
+              label: "scalars only",
+              title: "Model cards",
+              detail: "Region, tier, status. A when clause cannot call a function.",
+            },
+          ],
+        },
+        {
+          type: "split",
+          arms: [
+            {
+              label: "schema and HMAC",
+              title: "Aegis-shaped audit",
+              detail: "Committed stub. Charter does not import Aegis.",
+              dashed: true,
+            },
+            {
+              label: "four objectives or refuse",
+              title: "Lens-shaped SLO",
+              detail: "Targets match the Lens contract. Not a live export.",
+              dashed: true,
+            },
+          ],
+        },
+        { type: "down" },
+        {
+          type: "node",
+          title: "Control matrix",
+          detail: "One function per catalog id. Status is computed, not stored in YAML.",
+        },
+        { type: "down" },
+        {
+          type: "node",
+          title: "Evidence pack",
+          detail: "Names the gaps. The footer says it is not a legal opinion.",
+        },
+      ],
+    },
+    decisions: [
+      {
+        id: "ADR 0001",
+        title: "A Cedar subset, evaluated in process",
+        choice:
+          "permit, forbid, and when are parsed and evaluated in this process. A file outside the subset does not load. An unknown path, when it is read, denies the request.",
+        tradeoff:
+          "There is no principal group, no arithmetic, and no string prefix. eu-central-1 does not match eu. Shelling out to OPA or the Cedar CLI was rejected so make test needs only Python.",
+        href: blob("charter/docs/adr/0001-cedar-subset-in-process.md"),
+      },
+      {
+        id: "ADR 0002",
+        title: "Forbid overrides permit, and silence is deny",
+        choice:
+          "An unknown model is denied before any permit. If any forbid matches, the effect is deny. Otherwise a matching permit allows. No match is R-DEFAULT-DENY.",
+        tradeoff:
+          "First-match would make file order the policy. A forbid with a typo on the short-circuit side of && does not fire and does not raise an error. The gate compares rule ids, so a case that stays deny but loses R-RESIDENCY-EU still fails.",
+        href: blob("charter/docs/adr/0002-forbid-overrides-default-deny.md"),
+      },
+      {
+        id: "ADR 0003",
+        title: "Aegis-shaped and Lens-shaped stubs, no imports",
+        choice:
+          "The audit fixture uses Aegis’s event types, routes, labels, and HMAC construction. The SLO fixture uses Lens’s four targets and status words. Charter does not import either project.",
+        tradeoff:
+          "Region, model, and data residency are join fields the stub adds. A live export that drops them will not light EU-10 until the adapter changes. The Lens numbers are a stand-in, not Lens’s measured SLIs.",
+        href: blob("charter/docs/adr/0003-stubs-not-live-calls.md"),
+      },
+      {
+        id: "ADR 0004",
+        title: "The matrix is a mapping, not a certificate",
+        choice:
+          "Each catalog id has one function that returns met, partial, or gap, plus a sentence that cites a model, a rule, or a request. A control with no function is unmapped, and eval fails.",
+        tradeoff:
+          "The functions encode judgment. Coverage is the catalog that was written, 17 controls, not the Act. A single percentage was rejected because it would hide which three gaps are red.",
+        href: blob("charter/docs/adr/0004-matrix-is-a-mapping.md"),
+      },
+    ],
+    facts: [
+      {
+        value: "10 met · 4 partial · 3 gap",
+        label:
+          "17 controls in the catalog. The three gaps are locked: EU-10 (req-leak-01), EU-14 (claims-triage-eu has no reviewer), EU-15 (Lens quality is paging). A pack that was all green would be hiding the leak.",
+        href: blob("charter/reports/latest/summary.md"),
+      },
+      {
+        value: "Residency file removed, gate fails",
+        label:
+          "3 cases. eu-support-us flips deny to allow under R-PERMIT-HOSTED-SUPPORT. The other two stay deny but lose R-RESIDENCY-EU. Shipped policies pass.",
+        href: blob("charter/reports/latest/summary.md"),
+      },
+      {
+        value: "p50 9.9 µs · p95 11.8 µs",
+        label:
+          "2,000 rounds of the residency deny, in process, card already bound, no disk. Audit stub: 38 events, chain verifies, 1 residency violation. Provider cost $0. The $0.054 review figure is a labeled projection. 20 tests.",
+        href: blob("charter/README.md"),
+      },
+    ],
+    stack: [
+      "Python 3.12",
+      "FastAPI",
+      "Cedar subset",
+      "In-process evaluator",
+      "HMAC audit stub",
+    ],
+    links: [
+      { label: "Repository", href: tree("charter") },
+      { label: "Architecture", href: blob("charter/ARCHITECTURE.md") },
+      { label: "ADRs", href: tree("charter/docs/adr") },
+      { label: "Demo GIF", href: blob("charter/docs/assets/charter-demo.gif") },
+      { label: "Demo video", href: blob("charter/docs/assets/charter-demo.mp4") },
+    ],
   },
   {
     slug: "arena",
     index: "08",
     name: "Arena",
-    role: "In progress",
-    summary: "Fine-tune vs RAG vs prompt bench.",
-    status: "in-progress",
-    branch: "feat/arena",
-    stack: [],
+    role: "Fine-tune, RAG, and prompt bench",
+    summary:
+      "Runs the same labeled questions through a prompt, RAG, a LoRA stub, and a student, then writes the memo that says which one to ship.",
+    status: "main",
+    problem:
+      "A fine-tune on last quarter’s runbook answers last quarter’s policy. A prompt that never saw the runbook refuses. RAG cites the section that can be reindexed tomorrow. Those are different products, and nobody has put them on one labeled set. Arena is that bench. The adapter is not a neural trainer.",
+    diagram: {
+      title: "Arena arms and the memo",
+      caption:
+        "Hard rules remove arms. Cost ranks what remains. Quality and citations are computed. Dollars and catalog latency are projections. Overhead is measured and not added in. Drawn from arena/ARCHITECTURE.md.",
+      blocks: [
+        { type: "node", title: "Caller", detail: "Demo UI, or make demo / make eval" },
+        { type: "down" },
+        {
+          type: "node",
+          title: "Frozen corpus",
+          detail: "Harborline runbooks. 61 labeled questions. Freeze 2026-03-01.",
+        },
+        {
+          type: "split",
+          arms: [
+            {
+              label: "public sections only",
+              title: "Prompt",
+              detail: "No citations",
+            },
+            {
+              label: "the index you point at",
+              title: "RAG",
+              detail: "BM25 plus a section citation. Lumen-shaped port.",
+            },
+            {
+              label: "train split only",
+              title: "Adapter",
+              detail: "Emits freeze text. Does not cite. Does not read holdout labels.",
+            },
+            {
+              label: "drop long and one-off",
+              title: "Student",
+              detail: "The same memory, with a smaller capacity",
+            },
+          ],
+        },
+        { type: "down", label: "floor, citations, change rate, SLO, budget" },
+        {
+          type: "node",
+          tone: "emphasis",
+          title: "Decision rules",
+          detail: "Policy 2026.11.10. A cheap arm does not waive the quality floor.",
+        },
+        { type: "down" },
+        {
+          type: "node",
+          title: "One-page memo",
+          detail: "Names the winner and whether the claim was “do not fine-tune.”",
+        },
+        {
+          type: "note",
+          text: "Switchboard is a stand-in for which catalog model would serve the winning arm. A live disagreement is recorded and does not change the winner.",
+        },
+      ],
+    },
+    decisions: [
+      {
+        id: "ADR 0001",
+        title: "An adapter stub, not a GPU fine-tune",
+        choice:
+          "The LoRA arm is a memory built only from the train split. It emits the freeze text of facts that clear a two-word score. The student is that memory with long procedures and one-off facts removed.",
+        tradeoff:
+          "CI has no GPU, and a seed change would make the gate compare noise. Exact-phrase support is a lower bound on “the arm had the fact” and an upper bound on “the wording matched.” A real LoRA could pass the courtesy-credit rewording. It would still be frozen, and it would still not cite.",
+        href: blob("arena/docs/adr/0001-adapter-stub-not-a-gpu-job.md"),
+      },
+      {
+        id: "ADR 0002",
+        title: "Score the world the scenario claims",
+        choice:
+          "change_rate picks the index. Stable scores the freeze. Weekly eliminates both tune arms. Monthly keeps a tune arm only when the staleness slice clears 0.70. On this corpus it does not.",
+        tradeoff:
+          "A stable scenario hides today’s amendments from the gate. The old-policy column stays on screen. A team that marks the corpus stable and is wrong will ship a stale answer, and the memo says so.",
+        href: blob("arena/docs/adr/0002-score-the-world-the-scenario-claims.md"),
+      },
+      {
+        id: "ADR 0003",
+        title: "Split measured overhead from projections",
+        choice:
+          "Task success is computed and saved. Model latency and dollars come from the price card and are labeled projection. Pipeline overhead is wall clock, model time not slept. make gate does not compare overhead.",
+        tradeoff:
+          "The three columns are never added together. A 0.070 ms measurement must not move an 80 ms SLO. The price card can be wrong about a real provider, and the recommendation moves. That is one file, and the memo prints the assumptions.",
+        href: blob("arena/docs/adr/0003-split-measured-overhead-from-projections.md"),
+      },
+      {
+        id: "ADR 0004",
+        title: "Lumen and Switchboard are ports",
+        choice:
+          "The RAG arm speaks the subset of Lumen’s POST /ask the bench needs. The default is local BM25 over Harborline. Switchboard catalog ids are named on the price card. The committed eval never opens a socket.",
+        tradeoff:
+          "The stub does not implement Lumen’s RBAC. Harborline is one audience. The catalog has no adapter id, so the adapter maps to premium and the stand-in says so. A live disagreement does not change the winner.",
+        href: blob("arena/docs/adr/0004-lumen-and-switchboard-are-ports.md"),
+      },
+    ],
+    facts: [
+      {
+        value: "RAG 25/25 · adapter 19/25",
+        label:
+          "Current world, full slice. Student 15/25. Prompt 8/25. Frozen holdout: RAG 16/16, adapter 15/16. The miss is a goodwill credit asked as “courtesy money.” Exact-phrase support, not a judge.",
+        href: blob("arena/reports/latest.md"),
+      },
+      {
+        value: "LoRA trails RAG by 0.0625",
+        label:
+          "Quality margin on the frozen holdout. The bar to freeze for accuracy alone is +0.03. Weekly desk, citations on: RAG wins, and the tune arms stay out even if their score is patched to 1.0.",
+        href: blob("arena/reports/latest.json"),
+      },
+      {
+        value: "RAG overhead p95 0.070 ms",
+        label:
+          "Measured, n=500, in process, model time not slept. Catalog latency of 216.24 ms is a projection, not wall clock. Weekly desk at 50k requests is $185.50 projected. 28 tests. 16/16 demo checks.",
+        href: blob("arena/reports/latest.md"),
+      },
+    ],
+    stack: [
+      "Python 3.12",
+      "FastAPI",
+      "BM25",
+      "Price card",
+      "Lumen-shaped and Switchboard-shaped ports",
+    ],
+    links: [
+      { label: "Repository", href: tree("arena") },
+      { label: "Architecture", href: blob("arena/ARCHITECTURE.md") },
+      { label: "ADRs", href: tree("arena/docs/adr") },
+      { label: "Demo GIF", href: blob("arena/docs/assets/arena-demo.gif") },
+      { label: "Demo video", href: blob("arena/docs/assets/arena-demo.mp4") },
+    ],
   },
   {
-    slug: "charter",
+    slug: "conduit",
     index: "09",
-    name: "Charter",
+    name: "Conduit",
     role: "In progress",
-    summary: "AI governance control plane.",
+    summary: "Embedding CDC.",
     status: "in-progress",
-    branch: "feat/charter",
+    branch: "feat/conduit",
     stack: [],
   },
   {
@@ -1033,7 +1298,7 @@ export const waveTwo = projects.filter(
 );
 
 export const platform: Diagram = {
-  title: "How the six systems sit together",
+  title: "How the systems sit together",
   caption:
     "Solid steps are the path inside a project. Dashed boxes are documented contracts. Which of those are live, and which are tested against a stand-in, is in the repository README.",
   blocks: [
@@ -1086,11 +1351,26 @@ export const platform: Diagram = {
         },
       ],
     },
-    { type: "down", label: "beside the request path" },
+    { type: "down", label: "beside the chat request" },
     {
-      type: "node",
-      title: "Lens",
-      detail: "Sample, judge, drift, SLOs. Blocks a bad release in CI.",
+      type: "split",
+      arms: [
+        {
+          label: "quality of what shipped",
+          title: "Lens",
+          detail: "Sample, judge, drift, SLOs. Blocks a bad release.",
+        },
+        {
+          label: "which model may run",
+          title: "Charter",
+          detail: "Policies, cards, evidence pack. Not a legal opinion.",
+        },
+        {
+          label: "how to answer",
+          title: "Arena",
+          detail: "Prompt, RAG, adapter stub, student. One memo.",
+        },
+      ],
     },
   ],
 };

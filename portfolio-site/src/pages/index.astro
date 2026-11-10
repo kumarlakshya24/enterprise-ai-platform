@@ -11,7 +11,7 @@ import {
 
 const title = "Lakshya Kumar · Applied AI architect";
 const description =
-  "Six offline systems for using language models safely, cheaply, and with a number you can check. Portfolio of Lakshya Kumar.";
+  "Eight offline systems for using language models safely, cheaply, and with a number you can check. Portfolio of Lakshya Kumar.";
 ---
 
 <Base title={title} description={description}>
@@ -39,7 +39,7 @@ const description =
         How a company uses models without leaking data, overspending, or shipping a quiet regression.
       </h1>
       <p class="lede">
-        Six systems, each able to run alone, offline, on synthetic data. The seams between them are documented contracts. Every number on this page is copied from a committed evaluation. Nothing here was re-measured for the site.
+        Eight systems on main, each able to run alone, offline, on synthetic data. The seams between them are documented contracts. Every number on this page is copied from a committed evaluation. Nothing here was re-measured for the site.
       </p>
       <nav class="jump" aria-label="Projects">
         <ol>
@@ -55,7 +55,9 @@ const description =
           }
           <li>
             <a href="#wave-2">
-              <span>07–10</span>
+              <span>
+                {waveTwo[0].index}–{waveTwo[waveTwo.length - 1].index}
+              </span>
               Wave 2
             </a>
           </li>
@@ -67,7 +69,7 @@ const description =
       <div class="section-intro">
         <h2 id="platform-title">The platform</h2>
         <p>
-          Aegis is the trust boundary. Switchboard chooses a model after that decision. Lumen answers from documents. Atlas runs the multi-step work. Forge is where untrusted code would execute. Lens watches the others and can block a release. Dashed boxes are contracts that are specified, and not fully wired, today.
+          Aegis is the trust boundary. Switchboard chooses a model after that decision. Lumen answers from documents. Atlas runs the multi-step work. Forge is where untrusted code would execute. Lens, Charter, and Arena sit beside the chat request: quality, governance, and the choice between a prompt, retrieval, and a fine-tune. Dashed boxes are contracts that are specified, and not fully wired, today.
         </p>
       </div>
       <Diagram diagram={platform} />
@@ -81,7 +83,7 @@ const description =
       <div class="section-intro">
         <h2 id="wave-title">Wave 2</h2>
         <p>
-          Four systems are in progress and are not on main. No architecture, no decisions, and no numbers until the work is committed. The one-line descriptions are the brief for each branch.
+          Conduit and Skyline are still in progress and are not on main. No architecture, no decisions, and no numbers until the work is committed. The one-line descriptions are the brief for each branch.
         </p>
       </div>
       <ul class="wave-grid">

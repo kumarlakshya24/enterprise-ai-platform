@@ -2,7 +2,7 @@
 
 A static portfolio for Lakshya Kumar ([kumarlakshya24](https://github.com/kumarlakshya24)), written for Applied AI Architect, AI Engineer, and Solutions Architect reviews.
 
-The page covers the six systems on `main` — Aegis, Switchboard, Lumen, Forge, Atlas, and Lens — plus a Wave 2 strip for Conduit, Arena, Charter, and Skyline. Project copy, diagrams, decisions, and numbers live in [`src/data/projects.ts`](src/data/projects.ts). Fill that file in when a Wave 2 branch lands. Do not add a number that is not already in the project’s README or committed report.
+The page covers the eight systems on `main` — Aegis, Switchboard, Lumen, Forge, Atlas, Lens, Charter, and Arena — plus a Wave 2 strip for Conduit and Skyline. Project copy, diagrams, decisions, and numbers live in [`src/data/projects.ts`](src/data/projects.ts). Fill that file in when a Wave 2 branch lands. Do not add a number that is not already in the project’s README or committed report.
 
 ## Why Astro
 
