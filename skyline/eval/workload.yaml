@@ -1,0 +1,42 @@
+# One thousand requests, the unit of the FinOps view.
+# user_chars is the employee turn. Retrieved context is not scanned: see ADR 0004.
+# output_tokens are scanned. input_tokens include retrieved context and drive the model bill.
+name: platform-mix
+description: A thousand requests across FAQ, cited answers, confidential notes, and agent steps.
+requests:
+  - id: faq
+    label: FAQ and classification
+    count: 620
+    skyline_model: haiku
+    naive_model: sonnet
+    input_tokens: 900
+    output_tokens: 150
+    user_chars: 500
+    tgw_crossings: 2
+  - id: rag
+    label: Cited knowledge answer
+    count: 250
+    skyline_model: haiku
+    naive_model: sonnet
+    input_tokens: 3200
+    output_tokens: 450
+    user_chars: 600
+    tgw_crossings: 2
+  - id: confidential
+    label: Confidential, pinned local
+    count: 80
+    skyline_model: local
+    naive_model: sonnet
+    input_tokens: 1800
+    output_tokens: 250
+    user_chars: 400
+    tgw_crossings: 1
+  - id: agent
+    label: Agent step
+    count: 50
+    skyline_model: sonnet
+    naive_model: sonnet
+    input_tokens: 5000
+    output_tokens: 700
+    user_chars: 800
+    tgw_crossings: 2
