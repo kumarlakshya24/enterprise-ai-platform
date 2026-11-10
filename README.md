@@ -23,7 +23,7 @@ Each project solves one hard part on its own, runs offline with one command, and
 [![Skyline CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml)
 [![Conduit CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/conduit.yml)
 
-[**The platform**](#-the-platform-in-one-picture) · [**The ten projects**](#-the-ten-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
+[**The platform**](#-the-platform-in-three-views) · [**The ten projects**](#-the-ten-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
 
 </div>
 
@@ -50,54 +50,32 @@ ten things go wrong:
 Each project takes one of these problems and solves it the way a production team would: with a clear
 architecture, a measured result, honest limitations, and a test that fails if the protection ever regresses.
 
-## 🗺️ The platform in one picture
+## 🗺️ The platform in three views
+
+Ten projects are too many for one drawing, so the platform is shown as three views. Each project keeps one colour in every view.
+
+**1. The request path.** Who a person or an agent talks to, and what each call passes through.
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
 flowchart LR
-  U(["👩‍💼 Employees<br/>🤖 AI agents"]) --> AEG
+  U(["Employees and AI agents"])
+  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
+  ATL["🧭 <b>Atlas</b><br/>agent workflows"]
+  FRG["⚒️ <b>Forge</b><br/>tool sandbox"]
+  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
+  SW["🔀 <b>Switchboard</b><br/>model router"]
+  LLM[("Hosted and local models")]
 
-  subgraph EDGE["Trust boundary"]
-    AEG["🛡️ <b>Aegis</b><br/>security gateway<br/><sub>PII tokenization · data labels<br/>tool guard · audit log</sub>"]
-    SW["🔀 <b>Switchboard</b><br/>model router<br/><sub>cost · latency · capability</sub>"]
-  end
-
-  subgraph WORK["Doing the work"]
-    LUM["🔦 <b>Lumen</b><br/>knowledge assistant<br/><sub>cited answers · RBAC · refusals</sub>"]
-    ATL["🧭 <b>Atlas</b><br/>durable agent workflows<br/><sub>checkpoints · idempotency · sagas</sub>"]
-    FRG["⚒️ <b>Forge</b><br/>tool sandbox<br/><sub>deny-before-spawn · limits</sub>"]
-    ARN["🏟️ <b>Arena</b><br/>fine-tune vs RAG vs prompt<br/><sub>quality · cost · latency</sub>"]
-  end
-
-  AEG -. "pick a model" .-> SW --> LLM[("☁️ Hosted &<br/>🏠 local models")]
-  AEG --> LLM
   U --> LUM
   U --> ATL
-  ATL -. "is this tool call allowed?" .-> AEG
+  U --> AEG
   ATL -. "what does the policy say?" .-> LUM
   ATL -. "run untrusted code" .-> FRG
-
-  subgraph DATA["Data plane"]
-    CON["🔌 <b>Conduit</b><br/>embedding CDC<br/><sub>generations · swap · RTBF</sub>"]
-  end
-
-  DOCS[("document changes")] --> CON
-  AEG -. "redact before embed" .-> CON
-  CON -. "one active index" .-> LUM
-
-  LENS["🔬 <b>Lens</b><br/>observability & evaluation<br/><sub>traces · judge · drift · SLOs · CI gate</sub>"]
-  CHR["📜 <b>Charter</b><br/>governance control plane<br/><sub>policies · model cards<br/>residency · evidence</sub>"]
-  SKY["🏙️ <b>Skyline</b><br/>where they land<br/><sub>private net · tenant keys · FinOps</sub>"]
-
-  AEG -. traces .-> LENS
-  LUM -. traces .-> LENS
-  LENS -. "blocks a bad release" .-> CI{{"CI / release"}}
-  AEG -. "audit stub" .-> CHR
-  LENS -. "SLO snapshot" .-> CHR
-  ARN -. "RAG arm" .-> LUM
-  ARN -. "which model serves the arm" .-> SW
-  SKY -. "account layout" .-> AEG
-  SKY -. "account layout" .-> LUM
-  SKY -. "account layout" .-> SW
+  ATL -. "is this tool call allowed?" .-> AEG
+  AEG -. "pick a model" .-> SW
+  SW --> LLM
+  AEG --> LLM
 
   classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
   classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
@@ -110,20 +88,92 @@ flowchart LR
   classDef skyline fill:#57606a,stroke:#424a53,color:#fff
   classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
   classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
-  class AEG aegis
-  class SW switchboard
+  class U neutral
   class LUM lumen
   class ATL atlas
   class FRG forge
-  class LENS lens
-  class CHR charter
-  class ARN arena
-  class SKY skyline
+  class AEG aegis
+  class SW switchboard
+  class LLM neutral
+```
+
+**2. Knowledge and data.** How documents reach the search index, and how the ways of answering are compared.
+
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
+flowchart LR
+  DOCS[("Document changes")]
+  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
+  CON["🔌 <b>Conduit</b><br/>embedding pipeline"]
+  ARN["🏟️ <b>Arena</b><br/>fine-tune vs RAG vs prompt"]
+  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
+  SW["🔀 <b>Switchboard</b><br/>model router"]
+
+  DOCS --> CON
+  AEG -. "redact before embed" .-> CON
+  CON -. "one active index" .-> LUM
+  ARN -. "RAG arm" .-> LUM
+  ARN -. "which model serves the arm" .-> SW
+
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
+  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
+  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
+  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
+  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  class DOCS neutral
+  class AEG aegis
   class CON conduit
-  class U,LLM,CI,DOCS neutral
-  style EDGE fill:transparent,stroke:#cf222e,stroke-dasharray:6 4
-  style WORK fill:transparent,stroke:#1a7f37,stroke-dasharray:6 4
-  style DATA fill:transparent,stroke:#8a6238,stroke-dasharray:6 4
+  class ARN arena
+  class LUM lumen
+  class SW switchboard
+```
+
+**3. Oversight and where it runs.** What watches the platform, what governs it, and the cloud layout it would land on.
+
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 36, "rankSpacing": 80}}}%%
+flowchart LR
+  SKY["🏙️ <b>Skyline</b><br/>cloud landing zone"]
+  AEG["🛡️ <b>Aegis</b><br/>security gateway"]
+  LUM["🔦 <b>Lumen</b><br/>knowledge assistant"]
+  SW["🔀 <b>Switchboard</b><br/>model router"]
+  CHR["📜 <b>Charter</b><br/>governance"]
+  LENS["🔬 <b>Lens</b><br/>observability and evaluation"]
+  CI{{"CI / release"}}
+
+  SKY -. "account layout" .-> AEG
+  SKY -. "account layout" .-> LUM
+  SKY -. "account layout" .-> SW
+  AEG -. "audit records" .-> CHR
+  AEG -. "traces" .-> LENS
+  LUM -. "traces" .-> LENS
+  LENS -. "SLO snapshot" .-> CHR
+  LENS -. "blocks a bad release" .-> CI
+
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  classDef charter fill:#1b7c83,stroke:#136061,color:#fff
+  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
+  classDef skyline fill:#57606a,stroke:#424a53,color:#fff
+  classDef conduit fill:#8a6238,stroke:#6b4a28,color:#fff
+  classDef neutral fill:#6e7781,stroke:#57606a,color:#fff
+  class SKY skyline
+  class AEG aegis
+  class LUM lumen
+  class SW switchboard
+  class CHR charter
+  class LENS lens
+  class CI neutral
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>
