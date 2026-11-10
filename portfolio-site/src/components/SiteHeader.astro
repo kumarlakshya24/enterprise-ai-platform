@@ -1,0 +1,47 @@
+---
+import { githubProfile, site } from "../data/projects";
+
+const base = import.meta.env.BASE_URL;
+const accents = [
+  { id: "violet", label: "Violet" },
+  { id: "blue", label: "Blue" },
+  { id: "emerald", label: "Emerald" },
+  { id: "amber", label: "Amber" },
+  { id: "rose", label: "Rose" },
+];
+---
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href={base}>
+      <span class="brand-mark" aria-hidden="true">LK</span>
+      <span class="brand-name">{site.name}</span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href={`${base}#projects`}>Projects</a>
+      <a href={`${base}#platform`}>Platform</a>
+      <a href={githubProfile}>GitHub</a>
+    </nav>
+    <div class="controls">
+      <div class="swatches" role="radiogroup" aria-label="Accent colour">
+        {
+          accents.map((accent) => (
+            <button
+              type="button"
+              role="radio"
+              class="swatch"
+              data-set-accent={accent.id}
+              aria-checked="false"
+              aria-label={accent.label}
+              title={accent.label}
+            />
+          ))
+        }
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Use the light theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7a.75.75 0 0 0-1-.9A10 10 0 1 0 21.2 15.6a.75.75 0 0 0-.9-1Z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g></svg>
+      </button>
+    </div>
+  </div>
+</header>

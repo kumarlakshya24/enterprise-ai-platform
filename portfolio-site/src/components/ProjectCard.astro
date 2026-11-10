@@ -1,0 +1,40 @@
+---
+import { projectColor, type Project } from "../data/projects";
+
+interface Props {
+  project: Project;
+  featured?: boolean;
+}
+
+const { project, featured = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const headline = project.facts?.[0]?.value;
+---
+
+<li class:list={["card", { featured }]} style={`--p: ${projectColor[project.slug]}`}>
+  <a class="card-link" href={`${base}projects/${project.slug}/`} aria-labelledby={`card-${project.slug}`}>
+    <div class="card-shot">
+      <img
+        src={`${base}shots/${project.slug}.webp`}
+        alt={`${project.name} demo screen`}
+        width="1200"
+        height="750"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+    <div class="card-body">
+      <p class="card-meta">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="mono">{project.index}</span>
+        <span>{project.role}</span>
+      </p>
+      <h3 id={`card-${project.slug}`}>{project.name}</h3>
+      <p class="card-summary">{project.summary}</p>
+      {headline && <p class="card-fact">{headline}</p>}
+      <ul class="chips">
+        {project.stack.slice(0, 3).map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </a>
+</li>

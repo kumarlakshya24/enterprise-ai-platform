@@ -11,16 +11,21 @@ const { project } = Astro.props;
 
 <article class="case" id={project.slug} aria-labelledby={`${project.slug}-title`}>
   <header class="case-head">
-    <p class="index">{project.index}</p>
-    <div>
-      <p class="role">{project.role}</p>
-      <h2 id={`${project.slug}-title`}>{project.name}</h2>
-      <p class="summary">{project.summary}</p>
-    </div>
-    <p class="status">
-      <span class="status-mark" aria-hidden="true"></span>
-      On main
+    <p class="card-meta">
+      <span class="dot" aria-hidden="true"></span>
+      <span class="mono">{project.index}</span>
+      <span>{project.role}</span>
     </p>
+    <h1 id={`${project.slug}-title`}>{project.name}</h1>
+    <p class="summary">{project.summary}</p>
+    <div class="case-shot">
+      <img
+        src={`${import.meta.env.BASE_URL}shots/${project.slug}.webp`}
+        alt={`${project.name} demo screen`}
+        width="1200"
+        height="750"
+      />
+    </div>
   </header>
 
   <div class="case-body">
