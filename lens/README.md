@@ -6,7 +6,7 @@ Know when your AI got worse, before your users do, and stop the release that cau
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![OpenTelemetry-style](https://img.shields.io/badge/traces-OpenTelemetry--style-425CC7?logo=opentelemetry&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-23%20passing-2ea44f)

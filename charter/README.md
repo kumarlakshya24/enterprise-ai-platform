@@ -6,7 +6,7 @@ Which models may run, on whose data, in which region, and can you show the work?
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![Policies](https://img.shields.io/badge/policy-Cedar%20subset-6e4b2a)
 ![Tests](https://img.shields.io/badge/tests-20%20passing-2ea44f)

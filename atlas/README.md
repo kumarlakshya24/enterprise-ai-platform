@@ -6,7 +6,7 @@ Multi-agent workflows that survive a crash without charging the customer twice.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![SQLite](https://img.shields.io/badge/SQLite-event%20log-003B57?logo=sqlite&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-30%20passing-2ea44f)

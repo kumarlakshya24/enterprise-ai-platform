@@ -6,7 +6,7 @@ A sandbox that refuses a dangerous agent tool call before a process even exists.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](../LICENSE)
 ![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-2ea44f)
 ![Eval](https://img.shields.io/badge/eval-55%2F55-2ea44f)

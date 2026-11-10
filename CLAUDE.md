@@ -48,7 +48,8 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 - All ten project READMEs follow the shared section order. No README uses a `<video>` tag. `scripts/check_docs.py` covers the root README and all ten project READMEs.
 - The root README shows the platform as three small diagrams with no crossing lines (request path; knowledge and data; oversight and where it runs).
 - Root README counts: 10 projects, 477 tests.
-- Still open: the license decision in item 1, and the portfolio-site follow-ups in item 4.
+- Main has a root MIT `LICENSE`. The portfolio site is on Astro 7 with 0 `npm audit` findings (PR #21).
+- Still open: the Conduit and Skyline cards on the portfolio site (item 4).
 
 ## Work queue
 
@@ -57,7 +58,7 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 - [x] Bring `arena/README.md` and `skyline/README.md` into the shared section order, with the same badge row and anchor table of contents as the others.
 - [x] Remove the `## Interview` section from `skyline/README.md`. Move the link into the Documentation table as "Design walkthrough", matching the other projects.
 - [x] Add `arena/README.md` and `skyline/README.md` to the file list in `scripts/check_docs.py` (and `conduit/README.md`).
-- [ ] License badges: each `pyproject.toml` declares MIT but the repo has no `LICENSE` file. Ask me whether to add a root MIT `LICENSE` or drop the badges. Do not decide alone.
+- [x] License: a root MIT `LICENSE` was added on Nov 10 at my request, and the README license badges link to it.
 - [x] `check_docs.py` passed and #17 merged on Nov 10. The GitHub-API render check was not run from the cloud session, which cannot call that endpoint.
 
 ### 2. PR #11 (diagrams, one colour per project): done
@@ -71,7 +72,7 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 
 ### 4. Portfolio site follow-ups (PR #18 is merged)
 - [x] `npm ci && npm run build` passes.
-- [ ] `npm audit` reports 3 high and 1 critical finding on Astro 5. Upgrading to Astro 7 clears all of them and the site still builds; ship that as its own PR.
+- [x] Astro upgraded from 5 to 7 (PR #21), which cleared 3 high and 1 critical `npm audit` finding.
 - [ ] Conduit and Skyline are still "in progress" stubs in `src/data/projects.ts`. Write full cards from their READMEs, ADRs and reports.
 - [ ] Do not deploy. Tell me when it is ready to review.
 
