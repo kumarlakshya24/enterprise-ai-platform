@@ -91,15 +91,16 @@ Hard denials live in `forge/guard/constants.py`. The YAML file can only shrink t
 ## Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
+  Policy["Policy YAML<br/>can only shrink<br/>the allowlist"] -.-> Guard
   Caller([Caller or demo UI]) --> Guard{"Tool guard<br/>path · import · tool · size"}
+  Hard["Hard denials in code<br/>os · socket · shell · network"] -.-> Guard
   Guard -->|"deny (no process spawned)"| Audit[("Append-only<br/>HMAC JSONL")]
   Guard -->|python allow| Child["Child interpreter<br/>python -I · audit hook<br/>restricted builtins · rlimits"]
   Guard -->|file allow| WS[("Workspace<br/>relative paths only")]
-  Child --> WS
   Child -->|"result, exit code, kill reason"| Audit
-  Policy["Policy YAML<br/>can only shrink<br/>the allowlist"] -.-> Guard
-  Hard["Hard denials in code<br/>os · socket · shell · network"] -.-> Guard
+  Child --> WS
 ```
 
 Python 3.11+, FastAPI, a short-lived `python -I` child, and an HMAC JSONL audit log.

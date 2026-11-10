@@ -78,15 +78,12 @@ The other frames from the same take are [the start](docs/assets/01-start.png), [
 ## Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
-  subgraph Agents
-    P[Planner<br/>mock LLM]
-    S[Specialists<br/>research, finance, comms, ops]
-  end
+  P[Planner<br/>mock LLM] -- "proposes tool calls" --> ENG
   U[Operator / UI] --> API[Atlas API]
   API --> ENG[Engine<br/>drive, lease, fence]
-  P --> ENG
-  ENG --> S
+  ENG --> S[Specialists<br/>research, finance, comms, ops]
   ENG --> GUARD[Guard port<br/>Aegis contract]
   ENG --> LUMEN[Knowledge port<br/>Lumen contract]
   ENG --> LOG[(atlas.db<br/>events + checkpoints)]
