@@ -1,0 +1,11 @@
+# Illustrative vendor list prices, not an invoice and not a measurement of a bill.
+# Figures are the commonly published per-million-token rates for these model names.
+# Re-check them before using any of this in a budget. Local CPU API cost is zero.
+chars_per_token: 4
+usd_per_million_tokens:
+  text-embedding-3-small: 0.02
+  text-embedding-3-large: 0.13
+  local-cpu: 0.0
+scaled_tokens_per_doc:
+  short_memo: 2000
+  ten_page_policy: 8000
