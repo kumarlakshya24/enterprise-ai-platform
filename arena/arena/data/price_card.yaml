@@ -1,0 +1,56 @@
+# Illustrative 2026 list prices for the decision bench. Not an invoice.
+# Model latency is a catalog projection. Pipeline overhead is measured separately
+# and is not added into these base figures.
+version: "2026.11.10"
+label: projection
+amortization_months: 6
+models:
+  balanced:
+    switchboard_model: balanced
+    switchboard_policy: default
+    input_per_mtok: 3.0
+    output_per_mtok: 15.0
+    base_latency_ms: 210
+    per_1k_input_ms: 12
+  lora_endpoint:
+    switchboard_model: premium
+    switchboard_policy: quality-first
+    input_per_mtok: 1.5
+    output_per_mtok: 6.0
+    base_latency_ms: 160
+    per_1k_input_ms: 8
+  student:
+    switchboard_model: fast-cheap
+    switchboard_policy: latency-first
+    input_per_mtok: 0.15
+    output_per_mtok: 0.60
+    base_latency_ms: 42
+    per_1k_input_ms: 4
+arms:
+  prompt:
+    model: balanced
+    input_tokens: 180
+    output_tokens: 70
+    program_usd: 0
+  rag:
+    model: balanced
+    # System prompt plus three short passages. The extra tokens are the cost of citing.
+    input_tokens: 520
+    output_tokens: 90
+    program_usd: 0
+    reindex_usd_by_change:
+      stable: 0
+      monthly: 12
+      weekly: 40
+  lora:
+    model: lora_endpoint
+    input_tokens: 160
+    output_tokens: 70
+    # Data review, three training runs, an eval, and six months of a dedicated endpoint.
+    # A single GPU hour would hide the program and make every volume look cheap.
+    program_usd: 2400
+  distilled:
+    model: student
+    input_tokens: 90
+    output_tokens: 60
+    program_usd: 900

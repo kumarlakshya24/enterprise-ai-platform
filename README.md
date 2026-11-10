@@ -2,13 +2,13 @@
 
 # 🏗️ The Enterprise AI Platform, built piece by piece
 
-**Six production-style systems that answer one question:<br>
-how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, and measurably*?**
+**Eight production-style systems that answer one question:<br>
+how does a company let its people and its AI agents use LLMs *safely, cheaply, reliably, measurably, and in a way it can explain*?**
 
 Each project solves one hard part on its own, runs offline with one command, and proves its claims with a saved evaluation.
 
-![Projects](https://img.shields.io/badge/projects-6-0969da)
-![Automated tests](https://img.shields.io/badge/tests-388_passing-2ea44f)
+![Projects](https://img.shields.io/badge/projects-8-0969da)
+![Automated tests](https://img.shields.io/badge/tests-436_passing-2ea44f)
 ![Offline](https://img.shields.io/badge/runs-offline,_no_API_key-6e7781)
 ![Data](https://img.shields.io/badge/data-100%25_synthetic-8250df)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
@@ -18,8 +18,10 @@ Each project solves one hard part on its own, runs offline with one command, and
 [![Switchboard CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/switchboard.yml)
 [![Forge CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 [![Atlas CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/atlas.yml)
+[![Charter CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/charter.yml)
+[![Arena CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/arena.yml)
 
-[**The platform**](#-the-platform-in-one-picture) · [**The six projects**](#-the-six-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
+[**The platform**](#-the-platform-in-one-picture) · [**The eight projects**](#-the-eight-projects) · [**How they connect**](#-how-the-projects-connect) · [**Engineering standards**](#-engineering-standards) · [**Where to start**](#-where-to-start)
 
 </div>
 
@@ -28,7 +30,7 @@ Each project solves one hard part on its own, runs offline with one command, and
 ## 💡 The problem in plain English
 
 Every company wants its employees and its AI agents to use the best language models. The moment they do,
-six things go wrong:
+eight things go wrong:
 
 | What goes wrong | Example | Which project fixes it |
 |:--|:--|:--|
@@ -38,6 +40,8 @@ six things go wrong:
 | **An agent's code does something it shouldn't** | A generated script reads `../../secrets` or loops until the machine stalls | ⚒️ [**Forge**](forge/) |
 | **A multi-step agent crashes halfway** | The refund is charged, the worker dies, and the retry charges the customer twice | 🧭 [**Atlas**](atlas/) |
 | **Quality quietly gets worse and nobody notices** | A prompt change drops answer accuracy from 97% to 55% on part of the traffic | 🔬 [**Lens**](lens/) |
+| **Nobody can prove which model was allowed to run** | An auditor asks whether EU customer data stayed in the EU, and the answer is a Slack thread | 📜 [**Charter**](charter/) |
+| **Nobody can defend fine-tune vs RAG vs prompt** | The adapter still quotes last quarter's refund window, and the training bill was never compared with retrieval | 🏟️ [**Arena**](arena/) |
 
 Each project takes one of these problems and solves it the way a production team would: with a clear
 architecture, a measured result, honest limitations, and a test that fails if the protection ever regresses.
@@ -57,6 +61,7 @@ flowchart LR
     LUM["🔦 <b>Lumen</b><br/>knowledge assistant<br/><sub>cited answers · RBAC · refusals</sub>"]
     ATL["🧭 <b>Atlas</b><br/>durable agent workflows<br/><sub>checkpoints · idempotency · sagas</sub>"]
     FRG["⚒️ <b>Forge</b><br/>tool sandbox<br/><sub>deny-before-spawn · limits</sub>"]
+    ARN["🏟️ <b>Arena</b><br/>fine-tune vs RAG vs prompt<br/><sub>quality · cost · latency</sub>"]
   end
 
   AEG -. "pick a model" .-> SW --> LLM[("☁️ Hosted &<br/>🏠 local models")]
@@ -68,14 +73,20 @@ flowchart LR
   ATL -. "run untrusted code" .-> FRG
 
   LENS["🔬 <b>Lens</b><br/>observability & evaluation<br/><sub>traces · judge · drift · SLOs · CI gate</sub>"]
+  CHR["📜 <b>Charter</b><br/>governance control plane<br/><sub>policies · model cards<br/>residency · evidence</sub>"]
+
   AEG -. traces .-> LENS
   LUM -. traces .-> LENS
   LENS -. "blocks a bad release" .-> CI{{"CI / release"}}
+  AEG -. "audit stub" .-> CHR
+  LENS -. "SLO snapshot" .-> CHR
+  ARN -. "RAG arm" .-> LUM
+  ARN -. "which model serves the arm" .-> SW
 ```
 
 <sub>Solid arrows run today inside each project. Dashed arrows are the documented contracts between projects; which ones are live, and which are tested against a stand-in, is in <a href="#-how-the-projects-connect">How the projects connect</a>.</sub>
 
-## 🧩 The six projects
+## 🧩 The eight projects
 
 <table>
 <tr>
@@ -156,6 +167,30 @@ Judge agreement **κ 0.76** with hand labels · a seeded regression is **blocked
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+### 📜 [Charter](charter/) · AI governance control plane
+
+<a href="charter/"><img src="charter/docs/assets/charter-demo.gif" alt="Charter: the auditor desk, a residency deny on the US model, the same request allowed after the residency file is removed, and the control matrix" width="100%"></a>
+
+Decides which model may run on which data in which region, with Cedar-style policies a reviewer can diff, and writes an evidence pack an auditor can open. The pack is fed by an Aegis-shaped audit log and a Lens-shaped SLO snapshot.
+
+**10 met · 4 partial · 3 gaps** on the control matrix · residency deny in **12 µs** p95 · deleting the residency file **fails the gate** · 20 tests
+
+</td>
+<td width="50%" valign="top">
+
+### 🏟️ [Arena](arena/) · fine-tune vs RAG vs prompt
+
+<a href="arena/"><img src="arena/docs/assets/arena-demo.gif" alt="Arena: a weekly desk ships RAG, the refund window is 30 days cited and 14 days stale, then volume flips the adapter and an 80 ms SLO leaves the student" width="100%"></a>
+
+Runs one labeled support task through a prompt, RAG, a LoRA stub, and a distilled student, then writes a one-page memo for when the fine-tune loses.
+
+RAG **25/25** cited on the current runbook · adapter stale on **3/3** amended policies · weekly desk ships RAG · 28 tests
+
+</td>
+</tr>
 </table>
 
 <sub>Every number above is produced by the project's own code and committed in its <code>reports/</code> or <code>eval_results/</code> folder. Test counts are from running each suite.</sub>
@@ -175,28 +210,33 @@ independently testable, and makes the seams between them explicit.
 | **Aegis → Switchboard** | After the security decision, choose which model answers | ⚠️ Not wired. Aegis calls any OpenAI-compatible endpoint; Switchboard routes between in-process mock models. They share the same idea of sensitivity: confidential text is pinned to a local model in both. |
 | **Atlas → Forge** | Agent tools that run code or touch files | ⚠️ Not wired. Forge is the intended executor for code-running tools; Atlas's demo tools are ledger, email, pager and webhook calls. |
 | **Switchboard, Forge ↔ Aegis** | Identity and prompt-injection defence | By design: both stay out of the auth path and rely on Aegis at the boundary (documented in their architecture decisions). |
+| **Aegis → Charter** | Audit events (types, routes, labels, HMAC chain) → residency findings and the record-keeping control | ✅ Tested against an offline Aegis-shaped stub. ⚠️ Aegis does not export to Charter. Region and data residency are join fields on the stub. |
+| **Lens → Charter** | SLO targets and status (`within_budget`, `ticket`, `page`) → the accuracy and monitoring controls | ✅ Targets match Lens. ⚠️ The snapshot is hand-shaped, not a live Lens export. Quality is paging on purpose so the pack cannot pretend accuracy is fine. |
+| **Arena → Lumen** | The RAG arm calls a `POST /ask` shape and expects `answer`, `refused`, and `citations[].doc_id` | ✅ Tested against an offline Harborline index with that shape. ⚠️ `ARENA_LUMEN_URL` can probe a live Lumen; the eval stays on the stub, and the stub does not reimplement Lumen's ACL. |
+| **Arena → Switchboard** | Which catalog model serves the winning arm | ✅ Offline stand-in: prompt and RAG → `balanced`, adapter → `premium` (the catalog has no adapter id), student → `fast-cheap`. ⚠️ A live route that disagrees is recorded and does not change Arena's winner. |
 
 **What “fully wired” would take** is small and well-defined: an authenticated tool-guard endpoint in Aegis,
 a service identity plus three policy documents in Lumen, an event exporter in Aegis and Lumen, Switchboard
-as Aegis's model endpoint, and Forge behind Atlas's code-running tools. Those are the next steps, listed
+as Aegis's model endpoint, Forge behind Atlas's code-running tools, and an audit export plus a signed
+policy bundle between Aegis and Charter. Those are the next steps, listed
 openly rather than hidden.
 
 ## 📐 Engineering standards
 
 Every project is held to the same bar, so a reviewer can trust the numbers without reading the code first.
 
-| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens |
-|:--|:-:|:-:|:-:|:-:|:-:|:-:|
-| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 |
-| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ |
-| Strict type check (mypy) | ✅ | | | | | ✅ |
-| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ |
-| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate |
-| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs |
-| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
+| | Aegis | Lumen | Switchboard | Forge | Atlas | Lens | Charter | Arena |
+|:--|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| Automated tests | 200 | 52 | 29 | 54 | 30 | 23 | 20 | 28 |
+| Lint + format (Ruff) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| GitHub Actions on every push | ✅ | ✅ (pgvector + Redis 8) | ✅ | ✅ | ✅ (incl. SIGKILL test) | ✅ | ✅ | ✅ |
+| Strict type check (mypy) | ✅ | | | | | ✅ | ✅ | |
+| Saved, reproducible evaluation | red team · classifier · latency | 46-question RAG eval | 36-case routing eval | 55-case corpus | 16 workflows vs baseline | gold set · judge κ | control matrix · residency gate | 61-question arm bench |
+| Regression gate that fails CI | ✅ policy gate | | | ✅ policy gate | | ✅ quality gate | ✅ residency gate | ✅ eval gate |
+| Architecture doc + decision records | ✅ + 5 ADRs | ✅ | ✅ + ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + ADRs | ✅ + 4 ADRs | ✅ + 4 ADRs |
+| Honest limitations section | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Runs offline, no API key | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Demo GIF / video | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ | ✅ / ✅ |
 
 **Shared principles**
 
@@ -219,8 +259,8 @@ A static write-up of the same six systems, for a hiring review, is in [portfolio
 <details>
 <summary><b>Run everything locally</b></summary>
 
-Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas and Lens; Aegis and
-Lumen also run with Docker Compose. Ports don't collide, so they can all run side by side.
+Each project is self-contained. Python 3.12 is enough for Switchboard, Forge, Atlas, Lens, Charter and Arena; Aegis and
+Lumen also run with Docker Compose. Switchboard, Forge, Atlas and Lens use distinct ports. Arena and Charter both default to 8097; set `ARENA_PORT` or `CHARTER_PORT` to run those two together.
 
 | Project | Run | UI |
 |:--|:--|:--|
@@ -230,6 +270,8 @@ Lumen also run with Docker Compose. Ports don't collide, so they can all run sid
 | Forge | `cd forge && make install && make up` | http://127.0.0.1:8095 |
 | Atlas | `cd atlas && make install && make up` | http://127.0.0.1:8096 |
 | Lens | `cd lens && make install && make eval && make up` | http://127.0.0.1:8088 |
+| Charter | `cd charter && make install && make eval && make up` | http://127.0.0.1:8097 |
+| Arena | `cd arena && make install && make up` | http://127.0.0.1:8097 |
 
 </details>
 

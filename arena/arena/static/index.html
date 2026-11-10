@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena · fine-tune vs RAG vs prompt</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect fill='%2314110e' width='16' height='16'/%3E%3Ctext x='2' y='13' font-size='12' fill='%23e4b86a'%3EA%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <p class="kicker">Decision bench · offline</p>
+        <h1>Arena</h1>
+      </div>
+      <p class="tagline">
+        Same Harborline question, four ways to answer it.
+        <span id="meta"></span>
+      </p>
+      <p class="pill" id="mode-pill">No API key</p>
+    </header>
+
+    <main class="page">
+      <section class="stage" aria-label="Scenario and results">
+        <form class="controls" id="controls">
+          <fieldset>
+            <legend>Saved scenarios</legend>
+            <div class="presets" id="presets"></div>
+          </fieldset>
+          <label class="field">
+            <span>Requests / month <strong id="volume-readout"></strong></span>
+            <input id="volume" type="range" min="0" max="1000" value="500" />
+          </label>
+          <fieldset>
+            <legend>Runbook changes</legend>
+            <div class="segment" id="change" role="group" aria-label="Change rate"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Contract</legend>
+            <label class="check"><input id="citations" type="checkbox" /> Answers must cite a section</label>
+            <label class="check"><input id="scope" type="checkbox" /> Common short answers only</label>
+          </fieldset>
+          <fieldset>
+            <legend>Latency SLO</legend>
+            <div class="segment" id="slo" role="group" aria-label="Latency SLO"></div>
+          </fieldset>
+          <label class="field">
+            <span>Monthly budget (USD)</span>
+            <input id="budget" type="number" min="1" step="1" value="800" />
+          </label>
+        </form>
+
+        <div class="results">
+          <article class="banner" id="banner" aria-live="polite">
+            <p class="eyebrow" id="banner-kicker">Recommendation</p>
+            <h2 id="banner-title">Loading the saved eval…</h2>
+            <p id="banner-body"></p>
+          </article>
+          <div class="table-wrap">
+            <table id="table">
+              <caption id="table-caption">Quality, cost, and latency</caption>
+              <thead>
+                <tr>
+                  <th>Arm</th>
+                  <th>Task success</th>
+                  <th>Citations</th>
+                  <th>Old policy</th>
+                  <th>$ / month</th>
+                  <th>Model</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <p class="fine" id="overhead"></p>
+          </div>
+          <ul class="checks" id="checks"></ul>
+        </div>
+      </section>
+
+      <section class="answers" aria-label="One question, four arms">
+        <div class="section-head">
+          <div>
+            <p class="kicker">One question</p>
+            <h2>What each arm actually says</h2>
+          </div>
+          <label class="field grow">
+            <span>Labeled question</span>
+            <select id="question"></select>
+          </label>
+        </div>
+        <p class="prompt" id="asked"></p>
+        <div class="cards" id="cards"></div>
+        <div class="heatmap-wrap">
+          <h3>Current-world grades <span>from the saved report, not a rescore</span></h3>
+          <div id="heatmap"></div>
+        </div>
+      </section>
+
+      <section class="pipeline" aria-label="Train and eval pipeline">
+        <p class="kicker">Train / eval</p>
+        <h2>What the stub trainer is allowed to remember</h2>
+        <div class="flow" id="flow"></div>
+      </section>
+
+      <section class="lower">
+        <article class="paper" id="memo" aria-label="Decision memo"></article>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p id="ports"></p>
+      <p>Exact-phrase support on a frozen labeled set. Dollars and model latency are projections from the price card.</p>
+    </footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
