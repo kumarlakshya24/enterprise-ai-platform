@@ -232,7 +232,14 @@ flowchart LR
   U([Employee or agent]) --> AEG[🛡️ Aegis<br/>who is asking, what may leave]
   AEG -. "then: which model?" .-> SW[🔀 Switchboard<br/>cost, latency, capability]
   SW --> M[("hosted or local model")]
-  style SW fill:#0969da,color:#fff,stroke:#0969da
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class AEG aegis
+  class SW switchboard
 ```
 
 | Neighbour | Relationship | Status today |

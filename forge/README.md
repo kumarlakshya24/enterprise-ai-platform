@@ -154,7 +154,15 @@ forge/
 flowchart LR
   A[🧭 Atlas<br/>agent proposes a tool call] -. "may this happen?" .-> AEG[🛡️ Aegis<br/>tool guard]
   A -. "run it safely" .-> F[⚒️ Forge<br/>sandboxed execution]
-  style F fill:#cf222e,color:#fff,stroke:#cf222e
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class A atlas
+  class AEG aegis
+  class F forge
 ```
 
 Aegis answers *whether* an agent may make a call. Forge answers *how* an allowed call that runs code or

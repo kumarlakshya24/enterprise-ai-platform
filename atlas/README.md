@@ -248,7 +248,16 @@ flowchart LR
   ATL -- "Guard port: is this tool call allowed?" --> AEG[🛡️ Aegis]
   ATL -- "Knowledge port: what does the policy say?" --> LUM[🔦 Lumen]
   ATL -. "future: run untrusted code" .-> FRG[⚒️ Forge]
-  style ATL fill:#1a7f37,color:#fff,stroke:#1a7f37
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class ATL atlas
+  class AEG aegis
+  class LUM lumen
+  class FRG forge
 ```
 
 | Neighbour | What flows across it | Status today |

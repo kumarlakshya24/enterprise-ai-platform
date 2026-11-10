@@ -182,6 +182,18 @@ A fine-tune wins this table when the corpus is declared stable, citations are of
 
 Arena sits next to Lumen and Switchboard and does not import them.
 
+```mermaid
+flowchart LR
+  ARN[🏟️ Arena<br/>fine-tune vs RAG vs prompt] -. "RAG arm (stub today)" .-> LUM[🔦 Lumen]
+  ARN -. "which model serves the arm (stub today)" .-> SW[🔀 Switchboard]
+  classDef arena fill:#bf3989,stroke:#99286e,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  class ARN arena
+  class LUM lumen
+  class SW switchboard
+```
+
 | Link | What crosses | Today |
 |------|----------------|-------|
 | **Arena → Lumen** | RAG arm, `POST /ask` shape: `answer`, `refused`, `citations[].doc_id` | Offline stub over the Harborline index. `ARENA_LUMEN_URL` probes a live Lumen and leaves the eval on the stub. The stub does not reimplement Lumen's ACL. |

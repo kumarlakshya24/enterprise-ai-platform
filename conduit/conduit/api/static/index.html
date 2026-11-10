@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conduit · embedding CDC</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-demo-state="idle">
+<header class="top">
+  <div class="brand-block">
+    <div class="brand">CONDUIT</div>
+    <h1>Embedding CDC, with a generation you can swap and a delete you can prove</h1>
+  </div>
+  <div class="top-side">
+    <p class="offline">Offline · synthetic · no API key</p>
+    <div class="actions">
+      <button type="button" id="play" class="primary">Play demo</button>
+      <button type="button" id="reset">Reset</button>
+      <button type="button" id="load">Load stream</button>
+      <button type="button" id="consume">Consume</button>
+    </div>
+  </div>
+</header>
+
+<section class="metrics" aria-label="Pipeline metrics">
+  <article><span>Apply p50</span><strong id="p50">—</strong><em>measured</em></article>
+  <article><span>Apply p95</span><strong id="p95">—</strong><em>measured</em></article>
+  <article><span>Events behind</span><strong id="behind">0</strong><em id="head-label">log head 0</em></article>
+  <article><span>Read alias</span><strong id="alias">blue</strong><em id="alias-model">emb-v1</em></article>
+  <article><span>$ / M docs</span><strong id="cost">—</strong><em>list-price projection</em></article>
+</section>
+
+<div class="board">
+  <section class="panel log-panel">
+    <header><h2>CDC log</h2><span id="quarantine" class="pill">quarantine 0</span></header>
+    <ol id="log"></ol>
+  </section>
+
+  <section class="panel redact-panel">
+    <header><h2>Before it is embedded</h2><span class="pill">Aegis stand-in</span></header>
+    <p class="stage-row" id="stages">
+      <span>redact</span><i></i><span>chunk</span><i></i><span>embed</span><i></i><span id="stage-alias">alias</span>
+    </p>
+    <div class="pair">
+      <div>
+        <h3>Raw event</h3>
+        <pre id="raw">Load the stream. A ticket with an email, a phone, and a card lands here first.</pre>
+      </div>
+      <div>
+        <h3>What the model sees</h3>
+        <pre id="redacted">Placeholders only. The vector is computed from this text, never from the raw event.</pre>
+      </div>
+    </div>
+    <p class="reuse" id="reuse">Embeddings computed 0 · reused 0</p>
+  </section>
+
+  <section class="panel gens">
+    <header><h2>Index generations</h2></header>
+    <div id="gen-cards"></div>
+    <div class="gen-actions">
+      <button type="button" id="migrate">Dual-write emb-v2</button>
+      <button type="button" id="step">Backfill</button>
+      <button type="button" id="swap">Swap reads</button>
+      <button type="button" id="rollback">Roll back</button>
+    </div>
+    <p id="mig-note" class="note">One read alias. It never points at two models.</p>
+    <div class="bar" aria-hidden="true"><span id="mig-bar"></span></div>
+  </section>
+</div>
+
+<div class="bottom">
+  <section class="panel">
+    <header><h2>Lumen read port</h2><span class="pill" id="search-model">emb-v1</span></header>
+    <form id="search-form">
+      <input id="query" type="search" placeholder="mileage reimbursement receipt" aria-label="Search the active index">
+      <button type="submit">Search</button>
+    </form>
+    <ol id="hits"></ol>
+  </section>
+
+  <section class="panel proof-panel">
+    <header><h2>Right to be forgotten</h2><span id="stamp" class="stamp">no request</span></header>
+    <div class="forget-row">
+      <select id="subject" aria-label="Subject to erase"></select>
+      <button type="button" id="forget" class="danger">Forget</button>
+      <button type="button" id="replay">Replay log</button>
+    </div>
+    <dl id="proof">
+      <div><dt>Chunks removed</dt><dd>—</dd></div>
+      <div><dt>Links remaining</dt><dd>—</dd></div>
+      <div><dt>Email in the index</dt><dd>—</dd></div>
+      <div><dt>Email in the log</dt><dd>—</dd></div>
+    </dl>
+    <p class="note" id="proof-note">Erasure writes the tombstone first, then deletes every matching vector, then scrubs the log so a rebuild cannot put the person back.</p>
+  </section>
+</div>
+
+<p id="banner" class="banner" hidden></p>
+<script src="/static/app.js"></script>
+</body>
+</html>
