@@ -1,0 +1,27 @@
+# Sizing inputs for the fixture platform. Account ids are synthetic.
+# The trust decisions (who may call Bedrock, where the keys live) are in code.
+region: us-east-1
+corporate_cidr: 10.8.0.0/16
+azs:
+  - us-east-1a
+  - us-east-1b
+tenants:
+  - id: northwind
+    display: Northwind
+  - id: helix
+    display: Helix
+  - id: brightline
+    display: Brightline
+vpcs:
+  network:
+    cidr: 10.10.0.0/16
+    subnets: ["10.10.1.0/24", "10.10.2.0/24"]
+  security:
+    cidr: 10.20.0.0/16
+    subnets: ["10.20.1.0/24", "10.20.2.0/24"]
+  lumen:
+    cidr: 10.30.0.0/16
+    subnets: ["10.30.1.0/24", "10.30.2.0/24"]
+  switchboard:
+    cidr: 10.40.0.0/16
+    subnets: ["10.40.1.0/24", "10.40.2.0/24"]
