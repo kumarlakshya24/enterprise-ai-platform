@@ -1,0 +1,85 @@
+version: "2026.11.10"
+freeze_date: "2026-03-01"
+domain: "Harborline support runbooks"
+questions:
+  - {id: tr-product-what-1, split: train, fact_ids: [product.what], question: "What is the billing operations console?"}
+  - {id: tr-product-what-2, split: train, fact_ids: [product.what], question: "Which product is the billing operations console?"}
+  - {id: ho-product-what, split: holdout, fact_ids: [product.what], question: "Tell me about the billing operations console for support teams."}
+
+  - {id: tr-product-regions-1, split: train, fact_ids: [product.regions], question: "Is the product sold in the US and EU regions?"}
+  - {id: tr-product-regions-2, split: train, fact_ids: [product.regions], question: "Which regions are the US and EU regions we sell?"}
+  - {id: ho-product-regions, split: holdout, fact_ids: [product.regions], question: "Where is it sold, the US and EU regions?"}
+
+  - {id: tr-status-1, split: train, fact_ids: [status.url], question: "Where is public status published?"}
+  - {id: tr-status-2, split: train, fact_ids: [status.url], question: "What host serves public status?"}
+  - {id: ho-status, split: holdout, fact_ids: [status.url], question: "Which page publishes public status?"}
+
+  - {id: tr-hours-1, split: train, fact_ids: [support.hours], question: "What are the published support hours?"}
+  - {id: tr-hours-2, split: train, fact_ids: [support.hours], question: "When are the published support hours on weekdays?"}
+  - {id: ho-hours, split: holdout, fact_ids: [support.hours], question: "Which published support hours should we quote?"}
+
+  - {id: tr-refund-method-1, split: train, fact_ids: [refund.method], question: "Does an approved refund use the original payment method?"}
+  - {id: tr-refund-method-2, split: train, fact_ids: [refund.method], question: "Is the original payment method where an approved refund goes?"}
+  - {id: ho-refund-method, split: holdout, fact_ids: [refund.method], question: "Is the original payment method used for an approved refund?"}
+
+  - {id: tr-refund-partial-1, split: train, fact_ids: [refund.partial], question: "Can a partial refund exceed the captured amount?"}
+  - {id: tr-refund-partial-2, split: train, fact_ids: [refund.partial], question: "What does a partial refund do with the captured amount?"}
+  - {id: ho-refund-partial, split: holdout, fact_ids: [refund.partial], question: "Does a partial refund stay inside the captured amount?"}
+
+  - {id: tr-refund-window-1, split: train, fact_ids: [refund.window], question: "How long is the refund window?"}
+  - {id: tr-refund-window-2, split: train, fact_ids: [refund.window], question: "What refund window do we quote?"}
+  - {id: st-refund-window, split: staleness, fact_ids: [refund.window], question: "After approval, what is the refund window?"}
+
+  - {id: tr-credit-1, split: train, fact_ids: [credit.limit], question: "What is the cap on a goodwill credit?"}
+  - {id: tr-credit-2, split: train, fact_ids: [credit.limit], question: "How large may a goodwill credit be?"}
+  - {id: ho-credit, split: holdout, fact_ids: [credit.limit], question: "How much courtesy money can an account receive in a quarter?"}
+
+  - {id: tr-void-1, split: train, fact_ids: [invoice.void], question: "When can we void an invoice?"}
+  - {id: tr-void-2, split: train, fact_ids: [invoice.void], question: "Can we void an invoice after sending it?"}
+  - {id: ho-void, split: holdout, fact_ids: [invoice.void], question: "Can I void an invoice that was already sent?"}
+
+  - {id: tr-sso-1, split: train, fact_ids: [sso.enforcement], question: "When does SSO enforcement start?"}
+  - {id: tr-sso-2, split: train, fact_ids: [sso.enforcement], question: "Does SSO enforcement end active sessions?"}
+  - {id: ho-sso, split: holdout, fact_ids: [sso.enforcement], question: "Does SSO enforcement leave active sessions running?"}
+
+  - {id: tr-idle-1, split: train, fact_ids: [session.idle], question: "When does an idle session expire?"}
+  - {id: tr-idle-2, split: train, fact_ids: [session.idle], question: "What is the idle session limit?"}
+  - {id: st-idle, split: staleness, fact_ids: [session.idle], question: "How soon does an idle session expire?"}
+
+  - {id: tr-seat-1, split: train, fact_ids: [seat.transfer], question: "Can a seat transfer happen without a new invoice?"}
+  - {id: tr-seat-2, split: train, fact_ids: [seat.transfer], question: "Does a seat transfer create a new invoice?"}
+  - {id: ho-seat, split: holdout, fact_ids: [seat.transfer], question: "Will a seat transfer bill a new invoice?"}
+
+  - {id: tr-audit-1, split: train, fact_ids: [export.audit], question: "What does an audit log export contain?"}
+  - {id: tr-audit-2, split: train, fact_ids: [export.audit], question: "Does an audit log export include a timestamp?"}
+  - {id: ho-audit, split: holdout, fact_ids: [export.audit], question: "Which fields are on an audit log export?"}
+
+  - {id: tr-sev1-1, split: train, fact_ids: [incident.sev1], question: "How fast does severity one page the primary?"}
+  - {id: tr-sev1-2, split: train, fact_ids: [incident.sev1], question: "What is the severity one page target?"}
+  - {id: ho-sev1, split: holdout, fact_ids: [incident.sev1], question: "When severity one fires, how fast is the page?"}
+
+  - {id: tr-sev2-1, split: train, fact_ids: [sev2.response], question: "How fast is a severity two reply?"}
+  - {id: tr-sev2-2, split: train, fact_ids: [sev2.response], question: "What is the severity two response time?"}
+  - {id: st-sev2, split: staleness, fact_ids: [sev2.response], question: "When is a severity two human reply due?"}
+
+  - {id: tr-bridge-1, split: train, fact_ids: [incident.bridge], question: "What are the steps on the incident bridge?"}
+  - {id: tr-bridge-2, split: train, fact_ids: [incident.bridge], question: "How often is the notice refreshed on the incident bridge?"}
+  - {id: ho-bridge, split: holdout, fact_ids: [incident.bridge], question: "How often is the customer notice refreshed on the incident bridge?"}
+
+  - {id: tr-cutover-1, split: train, fact_ids: [migration.cutover], question: "What is the tenant cutover sequence?"}
+  - {id: tr-cutover-2, split: train, fact_ids: [migration.cutover], question: "How long is the old region read-only during tenant cutover?"}
+  - {id: ho-cutover, split: holdout, fact_ids: [migration.cutover], question: "During tenant cutover, how long is the old region read-only?"}
+
+  - {id: tr-vat-1, split: train, fact_ids: [tax.vat], question: "When do we apply VAT reverse charge?"}
+  - {id: ho-vat, split: holdout, fact_ids: [tax.vat], question: "Which customers get VAT reverse charge?"}
+
+  - {id: tr-sandbox-1, split: train, fact_ids: [sandbox.reset], question: "What does a sandbox reset keep?"}
+  - {id: ho-sandbox, split: holdout, fact_ids: [sandbox.reset], question: "Does a sandbox reset keep the SSO configuration?"}
+
+  - {id: st-webhook, split: staleness, fact_ids: [webhook.sign], question: "How are webhook payloads signed?"}
+  - {id: st-dunning, split: staleness, fact_ids: [dunning.retry], question: "On which days do failed payments retry?"}
+
+  - {id: un-tea, split: unanswerable, fact_ids: [], refuse: true, question: "What is the founder's favorite tea?"}
+  - {id: un-golf, split: unanswerable, fact_ids: [], refuse: true, question: "Which golf club does the board book?"}
+  - {id: un-cat, split: unanswerable, fact_ids: [], refuse: true, question: "Is the office cat allowed in the server room?"}
+  - {id: un-sofa, split: unanswerable, fact_ids: [], refuse: true, question: "What color is the lobby sofa?"}
