@@ -1,0 +1,1892 @@
+{
+  "version": "2026.11.10",
+  "freeze_date": "2026-03-01",
+  "domain": "Harborline support runbooks",
+  "policy_version": "2026.11.10",
+  "price_version": "2026.11.10",
+  "price_label": "projection",
+  "corpus_sha256": "eb0792f71fc664bb7a163e43d306107ecab50cc49f42ef3fabdd93ab3c3a50ea",
+  "counts": {
+    "docs": 12,
+    "facts": 21,
+    "questions": 61,
+    "train": 36,
+    "holdout": 16,
+    "staleness": 5,
+    "unanswerable": 4,
+    "adapter_facts": 19,
+    "student_facts": 15
+  },
+  "pipeline": {
+    "freeze_date": "2026-03-01",
+    "teacher": "Train pairs are the train split. Each pair carries the fact ids marked on the freeze corpus. Holdout labels are not read.",
+    "adapter_fact_ids": [
+      "credit.limit",
+      "export.audit",
+      "incident.bridge",
+      "incident.sev1",
+      "invoice.void",
+      "migration.cutover",
+      "product.regions",
+      "product.what",
+      "refund.method",
+      "refund.partial",
+      "refund.window",
+      "sandbox.reset",
+      "seat.transfer",
+      "session.idle",
+      "sev2.response",
+      "sso.enforcement",
+      "status.url",
+      "support.hours",
+      "tax.vat"
+    ],
+    "student_fact_ids": [
+      "credit.limit",
+      "export.audit",
+      "incident.sev1",
+      "invoice.void",
+      "product.regions",
+      "product.what",
+      "refund.method",
+      "refund.partial",
+      "refund.window",
+      "seat.transfer",
+      "session.idle",
+      "sev2.response",
+      "sso.enforcement",
+      "status.url",
+      "support.hours"
+    ],
+    "dropped_long": [
+      "incident.bridge",
+      "migration.cutover"
+    ],
+    "dropped_low_count": [
+      "sandbox.reset",
+      "tax.vat"
+    ],
+    "unseen_at_train": [
+      "dunning.retry",
+      "webhook.sign"
+    ],
+    "lumen": "POST /ask shape, offline stub unless ARENA_LUMEN_URL is set",
+    "switchboard": "catalog model per arm, offline stub unless ARENA_SWITCHBOARD_URL is set"
+  },
+  "arms": {
+    "prompt": {
+      "freeze_full": {
+        "n": 20,
+        "correct": 8,
+        "task_success": 0.4,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "freeze_common_short": {
+        "n": 16,
+        "correct": 8,
+        "task_success": 0.5,
+        "citation_hits": 0,
+        "citation_denominator": 12,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "current_full": {
+        "n": 25,
+        "correct": 8,
+        "task_success": 0.32,
+        "citation_hits": 0,
+        "citation_denominator": 21,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "current_common_short": {
+        "n": 19,
+        "correct": 8,
+        "task_success": 0.4211,
+        "citation_hits": 0,
+        "citation_denominator": 15,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "staleness": {
+        "n": 5,
+        "correct": 0,
+        "task_success": 0.0,
+        "citation_hits": 0,
+        "citation_denominator": 5,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "holdout_freeze": {
+        "n": 16,
+        "correct": 4,
+        "task_success": 0.25,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      }
+    },
+    "rag": {
+      "freeze_full": {
+        "n": 20,
+        "correct": 20,
+        "task_success": 1.0,
+        "citation_hits": 16,
+        "citation_denominator": 16,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "freeze_common_short": {
+        "n": 16,
+        "correct": 16,
+        "task_success": 1.0,
+        "citation_hits": 12,
+        "citation_denominator": 12,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "current_full": {
+        "n": 25,
+        "correct": 25,
+        "task_success": 1.0,
+        "citation_hits": 21,
+        "citation_denominator": 21,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "current_common_short": {
+        "n": 19,
+        "correct": 19,
+        "task_success": 1.0,
+        "citation_hits": 15,
+        "citation_denominator": 15,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "staleness": {
+        "n": 5,
+        "correct": 5,
+        "task_success": 1.0,
+        "citation_hits": 5,
+        "citation_denominator": 5,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 3,
+        "stale_rate": 0.0
+      },
+      "holdout_freeze": {
+        "n": 16,
+        "correct": 16,
+        "task_success": 1.0,
+        "citation_hits": 16,
+        "citation_denominator": 16,
+        "citation_rate": 1.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      }
+    },
+    "lora": {
+      "freeze_full": {
+        "n": 20,
+        "correct": 19,
+        "task_success": 0.95,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "freeze_common_short": {
+        "n": 16,
+        "correct": 15,
+        "task_success": 0.9375,
+        "citation_hits": 0,
+        "citation_denominator": 12,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "current_full": {
+        "n": 25,
+        "correct": 19,
+        "task_success": 0.76,
+        "citation_hits": 0,
+        "citation_denominator": 21,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "current_common_short": {
+        "n": 19,
+        "correct": 15,
+        "task_success": 0.7895,
+        "citation_hits": 0,
+        "citation_denominator": 15,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "staleness": {
+        "n": 5,
+        "correct": 0,
+        "task_success": 0.0,
+        "citation_hits": 0,
+        "citation_denominator": 5,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "holdout_freeze": {
+        "n": 16,
+        "correct": 15,
+        "task_success": 0.9375,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      }
+    },
+    "distilled": {
+      "freeze_full": {
+        "n": 20,
+        "correct": 15,
+        "task_success": 0.75,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "freeze_common_short": {
+        "n": 16,
+        "correct": 15,
+        "task_success": 0.9375,
+        "citation_hits": 0,
+        "citation_denominator": 12,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      },
+      "current_full": {
+        "n": 25,
+        "correct": 15,
+        "task_success": 0.6,
+        "citation_hits": 0,
+        "citation_denominator": 21,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "current_common_short": {
+        "n": 19,
+        "correct": 15,
+        "task_success": 0.7895,
+        "citation_hits": 0,
+        "citation_denominator": 15,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 4,
+        "refusal_denominator": 4,
+        "refusal_accuracy": 1.0,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "staleness": {
+        "n": 5,
+        "correct": 0,
+        "task_success": 0.0,
+        "citation_hits": 0,
+        "citation_denominator": 5,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 3,
+        "stale_denominator": 3,
+        "stale_rate": 1.0
+      },
+      "holdout_freeze": {
+        "n": 16,
+        "correct": 11,
+        "task_success": 0.6875,
+        "citation_hits": 0,
+        "citation_denominator": 16,
+        "citation_rate": 0.0,
+        "hallucinations": 0,
+        "hallucination_rate": 0.0,
+        "refusal_correct": 0,
+        "refusal_denominator": 0,
+        "refusal_accuracy": null,
+        "stale": 0,
+        "stale_denominator": 0,
+        "stale_rate": null
+      }
+    }
+  },
+  "grades": {
+    "freeze_full": {
+      "ho-product-what": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-product-regions": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-status": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-hours": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-method": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-partial": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-credit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "ho-void": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sso": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-seat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-audit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sev1": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-bridge": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-cutover": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-vat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-sandbox": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "un-tea": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-golf": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-cat": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-sofa": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      }
+    },
+    "freeze_common_short": {
+      "ho-product-what": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-product-regions": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-status": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-hours": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-method": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-partial": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-credit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "ho-void": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sso": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-seat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-audit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sev1": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-tea": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-golf": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-cat": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-sofa": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      }
+    },
+    "current_full": {
+      "ho-product-what": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-product-regions": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-status": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-hours": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-method": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-partial": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-refund-window": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "ho-credit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "ho-void": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sso": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-idle": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "ho-seat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-audit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sev1": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-sev2": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "ho-bridge": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-cutover": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-vat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-sandbox": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "st-webhook": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "st-dunning": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "un-tea": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-golf": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-cat": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-sofa": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      }
+    },
+    "current_common_short": {
+      "ho-product-what": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-product-regions": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-status": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-hours": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-method": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-partial": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-refund-window": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "ho-credit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "ho-void": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sso": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-idle": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "ho-seat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-audit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sev1": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "st-sev2": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "un-tea": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-golf": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-cat": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "un-sofa": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      }
+    },
+    "staleness": {
+      "st-refund-window": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "st-idle": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "st-sev2": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "stale",
+        "distilled": "stale"
+      },
+      "st-webhook": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "st-dunning": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      }
+    },
+    "holdout_freeze": {
+      "ho-product-what": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-product-regions": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-status": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-hours": {
+        "prompt": "ok",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-method": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-refund-partial": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-credit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "refused",
+        "distilled": "refused"
+      },
+      "ho-void": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sso": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-seat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-audit": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-sev1": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "ok"
+      },
+      "ho-bridge": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-cutover": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-vat": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      },
+      "ho-sandbox": {
+        "prompt": "refused",
+        "rag": "ok",
+        "lora": "ok",
+        "distilled": "refused"
+      }
+    }
+  },
+  "overhead_ms": {
+    "prompt": {
+      "p50": 0.011,
+      "p95": 0.018,
+      "n": 500
+    },
+    "rag": {
+      "p50": 0.048,
+      "p95": 0.07,
+      "n": 500
+    },
+    "lora": {
+      "p50": 0.018,
+      "p95": 0.024,
+      "n": 500
+    },
+    "distilled": {
+      "p50": 0.015,
+      "p95": 0.021,
+      "n": 500
+    },
+    "note": "In-process wall clock. Catalog model latency is not slept.",
+    "train_adapter_ms": 0.102,
+    "train_student_ms": 0.085
+  },
+  "cost": {
+    "label": "projection",
+    "amortization_months": 6,
+    "per_request_usd": {
+      "prompt": 0.00159,
+      "rag": 0.00291,
+      "lora": 0.00066,
+      "distilled": 5e-05
+    },
+    "model_latency_ms": {
+      "prompt": 212.16,
+      "rag": 216.24,
+      "lora": 161.28,
+      "distilled": 42.36
+    },
+    "program_usd": {
+      "prompt": 0,
+      "rag": 0,
+      "lora": 2400,
+      "distilled": 900
+    }
+  },
+  "serving": {
+    "prompt": {
+      "switchboard_model": "balanced",
+      "policy": "default",
+      "reason": "No passages. On the published Switchboard demo prompt, policy default picks balanced rather than fast-cheap.",
+      "source": "switchboard-stub"
+    },
+    "rag": {
+      "switchboard_model": "balanced",
+      "policy": "default",
+      "reason": "Same generator as prompt. The extra cost is context tokens, not a smarter model. Retrieval is the Lumen-shaped port, not Switchboard.",
+      "source": "switchboard-stub"
+    },
+    "lora": {
+      "switchboard_model": "premium",
+      "policy": "quality-first",
+      "reason": "The catalog has no adapter id. The stand-in maps the dedicated endpoint to premium under quality-first, and says so.",
+      "source": "switchboard-stub"
+    },
+    "distilled": {
+      "switchboard_model": "fast-cheap",
+      "policy": "latency-first",
+      "reason": "The student is the small model. On the same demo prompt, latency-first picks fast-cheap.",
+      "source": "switchboard-stub"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "weekly-cited",
+      "title": "Policies change weekly and every answer must cite a runbook",
+      "winner": "rag",
+      "expect": "rag",
+      "do_not_finetune": true,
+      "slice": "current_full",
+      "eliminated": {
+        "prompt": [
+          "task success 0.32 is under the 0.80 floor on current_full",
+          "citation rate 0.00 is under the 0.80 floor"
+        ],
+        "rag": [],
+        "lora": [
+          "task success 0.76 is under the 0.80 floor on current_full",
+          "citation rate 0.00 is under the 0.80 floor",
+          "corpus changes weekly and this arm is frozen at the cutoff"
+        ],
+        "distilled": [
+          "task success 0.60 is under the 0.80 floor on current_full",
+          "citation rate 0.00 is under the 0.80 floor",
+          "corpus changes weekly and this arm is frozen at the cutoff"
+        ]
+      },
+      "survivors": [
+        "rag"
+      ],
+      "monthly_usd": {
+        "prompt": 79.5,
+        "rag": 185.5,
+        "lora": 433.0,
+        "distilled": 152.5
+      },
+      "projected_latency_ms": {
+        "prompt": 212.16,
+        "rag": 216.24,
+        "lora": 161.28,
+        "distilled": 42.36
+      },
+      "overhead_p50_ms": {
+        "prompt": 0.011,
+        "rag": 0.048,
+        "lora": 0.018,
+        "distilled": 0.015
+      },
+      "per_request_usd": {
+        "prompt": 0.00159,
+        "rag": 0.00291,
+        "lora": 0.00066,
+        "distilled": 5e-05
+      },
+      "quality": {
+        "prompt": 0.32,
+        "rag": 1.0,
+        "lora": 0.76,
+        "distilled": 0.6
+      },
+      "quality_margin_lora_minus_rag": -0.0625,
+      "finetune_checks": [
+        {
+          "id": "citations",
+          "fired": true,
+          "text": "Citations are required, and the tune arms do not cite."
+        },
+        {
+          "id": "change",
+          "fired": true,
+          "text": "The runbook changes weekly, so a frozen adapter is the wrong artifact."
+        },
+        {
+          "id": "amortization",
+          "fired": true,
+          "text": "At 50,000 requests a month the LoRA program costs $433.00 against $185.50 for RAG, so the freeze does not pay for itself."
+        },
+        {
+          "id": "quality-margin",
+          "fired": true,
+          "text": "On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03."
+        },
+        {
+          "id": "student-coverage",
+          "fired": true,
+          "text": "The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped."
+        }
+      ],
+      "inputs": {
+        "monthly_requests": 50000,
+        "change_rate": "weekly",
+        "citations_required": true,
+        "latency_slo_ms": 2000.0,
+        "monthly_budget_usd": 800.0,
+        "scope": "full"
+      },
+      "memo_md": "# Arena decision memo \u00b7 Harborline support runbooks\n\nFreeze date 2026-03-01. Policy 2026.11.10. Quality numbers are exact-phrase support on the saved eval. Dollars and model latency are projections from the price card. Pipeline overhead is measured and is not in the dollar figures.\n\n**Do not fine-tune. Ship the RAG arm.**\n\n## This scenario\n\n50,000 requests / month \u00b7 change `weekly` \u00b7 citations required \u00b7 SLO 2000 ms \u00b7 budget $800 \u00b7 scope `full`.\n\nSlice `current_full`. Winner: `rag`.\n\n## The four arms\n\n| Arm | Task success | $/month | Projected latency | Why it lost, if it lost |\n| --- | ---: | ---: | ---: | --- |\n| prompt | 0.32 | 79.50 | 212 ms | task success 0.32 is under the 0.80 floor on current_full; citation rate 0.00 is under the 0.80 floor |\n| rag | 1.00 | 185.50 | 216 ms | selected: lowest projected monthly cost among arms that cleared the rules |\n| lora | 0.76 | 433.00 | 161 ms | task success 0.76 is under the 0.80 floor on current_full; citation rate 0.00 is under the 0.80 floor; corpus changes weekly and this arm is frozen at the cutoff |\n| distilled | 0.60 | 152.50 | 42 ms | task success 0.60 is under the 0.80 floor on current_full; citation rate 0.00 is under the 0.80 floor; corpus changes weekly and this arm is frozen at the cutoff |\n\n## When not to fine-tune\n\n- **applies.** Citations are required, and the tune arms do not cite.\n- **applies.** The runbook changes weekly, so a frozen adapter is the wrong artifact.\n- **applies.** At 50,000 requests a month the LoRA program costs $433.00 against $185.50 for RAG, so the freeze does not pay for itself.\n- **applies.** On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03.\n- **applies.** The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped.\n\n## What would reverse this\n\nA fine-tune wins this table only when the corpus is stable, citations are optional, volume amortizes the program, and the SLO still fits the endpoint. Quality alone does not.\n\nLumen is the retrieval port for the RAG arm (offline stub unless `ARENA_LUMEN_URL` is set). Switchboard is the serving port: the price card names the catalog model each arm would pin. That mapping is a stand-in. A live route that disagrees is reported, not overwritten.\n\nThis is not a neural trainer. The adapter stores train-split fact text and the words of the train questions. The student drops long procedures and facts that appear once. A GPU fine-tune could paraphrase. It would not change the freeze date, the citation gap, or the program cost that this memo is about.\n"
+    },
+    {
+      "id": "high-volume-stable",
+      "title": "Stable corpus, high volume, citations not required",
+      "winner": "lora",
+      "expect": "lora",
+      "do_not_finetune": false,
+      "slice": "freeze_full",
+      "eliminated": {
+        "prompt": [
+          "task success 0.40 is under the 0.80 floor on freeze_full"
+        ],
+        "rag": [],
+        "lora": [],
+        "distilled": [
+          "task success 0.75 is under the 0.80 floor on freeze_full"
+        ]
+      },
+      "survivors": [
+        "lora",
+        "rag"
+      ],
+      "monthly_usd": {
+        "prompt": 3180.0,
+        "rag": 5820.0,
+        "lora": 1720.0,
+        "distilled": 250.0
+      },
+      "projected_latency_ms": {
+        "prompt": 212.16,
+        "rag": 216.24,
+        "lora": 161.28,
+        "distilled": 42.36
+      },
+      "overhead_p50_ms": {
+        "prompt": 0.011,
+        "rag": 0.048,
+        "lora": 0.018,
+        "distilled": 0.015
+      },
+      "per_request_usd": {
+        "prompt": 0.00159,
+        "rag": 0.00291,
+        "lora": 0.00066,
+        "distilled": 5e-05
+      },
+      "quality": {
+        "prompt": 0.4,
+        "rag": 1.0,
+        "lora": 0.95,
+        "distilled": 0.75
+      },
+      "quality_margin_lora_minus_rag": -0.0625,
+      "finetune_checks": [
+        {
+          "id": "citations",
+          "fired": false,
+          "text": "Citations are not required, so an arm can win without a section pointer."
+        },
+        {
+          "id": "change",
+          "fired": false,
+          "text": "The scenario says the corpus stays put. Staleness stays a risk note, not a veto."
+        },
+        {
+          "id": "amortization",
+          "fired": false,
+          "text": "At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program."
+        },
+        {
+          "id": "quality-margin",
+          "fired": true,
+          "text": "On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03."
+        },
+        {
+          "id": "student-coverage",
+          "fired": true,
+          "text": "The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped."
+        }
+      ],
+      "inputs": {
+        "monthly_requests": 2000000,
+        "change_rate": "stable",
+        "citations_required": false,
+        "latency_slo_ms": 2000.0,
+        "monthly_budget_usd": 8000.0,
+        "scope": "full"
+      },
+      "memo_md": "# Arena decision memo \u00b7 Harborline support runbooks\n\nFreeze date 2026-03-01. Policy 2026.11.10. Quality numbers are exact-phrase support on the saved eval. Dollars and model latency are projections from the price card. Pipeline overhead is measured and is not in the dollar figures.\n\n**Ship the adapter. Do not ship it because it is smarter than RAG.**\n\n## This scenario\n\n2,000,000 requests / month \u00b7 change `stable` \u00b7 citations not required \u00b7 SLO 2000 ms \u00b7 budget $8,000 \u00b7 scope `full`.\n\nSlice `freeze_full`. Winner: `lora`.\n\n## The four arms\n\n| Arm | Task success | $/month | Projected latency | Why it lost, if it lost |\n| --- | ---: | ---: | ---: | --- |\n| prompt | 0.40 | 3,180.00 | 212 ms | task success 0.40 is under the 0.80 floor on freeze_full |\n| rag | 1.00 | 5,820.00 | 216 ms | survivor |\n| lora | 0.95 | 1,720.00 | 161 ms | selected: lowest projected monthly cost among arms that cleared the rules |\n| distilled | 0.75 | 250.00 | 42 ms | task success 0.75 is under the 0.80 floor on freeze_full |\n\n## When not to fine-tune\n\n- **does not apply.** Citations are not required, so an arm can win without a section pointer.\n- **does not apply.** The scenario says the corpus stays put. Staleness stays a risk note, not a veto.\n- **does not apply.** At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program.\n- **applies.** On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03.\n- **applies.** The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped.\n\n## What would reverse this\n\nThis flips back to RAG if citations become required, if the runbook starts changing, or if volume drops far enough that the training program costs more than retrieval.\n\nLumen is the retrieval port for the RAG arm (offline stub unless `ARENA_LUMEN_URL` is set). Switchboard is the serving port: the price card names the catalog model each arm would pin. That mapping is a stand-in. A live route that disagrees is reported, not overwritten.\n\nThis is not a neural trainer. The adapter stores train-split fact text and the words of the train questions. The student drops long procedures and facts that appear once. A GPU fine-tune could paraphrase. It would not change the freeze date, the citation gap, or the program cost that this memo is about.\n"
+    },
+    {
+      "id": "narrow-fast",
+      "title": "Common short answers only, 80 ms SLO",
+      "winner": "distilled",
+      "expect": "distilled",
+      "do_not_finetune": false,
+      "slice": "freeze_common_short",
+      "eliminated": {
+        "prompt": [
+          "task success 0.50 is under the 0.80 floor on freeze_common_short",
+          "projected latency 212.2 ms is over the 80 ms SLO"
+        ],
+        "rag": [
+          "projected latency 216.2 ms is over the 80 ms SLO"
+        ],
+        "lora": [
+          "projected latency 161.3 ms is over the 80 ms SLO"
+        ],
+        "distilled": []
+      },
+      "survivors": [
+        "distilled"
+      ],
+      "monthly_usd": {
+        "prompt": 3180.0,
+        "rag": 5820.0,
+        "lora": 1720.0,
+        "distilled": 250.0
+      },
+      "projected_latency_ms": {
+        "prompt": 212.16,
+        "rag": 216.24,
+        "lora": 161.28,
+        "distilled": 42.36
+      },
+      "overhead_p50_ms": {
+        "prompt": 0.011,
+        "rag": 0.048,
+        "lora": 0.018,
+        "distilled": 0.015
+      },
+      "per_request_usd": {
+        "prompt": 0.00159,
+        "rag": 0.00291,
+        "lora": 0.00066,
+        "distilled": 5e-05
+      },
+      "quality": {
+        "prompt": 0.5,
+        "rag": 1.0,
+        "lora": 0.9375,
+        "distilled": 0.9375
+      },
+      "quality_margin_lora_minus_rag": -0.0625,
+      "finetune_checks": [
+        {
+          "id": "citations",
+          "fired": false,
+          "text": "Citations are not required, so an arm can win without a section pointer."
+        },
+        {
+          "id": "change",
+          "fired": false,
+          "text": "The scenario says the corpus stays put. Staleness stays a risk note, not a veto."
+        },
+        {
+          "id": "amortization",
+          "fired": false,
+          "text": "At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program."
+        },
+        {
+          "id": "quality-margin",
+          "fired": true,
+          "text": "On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03."
+        },
+        {
+          "id": "student-coverage",
+          "fired": true,
+          "text": "The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped."
+        }
+      ],
+      "inputs": {
+        "monthly_requests": 2000000,
+        "change_rate": "stable",
+        "citations_required": false,
+        "latency_slo_ms": 80.0,
+        "monthly_budget_usd": 8000.0,
+        "scope": "common_short"
+      },
+      "memo_md": "# Arena decision memo \u00b7 Harborline support runbooks\n\nFreeze date 2026-03-01. Policy 2026.11.10. Quality numbers are exact-phrase support on the saved eval. Dollars and model latency are projections from the price card. Pipeline overhead is measured and is not in the dollar figures.\n\n**Ship the distilled student. Keep the task inside what it was allowed to remember.**\n\n## This scenario\n\n2,000,000 requests / month \u00b7 change `stable` \u00b7 citations not required \u00b7 SLO 80 ms \u00b7 budget $8,000 \u00b7 scope `common_short`.\n\nSlice `freeze_common_short`. Winner: `distilled`.\n\n## The four arms\n\n| Arm | Task success | $/month | Projected latency | Why it lost, if it lost |\n| --- | ---: | ---: | ---: | --- |\n| prompt | 0.50 | 3,180.00 | 212 ms | task success 0.50 is under the 0.80 floor on freeze_common_short; projected latency 212.2 ms is over the 80 ms SLO |\n| rag | 1.00 | 5,820.00 | 216 ms | projected latency 216.2 ms is over the 80 ms SLO |\n| lora | 0.94 | 1,720.00 | 161 ms | projected latency 161.3 ms is over the 80 ms SLO |\n| distilled | 0.94 | 250.00 | 42 ms | selected: lowest projected monthly cost among arms that cleared the rules |\n\n## When not to fine-tune\n\n- **does not apply.** Citations are not required, so an arm can win without a section pointer.\n- **does not apply.** The scenario says the corpus stays put. Staleness stays a risk note, not a veto.\n- **does not apply.** At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program.\n- **applies.** On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03.\n- **applies.** The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped.\n\n## What would reverse this\n\nThis flips if the contract grows to long procedures or rare policies, or if the SLO relaxes and the quality floor then prefers a larger arm.\n\nLumen is the retrieval port for the RAG arm (offline stub unless `ARENA_LUMEN_URL` is set). Switchboard is the serving port: the price card names the catalog model each arm would pin. That mapping is a stand-in. A live route that disagrees is reported, not overwritten.\n\nThis is not a neural trainer. The adapter stores train-split fact text and the words of the train questions. The student drops long procedures and facts that appear once. A GPU fine-tune could paraphrase. It would not change the freeze date, the citation gap, or the program cost that this memo is about.\n"
+    },
+    {
+      "id": "low-volume",
+      "title": "Stable corpus, too little traffic to pay for a training program",
+      "winner": "rag",
+      "expect": "rag",
+      "do_not_finetune": true,
+      "slice": "freeze_full",
+      "eliminated": {
+        "prompt": [
+          "task success 0.40 is under the 0.80 floor on freeze_full"
+        ],
+        "rag": [],
+        "lora": [],
+        "distilled": [
+          "task success 0.75 is under the 0.80 floor on freeze_full"
+        ]
+      },
+      "survivors": [
+        "rag",
+        "lora"
+      ],
+      "monthly_usd": {
+        "prompt": 3.18,
+        "rag": 5.82,
+        "lora": 401.32,
+        "distilled": 150.1
+      },
+      "projected_latency_ms": {
+        "prompt": 212.16,
+        "rag": 216.24,
+        "lora": 161.28,
+        "distilled": 42.36
+      },
+      "overhead_p50_ms": {
+        "prompt": 0.011,
+        "rag": 0.048,
+        "lora": 0.018,
+        "distilled": 0.015
+      },
+      "per_request_usd": {
+        "prompt": 0.00159,
+        "rag": 0.00291,
+        "lora": 0.00066,
+        "distilled": 5e-05
+      },
+      "quality": {
+        "prompt": 0.4,
+        "rag": 1.0,
+        "lora": 0.95,
+        "distilled": 0.75
+      },
+      "quality_margin_lora_minus_rag": -0.0625,
+      "finetune_checks": [
+        {
+          "id": "citations",
+          "fired": false,
+          "text": "Citations are not required, so an arm can win without a section pointer."
+        },
+        {
+          "id": "change",
+          "fired": false,
+          "text": "The scenario says the corpus stays put. Staleness stays a risk note, not a veto."
+        },
+        {
+          "id": "amortization",
+          "fired": true,
+          "text": "At 2,000 requests a month the LoRA program costs $401.32 against $5.82 for RAG, so the freeze does not pay for itself."
+        },
+        {
+          "id": "quality-margin",
+          "fired": true,
+          "text": "On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03."
+        },
+        {
+          "id": "student-coverage",
+          "fired": true,
+          "text": "The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped."
+        }
+      ],
+      "inputs": {
+        "monthly_requests": 2000,
+        "change_rate": "stable",
+        "citations_required": false,
+        "latency_slo_ms": 2000.0,
+        "monthly_budget_usd": 500.0,
+        "scope": "full"
+      },
+      "memo_md": "# Arena decision memo \u00b7 Harborline support runbooks\n\nFreeze date 2026-03-01. Policy 2026.11.10. Quality numbers are exact-phrase support on the saved eval. Dollars and model latency are projections from the price card. Pipeline overhead is measured and is not in the dollar figures.\n\n**Do not fine-tune. Ship the RAG arm.**\n\n## This scenario\n\n2,000 requests / month \u00b7 change `stable` \u00b7 citations not required \u00b7 SLO 2000 ms \u00b7 budget $500 \u00b7 scope `full`.\n\nSlice `freeze_full`. Winner: `rag`.\n\n## The four arms\n\n| Arm | Task success | $/month | Projected latency | Why it lost, if it lost |\n| --- | ---: | ---: | ---: | --- |\n| prompt | 0.40 | 3.18 | 212 ms | task success 0.40 is under the 0.80 floor on freeze_full |\n| rag | 1.00 | 5.82 | 216 ms | selected: lowest projected monthly cost among arms that cleared the rules |\n| lora | 0.95 | 401.32 | 161 ms | survivor |\n| distilled | 0.75 | 150.10 | 42 ms | task success 0.75 is under the 0.80 floor on freeze_full |\n\n## When not to fine-tune\n\n- **does not apply.** Citations are not required, so an arm can win without a section pointer.\n- **does not apply.** The scenario says the corpus stays put. Staleness stays a risk note, not a veto.\n- **applies.** At 2,000 requests a month the LoRA program costs $401.32 against $5.82 for RAG, so the freeze does not pay for itself.\n- **applies.** On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03.\n- **applies.** The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped.\n\n## What would reverse this\n\nA fine-tune wins this table only when the corpus is stable, citations are optional, volume amortizes the program, and the SLO still fits the endpoint. Quality alone does not.\n\nLumen is the retrieval port for the RAG arm (offline stub unless `ARENA_LUMEN_URL` is set). Switchboard is the serving port: the price card names the catalog model each arm would pin. That mapping is a stand-in. A live route that disagrees is reported, not overwritten.\n\nThis is not a neural trainer. The adapter stores train-split fact text and the words of the train questions. The student drops long procedures and facts that appear once. A GPU fine-tune could paraphrase. It would not change the freeze date, the citation gap, or the program cost that this memo is about.\n"
+    },
+    {
+      "id": "cited-stable",
+      "title": "Stable corpus, but every answer needs a citation",
+      "winner": "rag",
+      "expect": "rag",
+      "do_not_finetune": true,
+      "slice": "freeze_full",
+      "eliminated": {
+        "prompt": [
+          "task success 0.40 is under the 0.80 floor on freeze_full",
+          "citation rate 0.00 is under the 0.80 floor"
+        ],
+        "rag": [],
+        "lora": [
+          "citation rate 0.00 is under the 0.80 floor"
+        ],
+        "distilled": [
+          "task success 0.75 is under the 0.80 floor on freeze_full",
+          "citation rate 0.00 is under the 0.80 floor"
+        ]
+      },
+      "survivors": [
+        "rag"
+      ],
+      "monthly_usd": {
+        "prompt": 3180.0,
+        "rag": 5820.0,
+        "lora": 1720.0,
+        "distilled": 250.0
+      },
+      "projected_latency_ms": {
+        "prompt": 212.16,
+        "rag": 216.24,
+        "lora": 161.28,
+        "distilled": 42.36
+      },
+      "overhead_p50_ms": {
+        "prompt": 0.011,
+        "rag": 0.048,
+        "lora": 0.018,
+        "distilled": 0.015
+      },
+      "per_request_usd": {
+        "prompt": 0.00159,
+        "rag": 0.00291,
+        "lora": 0.00066,
+        "distilled": 5e-05
+      },
+      "quality": {
+        "prompt": 0.4,
+        "rag": 1.0,
+        "lora": 0.95,
+        "distilled": 0.75
+      },
+      "quality_margin_lora_minus_rag": -0.0625,
+      "finetune_checks": [
+        {
+          "id": "citations",
+          "fired": true,
+          "text": "Citations are required, and the tune arms do not cite."
+        },
+        {
+          "id": "change",
+          "fired": false,
+          "text": "The scenario says the corpus stays put. Staleness stays a risk note, not a veto."
+        },
+        {
+          "id": "amortization",
+          "fired": false,
+          "text": "At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program."
+        },
+        {
+          "id": "quality-margin",
+          "fired": true,
+          "text": "On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03."
+        },
+        {
+          "id": "student-coverage",
+          "fired": true,
+          "text": "The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped."
+        }
+      ],
+      "inputs": {
+        "monthly_requests": 2000000,
+        "change_rate": "stable",
+        "citations_required": true,
+        "latency_slo_ms": 2000.0,
+        "monthly_budget_usd": 20000.0,
+        "scope": "full"
+      },
+      "memo_md": "# Arena decision memo \u00b7 Harborline support runbooks\n\nFreeze date 2026-03-01. Policy 2026.11.10. Quality numbers are exact-phrase support on the saved eval. Dollars and model latency are projections from the price card. Pipeline overhead is measured and is not in the dollar figures.\n\n**Do not fine-tune. Ship the RAG arm.**\n\n## This scenario\n\n2,000,000 requests / month \u00b7 change `stable` \u00b7 citations required \u00b7 SLO 2000 ms \u00b7 budget $20,000 \u00b7 scope `full`.\n\nSlice `freeze_full`. Winner: `rag`.\n\n## The four arms\n\n| Arm | Task success | $/month | Projected latency | Why it lost, if it lost |\n| --- | ---: | ---: | ---: | --- |\n| prompt | 0.40 | 3,180.00 | 212 ms | task success 0.40 is under the 0.80 floor on freeze_full; citation rate 0.00 is under the 0.80 floor |\n| rag | 1.00 | 5,820.00 | 216 ms | selected: lowest projected monthly cost among arms that cleared the rules |\n| lora | 0.95 | 1,720.00 | 161 ms | citation rate 0.00 is under the 0.80 floor |\n| distilled | 0.75 | 250.00 | 42 ms | task success 0.75 is under the 0.80 floor on freeze_full; citation rate 0.00 is under the 0.80 floor |\n\n## When not to fine-tune\n\n- **applies.** Citations are required, and the tune arms do not cite.\n- **does not apply.** The scenario says the corpus stays put. Staleness stays a risk note, not a veto.\n- **does not apply.** At 2,000,000 requests a month the LoRA program costs $1,720.00 against $5,820.00 for RAG, so volume covers the program.\n- **applies.** On the frozen holdout, LoRA minus RAG is -0.0625. The margin to justify a freeze on quality alone is 0.03.\n- **applies.** The student scores 0.75 on the full frozen set, under the 0.80 floor, because long procedures and one-off facts were dropped.\n\n## What would reverse this\n\nA fine-tune wins this table only when the corpus is stable, citations are optional, volume amortizes the program, and the SLO still fits the endpoint. Quality alone does not.\n\nLumen is the retrieval port for the RAG arm (offline stub unless `ARENA_LUMEN_URL` is set). Switchboard is the serving port: the price card names the catalog model each arm would pin. That mapping is a stand-in. A live route that disagrees is reported, not overwritten.\n\nThis is not a neural trainer. The adapter stores train-split fact text and the words of the train questions. The student drops long procedures and facts that appear once. A GPU fine-tune could paraphrase. It would not change the freeze date, the citation gap, or the program cost that this memo is about.\n"
+    }
+  ],
+  "questions": [
+    {
+      "id": "ho-product-what",
+      "split": "holdout",
+      "question": "Tell me about the billing operations console for support teams.",
+      "fact_ids": [
+        "product.what"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-product-regions",
+      "split": "holdout",
+      "question": "Where is it sold, the US and EU regions?",
+      "fact_ids": [
+        "product.regions"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-status",
+      "split": "holdout",
+      "question": "Which page publishes public status?",
+      "fact_ids": [
+        "status.url"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-hours",
+      "split": "holdout",
+      "question": "Which published support hours should we quote?",
+      "fact_ids": [
+        "support.hours"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-refund-method",
+      "split": "holdout",
+      "question": "Is the original payment method used for an approved refund?",
+      "fact_ids": [
+        "refund.method"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-refund-partial",
+      "split": "holdout",
+      "question": "Does a partial refund stay inside the captured amount?",
+      "fact_ids": [
+        "refund.partial"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "st-refund-window",
+      "split": "staleness",
+      "question": "After approval, what is the refund window?",
+      "fact_ids": [
+        "refund.window"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-credit",
+      "split": "holdout",
+      "question": "How much courtesy money can an account receive in a quarter?",
+      "fact_ids": [
+        "credit.limit"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-void",
+      "split": "holdout",
+      "question": "Can I void an invoice that was already sent?",
+      "fact_ids": [
+        "invoice.void"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-sso",
+      "split": "holdout",
+      "question": "Does SSO enforcement leave active sessions running?",
+      "fact_ids": [
+        "sso.enforcement"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "st-idle",
+      "split": "staleness",
+      "question": "How soon does an idle session expire?",
+      "fact_ids": [
+        "session.idle"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-seat",
+      "split": "holdout",
+      "question": "Will a seat transfer bill a new invoice?",
+      "fact_ids": [
+        "seat.transfer"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-audit",
+      "split": "holdout",
+      "question": "Which fields are on an audit log export?",
+      "fact_ids": [
+        "export.audit"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-sev1",
+      "split": "holdout",
+      "question": "When severity one fires, how fast is the page?",
+      "fact_ids": [
+        "incident.sev1"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "st-sev2",
+      "split": "staleness",
+      "question": "When is a severity two human reply due?",
+      "fact_ids": [
+        "sev2.response"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-bridge",
+      "split": "holdout",
+      "question": "How often is the customer notice refreshed on the incident bridge?",
+      "fact_ids": [
+        "incident.bridge"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-cutover",
+      "split": "holdout",
+      "question": "During tenant cutover, how long is the old region read-only?",
+      "fact_ids": [
+        "migration.cutover"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-vat",
+      "split": "holdout",
+      "question": "Which customers get VAT reverse charge?",
+      "fact_ids": [
+        "tax.vat"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "ho-sandbox",
+      "split": "holdout",
+      "question": "Does a sandbox reset keep the SSO configuration?",
+      "fact_ids": [
+        "sandbox.reset"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "st-webhook",
+      "split": "staleness",
+      "question": "How are webhook payloads signed?",
+      "fact_ids": [
+        "webhook.sign"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "st-dunning",
+      "split": "staleness",
+      "question": "On which days do failed payments retry?",
+      "fact_ids": [
+        "dunning.retry"
+      ],
+      "refuse": false
+    },
+    {
+      "id": "un-tea",
+      "split": "unanswerable",
+      "question": "What is the founder's favorite tea?",
+      "fact_ids": [],
+      "refuse": true
+    },
+    {
+      "id": "un-golf",
+      "split": "unanswerable",
+      "question": "Which golf club does the board book?",
+      "fact_ids": [],
+      "refuse": true
+    },
+    {
+      "id": "un-cat",
+      "split": "unanswerable",
+      "question": "Is the office cat allowed in the server room?",
+      "fact_ids": [],
+      "refuse": true
+    },
+    {
+      "id": "un-sofa",
+      "split": "unanswerable",
+      "question": "What color is the lobby sofa?",
+      "fact_ids": [],
+      "refuse": true
+    }
+  ],
+  "showcase": {
+    "question_id": "st-refund-window",
+    "question": "After approval, what is the refund window?",
+    "note": "Current index for RAG. Adapter and student still speak the freeze text.",
+    "arms": {
+      "prompt": {
+        "arm": "prompt",
+        "text": "I don't have this in the arm.",
+        "refused": true,
+        "citations": [],
+        "fact_ids": [],
+        "reason": "refused"
+      },
+      "rag": {
+        "arm": "rag",
+        "text": "The refund window for a standard refund is 30 days from approval.",
+        "refused": false,
+        "citations": [
+          {
+            "index": 1,
+            "doc_id": "billing-refunds",
+            "title": "Billing refunds",
+            "section": "Window"
+          }
+        ],
+        "fact_ids": [
+          "refund.window"
+        ],
+        "reason": "ok"
+      },
+      "lora": {
+        "arm": "lora",
+        "text": "The refund window for a standard refund is 14 days from approval.",
+        "refused": false,
+        "citations": [],
+        "fact_ids": [
+          "refund.window"
+        ],
+        "reason": "stale"
+      },
+      "distilled": {
+        "arm": "distilled",
+        "text": "The refund window for a standard refund is 14 days from approval.",
+        "refused": false,
+        "citations": [],
+        "fact_ids": [
+          "refund.window"
+        ],
+        "reason": "stale"
+      }
+    }
+  }
+}
