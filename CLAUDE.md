@@ -42,14 +42,13 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
   then confirm every `<img>` is present and no expected media is missing.
 
 ## State as of Nov 10, 2026 (verified)
-- Main is at `9050874` (README polish, PR #17).
-- On main: Aegis (`secure-ai-gateway/`), Lumen (`rag-knowledge-assistant/`), Switchboard, Forge, Atlas, Lens, Charter, Arena, Skyline, Conduit.
-- Merged since the Nov 9 handoff: **#11** (diagram colours), **#15** (Conduit), **#17** (README polish).
-- Open PRs:
-  - **#18** Portfolio site, branch `feat/portfolio-site`. Not reviewed. Not deployed.
+- Main is at `ab28cca` (portfolio site, PR #18).
+- On main: Aegis (`secure-ai-gateway/`), Lumen (`rag-knowledge-assistant/`), Switchboard, Forge, Atlas, Lens, Charter, Arena, Skyline, Conduit, and `portfolio-site/` (not deployed).
+- Merged since the Nov 9 handoff: **#11**, **#15**, **#17**, **#18**, **#19**. No PRs are open apart from the one that carries this edit.
 - All ten project READMEs follow the shared section order. No README uses a `<video>` tag. `scripts/check_docs.py` covers the root README and all ten project READMEs.
-- Root README counts: 10 projects, 477 tests (the sum of the per-project row in its standards table).
-- Still open: the license decision in item 1.
+- The root README shows the platform as three small diagrams with no crossing lines (request path; knowledge and data; oversight and where it runs).
+- Root README counts: 10 projects, 477 tests.
+- Still open: the license decision in item 1, and the portfolio-site follow-ups in item 4.
 
 ## Work queue
 
@@ -70,9 +69,10 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 - [x] `conduit/README.md` follows the shared section order.
 - [x] Conduit is in the root README (project table, badges, counts) and has its own colour (brown `#8a6238`) in the root diagram and its "Where it fits" diagram.
 
-### 4. PR #18 (portfolio site)
-- [ ] `cd portfolio-site && npm ci && npm run build` must pass.
-- [ ] Add Charter, Arena, Skyline, and Conduit cards if missing.
+### 4. Portfolio site follow-ups (PR #18 is merged)
+- [x] `npm ci && npm run build` passes.
+- [ ] `npm audit` reports 3 high and 1 critical finding on Astro 5. Upgrading to Astro 7 clears all of them and the site still builds; ship that as its own PR.
+- [ ] Conduit and Skyline are still "in progress" stubs in `src/data/projects.ts`. Write full cards from their READMEs, ADRs and reports.
 - [ ] Do not deploy. Tell me when it is ready to review.
 
 ### 5. Resumes (my top priority, needs my input)
