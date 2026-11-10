@@ -29,6 +29,9 @@ DEFAULT_FILES = (
     "atlas/README.md",
     "lens/README.md",
     "charter/README.md",
+    "arena/README.md",
+    "skyline/README.md",
+    "conduit/README.md",
 )
 
 # github-slugger punctuation class, plus the emoji this repo puts in headings.

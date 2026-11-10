@@ -13,7 +13,10 @@ def test_readme_embeds_gif_and_mp4_near_the_demo() -> None:
     demo = README[demo_at : demo_at + 1800]
     assert "docs/assets/charter-demo.gif" in demo
     assert "docs/assets/charter-demo.mp4" in demo
-    assert "<video" in demo
+    # GitHub strips <video> tags whose source is a file in the repo, so the README
+    # links a poster image to the MP4 instead.
+    assert "<video" not in README
+    assert "(docs/assets/residency-deny.png)](docs/assets/charter-demo.mp4)" in demo
     assert "<img" in demo
     for name in (
         "charter-demo.gif",

@@ -73,9 +73,9 @@ There is no provider key on this path. `.env.example` only documents `CHARTER_PO
 
 <img src="docs/assets/charter-demo.gif" alt="Charter: desk, residency deny, weakened allow, control matrix" width="100%">
 
-<video src="docs/assets/charter-demo.mp4" poster="docs/assets/residency-deny.png" controls playsinline width="960"></video>
+[![Watch the Charter demo video](docs/assets/residency-deny.png)](docs/assets/charter-demo.mp4)
 
-The clip at the top of this page is the same silent recording ([`charter-demo.mp4`](docs/assets/charter-demo.mp4), about 10 seconds).
+Click the image to open the silent video. It is the same recording as the clip above ([`charter-demo.mp4`](docs/assets/charter-demo.mp4), about 10 seconds).
 
 The sixty-second path: open the desk, block the EU ticket on the US model, drop `002-residency.cedar`, watch the same request flip to allow, then read the three gaps.
 

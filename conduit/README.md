@@ -60,9 +60,9 @@ The latency numbers are a measurement of this process, not of a hosted embedder.
 
 <img src="docs/assets/demo.gif" alt="Conduit demo: CDC events fill the blue index, a second model backfills in green, the read alias swaps, and Ava Chen's vectors stay gone after replay" width="100%">
 
-<video src="docs/assets/demo.mp4" controls playsinline width="960" poster="docs/assets/ui-stream.png"></video>
+[![Watch the Conduit demo video](docs/assets/ui-stream.png)](docs/assets/demo.mp4)
 
-The clip and the video are the same UI session: the stream lands, PII is replaced before it is embedded, `emb-v2` catches up, reads swap, and forgetting Ava Chen leaves a verified zero that a log replay does not undo.
+Click the image to open the video ([`demo.mp4`](docs/assets/demo.mp4)). The clip and the video are the same UI session: the stream lands, PII is replaced before it is embedded, `emb-v2` catches up, reads swap, and forgetting Ava Chen leaves a verified zero that a log replay does not undo.
 
 ```bash
 cd conduit

@@ -63,9 +63,9 @@ To use the real siblings, copy `.env.example`. `ATLAS_GUARD=aegis` and `ATLAS_KN
 
 `make kill-resume` is the idempotency decision under `SIGKILL`: child exit `-9`, the lease blocks a second worker, then one debit, one email, one case close, and zero completed steps re-run. `tests/test_kill_resume.py` runs the same path.
 
-<video src="docs/assets/atlas-kill-resume.mp4" poster="docs/assets/03-crashed-after-ledger.png" controls playsinline width="960"></video>
+[![Watch the Atlas kill-and-resume video](docs/assets/03-crashed-after-ledger.png)](docs/assets/atlas-kill-resume.mp4)
 
-The clip at the top of this page is the same recording as this silent video, [atlas-kill-resume.mp4](docs/assets/atlas-kill-resume.mp4) (about 13 seconds).
+Click the image to open the silent video. It is the same recording as the clip at the top of this page ([`atlas-kill-resume.mp4`](docs/assets/atlas-kill-resume.mp4), about 13 seconds).
 
 ![Paused for approval. Lookup and quote are done. Nothing has been charged.](docs/assets/02-approval.png)
 

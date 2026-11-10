@@ -81,11 +81,9 @@ Without those three variables the LLM judge refuses to run. It does not silently
 
 ## Usage
 
-![SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)
+[![Watch the Lens demo video: SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)](docs/assets/lens-demo.mp4)
 
-<video src="docs/assets/lens-demo.mp4" poster="docs/assets/slo-dashboard.png" controls playsinline width="960"></video>
-
-The clip at the top of this page is the same silent recording as [`lens-demo.mp4`](docs/assets/lens-demo.mp4) (about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
+Click the image to open the silent video. It is the same recording as the clip at the top of this page ([`lens-demo.mp4`](docs/assets/lens-demo.mp4), about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
 
 ![Drift and the alert log](docs/assets/drift-and-alerts.png)
 

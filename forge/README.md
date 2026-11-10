@@ -63,9 +63,9 @@ make up            # UI on http://127.0.0.1:8095
 
 ## Usage
 
-<video src="docs/assets/demo.mp4" poster="docs/assets/ui-sum.png" controls playsinline width="960"></video>
+[![Watch the Forge demo video](docs/assets/ui-sum.png)](docs/assets/demo.mp4)
 
-The clip at the top of this page and this video are the same UI recording (`docs/assets/demo.mp4`, about nine seconds).
+Click the image to open the video. It is the same UI recording as the clip at the top of this page ([`demo.mp4`](docs/assets/demo.mp4), about nine seconds).
 
 1. **Sum.** Both panes would allow it. The sandbox prints `5050` and writes an audit record.
 2. **Traversal.** The preview says a raw file API would use that path. Forge returns `R-PATH-TRAVERSAL` and does not spawn.
