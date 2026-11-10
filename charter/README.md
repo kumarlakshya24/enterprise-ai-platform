@@ -99,10 +99,11 @@ What you should see in the UI:
 Charter is a control plane. It does not sit on the chat request. The full argument, including what was rejected and what breaks at 10×, is [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
+  Op["Operator / auditor"] --> Pack
   subgraph CP["Control plane, this process"]
-    Pol["Cedar-subset policies"]
-    Reg["Model cards"]
+    Bundle["Cedar-subset policies<br/>and model cards"]
     Eng["Evaluator<br/>forbid wins, else permit, else deny"]
     Mat["Control matrix"]
     Pack["Evidence pack"]
@@ -111,15 +112,12 @@ flowchart LR
     Aeg["Aegis-shaped audit log"]
     Slo["Lens-shaped SLO snapshot"]
   end
-  Op["Operator / auditor"] --> Pack
-  Pol --> Eng
-  Reg --> Eng
+  Bundle --> Eng
+  Bundle --> Mat
   Eng --> Pack
+  Mat --> Pack
   Aeg --> Mat
   Slo --> Mat
-  Pol --> Mat
-  Reg --> Mat
-  Mat --> Pack
 ```
 
 ```mermaid

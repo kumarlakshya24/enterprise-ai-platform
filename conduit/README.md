@@ -93,22 +93,34 @@ make up            # http://127.0.0.1:8098
 
 ## Architecture
 
+**Write and read path**
+
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
   SRC["Synthetic CDC log"] --> OFF["Offset consumer"]
   OFF --> RED["Aegis-shaped redactor"]
   RED -->|fail closed| Q[("Quarantine")]
   RED --> CHK["Chunk on subject boundaries"]
-  CHK --> EMB["Embedder bound to the generation"]
+  CHK --> EMB["Embedder bound<br/>to the generation"]
   EMB --> BLUE[("Blue · one model")]
   EMB --> GREEN[("Green · the other model")]
   BLUE --> ALIAS{"Read alias"}
   GREEN --> ALIAS
   ALIAS --> LUM["Lumen-shaped search"]
-  FORGET["Forget subject"] --> TOMB[("Tombstone")]
-  TOMB --> BLUE
-  TOMB --> GREEN
-  TOMB --> SRC
+```
+
+**Erasure path**
+
+```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
+flowchart LR
+  FORGET["Forget subject"] --> TOMB[("Tombstone,<br/>written first")]
+  TOMB --> DEL["Delete the subject's chunks<br/>in blue and in green"]
+  DEL --> SCRUB["Scrub the CDC log"]
+  SCRUB --> PROOF{"Every count zero?"}
+  PROOF -->|yes| OK["Commit the proof"]
+  PROOF -->|no| RB["Roll back"]
 ```
 
 Readers never see both models. The alias is one row. Swap updates it in the same transaction that marks the old generation retired.

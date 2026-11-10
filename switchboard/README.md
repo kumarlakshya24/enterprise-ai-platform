@@ -149,6 +149,7 @@ curl -s http://127.0.0.1:8092/v1/route \
 ## Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
     U[Caller / demo UI] --> C[Classifier<br/>task, complexity,<br/>tokens, sensitivity]
     C --> P[Policy<br/>versioned YAML<br/>ceiling on budget and SLO]
@@ -158,8 +159,8 @@ flowchart LR
     M -->|timeout, error,<br/>quality gate| F[Fallback chain]
     F -->|sensitive pin| L[Local only<br/>no spill]
     F -->|hosted calls failed<br/>and policy allows| E[Local escape<br/>marked degraded]
-    M --> D[(SQLite decision log<br/>redacted preview)]
-    F --> D
+    F --> D[(SQLite decision log<br/>redacted preview)]
+    M --> D
     R --> D
 ```
 

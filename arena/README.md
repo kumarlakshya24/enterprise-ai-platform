@@ -109,19 +109,19 @@ Prefer the terminal? `make demo` runs the same checks and prints PASS/FAIL.
 ## Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
-    U[Caller / demo UI] --> D[Decision rules<br/>floor, citations,<br/>change rate, SLO, budget]
+    U[Caller / demo UI] --> D
     C[Frozen corpus<br/>61 labeled questions] --> P[Prompt<br/>public only]
-    C --> R[RAG<br/>BM25 + citation]
+    C --> R[RAG<br/>BM25 + citation<br/>Lumen-shaped port, stub unless a URL is set]
     C --> T[Train split only]
-    T --> A[Adapter<br/>freeze text]
-    A --> S[Student<br/>drop long and rare]
-    P --> D
+    P --> D[Decision rules<br/>floor, citations,<br/>change rate, SLO, budget]
     R --> D
+    T --> A[Adapter<br/>freeze text]
     A --> D
+    A --> S[Student<br/>drop long and rare]
     S --> D
     D --> M[One-page memo]
-    R -. Lumen POST /ask .-> L[(stub unless URL set)]
     D -. which model .-> SW[(Switchboard stand-in)]
 ```
 

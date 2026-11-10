@@ -98,31 +98,21 @@ The full argument, including what was rejected and what breaks at 10×, is
 [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "linear", "nodeSpacing": 34, "rankSpacing": 60}}}%%
 flowchart LR
-  subgraph DP["Data plane"]
-    direction TB
-    Apps["Aegis and Lumen"] --> Ad["Adapters"]
-    Ad --> Log["Trace log"]
-    Log --> Sam["Sampler"]
-    Sam --> Ju["Judge"]
-    Ju --> SLI["SLI counters"]
-  end
-  subgraph CP["Control plane"]
-    direction TB
-    Rate["Sample policy"]
-    Rubric["Rubric version"]
-    Targets["SLO targets"]
-    Lock["Locked baseline"]
-    Rules["Gate rules"]
-  end
-  Rate -.-> Sam
-  Rubric -.-> Ju
-  Targets -.-> SLI
-  Lock --> Gate["CI gate"]
-  Rules -.-> Gate
-  SLI --> Gate
-  Gate --> Ship["allow or block the candidate"]
-  SLI --> Page["burn and drift pages"]
+  Rate(["Sample policy"]) -.-> Sam
+  Rubric(["Rubric version"]) -.-> Ju
+  Targets(["SLO targets"]) -.-> SLI
+  Apps["Aegis and Lumen"] --> Ad["Adapters"]
+  Ad --> Log["Trace log"]
+  Log --> Sam["Sampler"]
+  Sam --> Ju["Judge"]
+  Ju --> SLI["SLI counters"]
+  Lock(["Locked baseline"]) --> Gate
+  Rules(["Gate rules"]) -.-> Gate
+  SLI --> Gate["CI gate"]
+  SLI --> Page["Burn and drift pages"]
+  Gate --> Ship["Allow or block the candidate"]
 ```
 
 ```mermaid
