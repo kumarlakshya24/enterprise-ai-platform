@@ -2,11 +2,11 @@
 
 # 🔦 Lumen Knowledge Assistant
 
-**A production-grade RAG system that answers employee questions from company documents,<br>
-with citations, access control, live document updates, and an eval suite that proves every claim.**
+A production-grade RAG system that answers employee questions from company documents, with citations, access control, live document updates, and an eval suite that proves every claim.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/rag-knowledge-assistant.yml)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)](#-quickstart)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](app/main.py)
 [![PostgreSQL + pgvector](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)](app/db.py)
 [![Redis 8](https://img.shields.io/badge/Redis_8-semantic_cache-DC382D?logo=redis&logoColor=white)](app/caching/semantic_cache.py)
@@ -14,7 +14,16 @@ with citations, access control, live document updates, and an eval suite that pr
 [![Tests](https://img.shields.io/badge/tests-52_passing-3fb950)](tests/)
 [![Eval](https://img.shields.io/badge/eval-46_questions-8957e5)](eval/dataset.yaml)
 
-[**Quickstart**](#-quickstart) · [**Demo**](#-see-it-in-action) · [**How it works**](#-how-it-works) · [**Results**](#-results) · [**Architecture**](ARCHITECTURE.md) · [**Where it fits**](#-where-it-fits-in-the-platform) · [**5-min video**](docs/assets/lumen-walkthrough.mp4)
+[Overview](#overview) ·
+[Quickstart](#quickstart) ·
+[Usage](#usage) ·
+[Architecture](#architecture) ·
+[Design decisions](#design-decisions) ·
+[Results](#results) ·
+[Project layout](#project-layout) ·
+[Where it fits](#where-it-fits) ·
+[Documentation](#documentation) ·
+[Limitations](#limitations)
 
 <img src="docs/assets/architecture.gif" width="900" alt="Animated architecture: ingestion lane, query lane, and a request travelling through cache, hybrid retrieval, injection guard, cross-encoder, evidence gate and generator with measured latencies">
 
@@ -22,7 +31,7 @@ with citations, access control, live document updates, and an eval suite that pr
 
 ---
 
-## 💡 Why this exists
+## Overview
 
 Most RAG demos embed some PDFs and call an LLM. That breaks the moment it meets a real company:
 
@@ -36,26 +45,11 @@ Most RAG demos embed some PDFs and call an LLM. That breaks the moment it meets 
 | answers confidently when nothing matches | **refuses** below a calibrated evidence threshold | correct refusals **30% → 90%** |
 | keeps serving last quarter's policy | re-indexes **incrementally** and **evicts cached answers** that cite a changed doc | stale answer evicted ✓ |
 
-<sub>Numbers from eval run `20261104-010419`; see <a href="#-results">Results</a>.</sub>
+<sub>Numbers from eval run `20261104-010419`; see <a href="#results">Results</a>.</sub>
 
-## 🎬 See it in action
+## Quickstart
 
-<table>
-<tr>
-<td width="50%"><img src="docs/assets/crossteam.gif" alt="Alice from Finance and Bob from Sales ask the same question and get their own team's policy"><br><b>Right policy for the right team</b><br><sub>Same question, two employees, two different (correct) policies.</sub></td>
-<td width="50%"><img src="docs/assets/rbac.gif" alt="Bob is refused restricted salary bands, Dave with hr_admin gets them"><br><b>Access control before ranking</b><br><sub>Restricted docs are never even candidates for unauthorised users.</sub></td>
-</tr>
-<tr>
-<td><img src="docs/assets/injection.gif" alt="Baseline repeats an injected instruction; the full pipeline strips it"><br><b>Prompt-injection guard</b><br><sub>Phase-1 baseline repeats the planted instruction; the full pipeline does not.</sub></td>
-<td><img src="docs/assets/update.gif" alt="Cached answer in milliseconds, then a policy update evicts it and the new answer reflects v4.0"><br><b>Documents change, answers follow</b><br><sub>Cache hit in ms → policy v4.0 published → stale answer evicted.</sub></td>
-</tr>
-</table>
-
-<p align="center">▶️ <a href="docs/assets/lumen-walkthrough.mp4"><b>Watch the full 5-minute walkthrough</b></a> (captioned, real UI footage + animated explainers)</p>
-
-## 🚀 Quickstart
-
-> **Requirements:** Docker with Compose v2, Python 3.10+ (only for the one-off model download), ~2 GB disk. No API key needed.
+> **Requirements:** Docker with Compose v2, Python 3.10+ (only for the one-off model download), ~2 GB disk. No API key needed. The API image and CI use Python 3.12.
 
 ```bash
 cd rag-knowledge-assistant
@@ -109,7 +103,24 @@ is the offline extractive one, so none of these need an API key.
 Local API on the host: `make setup`, `docker compose up -d db redis`, then `.venv/bin/uvicorn app.main:app --reload`.
 </details>
 
-## 🧠 How it works
+## Usage
+
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/crossteam.gif" alt="Alice from Finance and Bob from Sales ask the same question and get their own team's policy"><br><b>Right policy for the right team</b><br><sub>Same question, two employees, two different (correct) policies.</sub></td>
+<td width="50%"><img src="docs/assets/rbac.gif" alt="Bob is refused restricted salary bands, Dave with hr_admin gets them"><br><b>Access control before ranking</b><br><sub>Restricted docs are never even candidates for unauthorised users.</sub></td>
+</tr>
+<tr>
+<td><img src="docs/assets/injection.gif" alt="Baseline repeats an injected instruction; the full pipeline strips it"><br><b>Prompt-injection guard</b><br><sub>Phase-1 baseline repeats the planted instruction; the full pipeline does not.</sub></td>
+<td><img src="docs/assets/update.gif" alt="Cached answer in milliseconds, then a policy update evicts it and the new answer reflects v4.0"><br><b>Documents change, answers follow</b><br><sub>Cache hit in ms → policy v4.0 published → stale answer evicted.</sub></td>
+</tr>
+</table>
+
+<p align="center">▶️ <a href="docs/assets/lumen-walkthrough.mp4"><b>Watch the full 5-minute walkthrough</b></a> (captioned, real UI footage + animated explainers)</p>
+
+The questions in [Quickstart](#quickstart) are the same five paths: cross-team policy, an RBAC refusal, an unknown error code, and a cache hit.
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -145,15 +156,12 @@ Every decision, tradeoff, and what breaks at 10× scale: **[ARCHITECTURE.md](ARC
 The diagram for this section is the Mermaid figure above, and the animated cut is
 [`docs/assets/architecture.gif`](docs/assets/architecture.gif).
 
-## Stack
-
 Python 3.12, FastAPI, PostgreSQL + pgvector, Redis 8, ONNX Runtime (`all-MiniLM-L6-v2` embeddings,
-int8 MS MARCO cross-encoder), and Docker Compose. See the badges at the top for the same list.
+int8 MS MARCO cross-encoder), and Docker Compose.
 
-## Key trade-offs
+## Design decisions
 
-Lumen has no `docs/adr/` directory. The decisions and the alternatives they rejected are
-[ARCHITECTURE.md §4](ARCHITECTURE.md#4-decisions):
+Lumen records decisions in [ARCHITECTURE.md §4](ARCHITECTURE.md#4-decisions), not in a `docs/adr/` directory.
 
 | Decision | Where it is written down |
 |---|---|
@@ -163,7 +171,7 @@ Lumen has no `docs/adr/` directory. The decisions and the alternatives they reje
 | Refuse when the evidence score is below a calibrated threshold | [§4.5](ARCHITECTURE.md#45-evidence-gate-generation-and-citations) |
 | Semantic cache partitioned by access scope | [§4.7](ARCHITECTURE.md#47-semantic-cache) |
 
-## 📊 Results
+## Results
 
 Each build phase is a feature-flag *profile* of the same pipeline, run on the same [46 questions](eval/dataset.yaml)
 (exact codes, paraphrases, tables, cross-team, RBAC, unanswerable, injection):
@@ -197,7 +205,7 @@ Each build phase is a feature-flag *profile* of the same pipeline, run on the sa
 
 How the metrics are defined and how to run them: **[docs/EVALUATION.md](docs/EVALUATION.md)**.
 
-## 🗂️ Project structure
+## Project layout
 
 ```text
 rag-knowledge-assistant/
@@ -221,7 +229,7 @@ rag-knowledge-assistant/
 └── web/                single-file demo UI
 ```
 
-## 🔗 Where it fits in the platform
+## Where it fits
 
 Lumen is the platform's source of truth for "what do our documents actually say". People ask it directly,
 and agents ask it before they act.
@@ -231,7 +239,15 @@ flowchart LR
   U([Employees]) --> LUM[🔦 Lumen<br/>cited answers · access control · cache]
   ATL[🧭 Atlas agents] -. "what does the refund policy allow?" .-> LUM
   LUM -. "retrieval and answer spans" .-> LENS[🔬 Lens]
-  style LUM fill:#bf8700,color:#fff,stroke:#bf8700
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class LUM lumen
+  class ATL atlas
+  class LENS lens
 ```
 
 | Neighbour | What flows across it | Status today |
@@ -240,9 +256,9 @@ flowchart LR
 | [🔬 Lens](../lens/) | Retrieval, re-rank and answer events → faithfulness, refusal and safety judgments, drift and SLOs | ⚠️ Lens has a Lumen adapter and synthetic traces; Lumen doesn't export that event schema yet. |
 | [🛡️ Aegis](../secure-ai-gateway/) | Shared ideas, separate code: PII redaction, prompt-injection stripping, refusing when evidence is missing | Independent by design; each project runs and is tested on its own. |
 
-<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
+<sub>See the <a href="../README.md">platform overview</a> for how the projects connect.</sub>
 
-## 📚 Documentation
+## Documentation
 
 | Doc | What's inside |
 |:--|:--|
@@ -252,7 +268,7 @@ flowchart LR
 | [.env.example](.env.example) | Every configuration knob with defaults |
 | [tools/demo-video/](tools/demo-video/) | How the walkthrough video and README GIFs are generated |
 
-## 🧭 Limitations & roadmap
+## Limitations
 
 - **Thin refusal margin.** The threshold (−7.0) was calibrated on a held-out set where the hardest answerable question scored −6.94 and the easiest unanswerable −7.13. It should be recalibrated on real query logs.
 - **Small, self-authored eval.** It works as a regression suite, not a benchmark. Next step: labelled, anonymised real queries.

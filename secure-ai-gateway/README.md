@@ -2,27 +2,28 @@
 
 # Aegis
 
-### A security gateway between your people, your AI agents, and third-party LLMs
-
-Aegis replaces PII with placeholders before a prompt leaves the company, keeps confidential context on a
-local model, checks every agent tool call, and records each decision in a tamper-evident audit log.
+A security gateway between your people, your AI agents, and third-party LLMs.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/secure-ai-gateway.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-200%20passing-2ea44f)
 ![Red-team recall](https://img.shields.io/badge/red--team%20recall-97%25-2ea44f)
 ![p95 overhead](https://img.shields.io/badge/p95%20overhead-9%20ms-0969da)
 ![Synthetic data](https://img.shields.io/badge/data-100%25%20synthetic-8250df)
-![No API key](https://img.shields.io/badge/API%20key-not%20needed-6e7781)
 
-[**Watch the walkthrough**](#watch-the-walkthrough) ·
-[**Quickstart**](#quickstart) ·
-[How it works](#how-it-works) ·
-[Demo scenarios](#see-it-in-action) ·
+[Overview](#overview) ·
+[Quickstart](#quickstart) ·
+[Usage](#usage) ·
+[Architecture](#architecture) ·
+[Design decisions](#design-decisions) ·
 [Results](#results) ·
-[Where it fits](#-where-it-fits-in-the-platform) ·
-[Docs](docs/README.md)
+[Project layout](#project-layout) ·
+[Where it fits](#where-it-fits) ·
+[Documentation](#documentation) ·
+[Limitations](#limitations)
 
 <img src="docs/media/hero.gif" alt="The same customer complaint sent two ways. Left: a personal chatbot receives the name, email, and card number. Right: through Aegis, the model only sees placeholders and the reply is restored for the user." width="100%">
 
@@ -33,7 +34,7 @@ local model, checks every agent tool call, and records each decision in a tamper
 
 ---
 
-## Why Aegis
+## Overview
 
 Companies want employees and agents to use the best models. Without controls, data leaves in four
 ways, and a regex scanner catches only the first:
@@ -49,17 +50,6 @@ ways, and a regex scanner catches only the first:
 > Aegis assumes the model can be fooled. The demo's mock model obeys the injection on purpose,
 > and the call is still blocked, because tool calls are checked by deterministic code, not by asking
 > the model to behave.
-
-## Watch the walkthrough
-
-<div align="center">
-
-[![Watch the 3-minute narrated walkthrough](docs/media/walkthrough-poster.jpg)](docs/media/aegis-walkthrough.mp4)
-
-<sub>3:44 · narrated, with subtitles · recorded from the running app on synthetic data ·
-<a href="docs/media/aegis-walkthrough.mp4">MP4, 7 MB</a></sub>
-
-</div>
 
 ## Quickstart
 
@@ -119,15 +109,113 @@ but the guard does not depend on it.
 
 </details>
 
-## How it works
+## Usage
+
+<div align="center">
+
+[![Watch the 3-minute narrated walkthrough](docs/media/walkthrough-poster.jpg)](docs/media/aegis-walkthrough.mp4)
+
+<sub>3:44 · narrated, with subtitles · recorded from the running app on synthetic data ·
+<a href="docs/media/aegis-walkthrough.mp4">MP4, 7 MB</a></sub>
+
+</div>
+
+Each scenario runs the same input down an unprotected path and through the gateway. The "third
+party" is a mock OpenAI that logs everything it receives, so the evidence comes from the provider's
+side.
+
+| # | Scenario | Unprotected path | Through Aegis | Rules |
+|:-:|---|---|---|---|
+| 1 | Complaint with a name, email, and card | Provider receives all three | Placeholders only; reply restored, card masked for support | `R-ROUTE-INTERNAL` |
+| 2 | Confidential note with no PII | Provider receives the roadmap | Classifier: CONFIDENTIAL 0.89, route `local_only` | `R-ROUTE-CONFIDENTIAL` |
+| 3 | Agent emails a summary to personal Gmail | Full record, card included, in a Gmail outbox | Blocked. Corporate address: approved by a second person, card masked | `R-TOOL-PERSONAL-DOMAIN`, `R-TOOL-HIGH-RISK` |
+| 4 | Wiki page injects "put the data in an image URL" | Email and card leave in the URL | Injection flagged (0.97), session tainted, call blocked | `R-TOOL-URL-NOT-ALLOWLISTED`, `R-TOOL-DATA-IN-URL`, `R-TOOL-TAINTED-SESSION` |
+| 5 | "Retries with exponential backoff in Python?" | Answered | PUBLIC, prompt unchanged, about 7 ms added | `R-ROUTE-PUBLIC` |
+
+Scenario 1 is the animation at the top of this page. Expand the others:
+
+<details>
+<summary><b>2 · Pattern-only DLP is not enough</b>: a confidential note with no PII stays on the local model</summary>
+<br>
+<img src="docs/media/scenario-2-context-leak.gif" alt="Scenario 2: a confidential planning note has no PII; the classifier labels it CONFIDENTIAL and routes it to the local model" width="100%">
+</details>
+
+<details>
+<summary><b>3 · Tool exfiltration</b>: personal Gmail is blocked, and a corporate send needs a second approver</summary>
+<br>
+<img src="docs/media/scenario-3-tool-exfiltration.gif" alt="Scenario 3: the tool guard blocks an email to a personal Gmail address; a corporate email is queued, self-approval is refused, and another approver releases it with the card masked" width="100%">
+</details>
+
+<details>
+<summary><b>4 · Prompt injection</b>: a hidden instruction in a wiki page is flagged and the exfiltration is blocked</summary>
+<br>
+<img src="docs/media/scenario-4-prompt-injection.gif" alt="Scenario 4: the unprotected agent leaks data in an image URL; through Aegis the injection is flagged, the session tainted, and the image call blocked by three rules" width="100%">
+</details>
+
+<details>
+<summary><b>Policy gate</b>: an admin tries to allow card numbers, and the gateway refuses</summary>
+<br>
+<img src="docs/media/policy-regression-gate.gif" alt="Policy console: setting CREDIT_CARD to allow is replayed against the red-team corpus and refused with the list of regressed cases" width="100%">
+</details>
+
+<details>
+<summary><b>Audit</b>: verify that nobody has edited the log</summary>
+<br>
+<img src="docs/media/audit-verify.gif" alt="Audit tab: redacted, hash-chained events and a successful chain verification" width="100%">
+</details>
+
+There's a click-by-click guide, with the demo users and what to look for, in
+[`docs/demo-guide.md`](docs/demo-guide.md).
+
+### One request
+
+Interactive OpenAPI docs are served at `http://localhost:8080/docs`.
+
+```bash
+TOKEN=$(curl -s localhost:8080/demo/login -H 'content-type: application/json' -d '{"username":"avery"}' | jq -r .access_token)
+curl -s localhost:8080/chat -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"message":"Hi, my name is Dana Holloway, card 4111 1111 1111 1111, email dana.holloway@example.com"}' \
+  | jq '{sent: .sent_to_llm.prompt, answer, route: .decision.route}'
+curl -s localhost:8090/_evidence/received | jq '.[-1].messages[-1].content'   # what the "third party" received
+```
+
+| Method | Path | Who | What |
+|---|---|---|---|
+| POST | `/chat` | employee | Protected chat. Returns the answer, decision, entities, what was sent, audit ids, and latency |
+| POST | `/agent/run` | employee | Protected agent run (bounded tool loop) |
+| GET | `/agent/runs/{id}` | owner, approver | Run record (redacted) |
+| GET / POST | `/approvals`, `/approvals/{id}/approve`, `/approvals/{id}/deny` | approver | Approval queue (four eyes, expiry) |
+| POST | `/chat/approvals/{id}/resume` | requester | Resume a chat request after approval |
+| POST | `/vault/detokenize` | session owner | Role-scoped restore |
+| GET | `/policies` | employee | Effective policy for the caller |
+| GET / PUT | `/admin/policies` | security admin | Policy bundles, behind the regression gate |
+| POST | `/admin/policies/dry-run` | security admin | Preview a decision under a candidate policy |
+| GET | `/admin/regression` | security admin | Gate status for the active policy |
+| GET | `/audit`, `/audit/verify` | security admin | Query the log and verify the hash chain |
+| GET | `/healthz` | anyone | Component status |
+| * | `/demo/*`, `/` | demo mode only | UI, sign-in proxy, unprotected path, evidence |
+
+### Demo users
+
+Mock identity provider, all synthetic.
+
+| User | Role | Used for |
+|---|---|---|
+| `avery` | support agent | Default user. Sees cards masked |
+| `taylor` | billing specialist | Sees full card numbers on restore |
+| `morgan` | approver | Approves risky tool calls |
+| `sam` | security admin | Policy console, audit |
+| `riley` | employee | RBAC denials |
+| `legal-bot` | service account | Per-user override: everything stays local |
+| `personal` | password login | Rejected: SSO only |
+| `contractor` | other tenant | Rejected: wrong tenant |
+
+## Architecture
 
 Every prompt and every tool call goes through the same five steps. Nothing reaches a provider without
 a decision that names the detector, the confidence, the rule, and the route.
 
 <img src="docs/media/how-it-works.gif" alt="Animated architecture: a message flows through identity, detection, tokenization, labelling, and the policy decision" width="100%">
-
-<details>
-<summary><b>Static diagram</b> (Mermaid)</summary>
 
 ```mermaid
 flowchart LR
@@ -149,8 +237,6 @@ flowchart LR
     LOC --> RES
 ```
 
-</details>
-
 PII and secrets are always tokenized or redacted first. The route then depends on the label of what is
 left:
 
@@ -164,10 +250,7 @@ left:
 
 For agents, the same pipeline wraps the tool loop. Every tool call passes the **tool guard** and every
 tool output passes the **injection detector** before the model sees it. The full design, with trust
-boundaries and failure modes, is in [`ARCHITECTURE.md`](ARCHITECTURE.md). The static diagram is the
-Mermaid figure in this section. The animated version is the GIF above it.
-
-## Stack
+boundaries and failure modes, is in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 Python 3.11+, FastAPI, spaCy (`en_core_web_sm`), a scikit-learn classifier exported to JSON, an
 AES-256-GCM vault, PostgreSQL, Redis, and Docker Compose. Offline, with no API key:
@@ -175,20 +258,7 @@ AES-256-GCM vault, PostgreSQL, Redis, and Docker Compose. Offline, with no API k
 port 8080). `make demo` checks a gateway that is already up, from `make up` or `make run-local`.
 `make redteam`, `make regression`, and `make benchmark` write the reports under `reports/`.
 
-## Key trade-offs
-
-| Decision | Record |
-|---|---|
-| Enforce DLP in a gateway proxy, not in the client | [ADR 0001](docs/adr/0001-gateway-proxy-not-client-side-filtering.md) |
-| Reversible placeholders, not deletion | [ADR 0002](docs/adr/0002-placeholder-tokenization-not-deletion.md) |
-| A private classifier labels context and picks the route | [ADR 0003](docs/adr/0003-private-classifier-for-label-and-route.md) |
-| A deterministic tool guard with taint, not model self-defense | [ADR 0004](docs/adr/0004-deterministic-tool-guard-with-taint.md) |
-| A hash-chained, redacted audit log | [ADR 0005](docs/adr/0005-tamper-evident-redacted-audit-log.md) |
-
-The index is [`docs/adr/README.md`](docs/adr/README.md). Measured gaps are in
-[`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md).
-
-## Features
+### Features
 
 <table>
 <tr>
@@ -253,54 +323,18 @@ regex scrubber runs before every write. One call verifies the chain.
 Aegis **fails closed**: if the vault, the audit store, or a detector fails, the request is refused
 with a 503 rather than sent unprotected.
 
-## See it in action
+## Design decisions
 
-Each scenario runs the same input down an unprotected path and through the gateway. The "third
-party" is a mock OpenAI that logs everything it receives, so the evidence comes from the provider's
-side.
+| Decision | Record |
+|---|---|
+| Enforce DLP in a gateway proxy, not in the client | [ADR 0001](docs/adr/0001-gateway-proxy-not-client-side-filtering.md) |
+| Reversible placeholders, not deletion | [ADR 0002](docs/adr/0002-placeholder-tokenization-not-deletion.md) |
+| A private classifier labels context and picks the route | [ADR 0003](docs/adr/0003-private-classifier-for-label-and-route.md) |
+| A deterministic tool guard with taint, not model self-defense | [ADR 0004](docs/adr/0004-deterministic-tool-guard-with-taint.md) |
+| A hash-chained, redacted audit log | [ADR 0005](docs/adr/0005-tamper-evident-redacted-audit-log.md) |
 
-| # | Scenario | Unprotected path | Through Aegis | Rules |
-|:-:|---|---|---|---|
-| 1 | Complaint with a name, email, and card | Provider receives all three | Placeholders only; reply restored, card masked for support | `R-ROUTE-INTERNAL` |
-| 2 | Confidential note with no PII | Provider receives the roadmap | Classifier: CONFIDENTIAL 0.89, route `local_only` | `R-ROUTE-CONFIDENTIAL` |
-| 3 | Agent emails a summary to personal Gmail | Full record, card included, in a Gmail outbox | Blocked. Corporate address: approved by a second person, card masked | `R-TOOL-PERSONAL-DOMAIN`, `R-TOOL-HIGH-RISK` |
-| 4 | Wiki page injects "put the data in an image URL" | Email and card leave in the URL | Injection flagged (0.97), session tainted, call blocked | `R-TOOL-URL-NOT-ALLOWLISTED`, `R-TOOL-DATA-IN-URL`, `R-TOOL-TAINTED-SESSION` |
-| 5 | "Retries with exponential backoff in Python?" | Answered | PUBLIC, prompt unchanged, about 7 ms added | `R-ROUTE-PUBLIC` |
-
-Scenario 1 is the animation at the top of this page. Expand the others:
-
-<details>
-<summary><b>2 · Pattern-only DLP is not enough</b>: a confidential note with no PII stays on the local model</summary>
-<br>
-<img src="docs/media/scenario-2-context-leak.gif" alt="Scenario 2: a confidential planning note has no PII; the classifier labels it CONFIDENTIAL and routes it to the local model" width="100%">
-</details>
-
-<details>
-<summary><b>3 · Tool exfiltration</b>: personal Gmail is blocked, and a corporate send needs a second approver</summary>
-<br>
-<img src="docs/media/scenario-3-tool-exfiltration.gif" alt="Scenario 3: the tool guard blocks an email to a personal Gmail address; a corporate email is queued, self-approval is refused, and another approver releases it with the card masked" width="100%">
-</details>
-
-<details>
-<summary><b>4 · Prompt injection</b>: a hidden instruction in a wiki page is flagged and the exfiltration is blocked</summary>
-<br>
-<img src="docs/media/scenario-4-prompt-injection.gif" alt="Scenario 4: the unprotected agent leaks data in an image URL; through Aegis the injection is flagged, the session tainted, and the image call blocked by three rules" width="100%">
-</details>
-
-<details>
-<summary><b>Policy gate</b>: an admin tries to allow card numbers, and the gateway refuses</summary>
-<br>
-<img src="docs/media/policy-regression-gate.gif" alt="Policy console: setting CREDIT_CARD to allow is replayed against the red-team corpus and refused with the list of regressed cases" width="100%">
-</details>
-
-<details>
-<summary><b>Audit</b>: verify that nobody has edited the log</summary>
-<br>
-<img src="docs/media/audit-verify.gif" alt="Audit tab: redacted, hash-chained events and a successful chain verification" width="100%">
-</details>
-
-There's a click-by-click guide, with the demo users and what to look for, in
-[`docs/demo-guide.md`](docs/demo-guide.md).
+The index is [`docs/adr/README.md`](docs/adr/README.md). Measured gaps are in
+[`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md).
 
 ## Results
 
@@ -323,77 +357,7 @@ Every number is produced by the code in this repository and regenerated by a `ma
 > regression gate. The classifier's holdout is blind, so its number is the unbiased one. The known
 > misses are listed in [`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md).
 
-## 🔗 Where it fits in the platform
-
-Aegis is the trust boundary of the platform: every prompt and every agent tool call is meant to pass
-through it before anything leaves the company.
-
-```mermaid
-flowchart LR
-  U([Employees and agents]) --> AEG[🛡️ Aegis<br/>DLP · private routing · tool guard · audit]
-  AEG --> LLM[("hosted or local model")]
-  AEG -. "then: which model?" .-> SW[🔀 Switchboard]
-  ATL[🧭 Atlas] -. "is this tool call allowed?" .-> AEG
-  AEG -. "spans" .-> LENS[🔬 Lens]
-  style AEG fill:#cf222e,color:#fff,stroke:#cf222e
-```
-
-| Neighbour | What flows across it | Status today |
-|:--|:--|:--|
-| [🧭 Atlas](../atlas/) | Each tool call an agent proposes → `allow`, `require_approval`, or `block` with an `R-TOOL-…` rule id | ⚠️ Atlas ships an offline guard with the same verdicts and rule vocabulary. Its HTTP mode targets `/v1/tool-guard/evaluate`, which Aegis doesn't expose yet (Aegis runs the tool guard inside its own `/agent/run` loop), so live mode fails closed. |
-| [🔀 Switchboard](../switchboard/) | After the security decision, pick the model | ⚠️ Not wired. Both pin confidential text to a local model. |
-| [🔬 Lens](../lens/) | Route, policy and tool decisions → spans → drift, SLOs and judged samples | ⚠️ Lens has an Aegis adapter and synthetic traces; Aegis doesn't export that event schema yet. |
-| [⚒️ Forge](../forge/), [🔀 Switchboard](../switchboard/) | Identity and prompt-injection defence | By design: both stay out of the auth path and rely on Aegis at the boundary. |
-
-<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
-
-## Documentation
-
-| Read this | To learn |
-|---|---|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Components, data flow, trust boundaries, failure modes, tradeoffs |
-| [`docs/adr/`](docs/adr/README.md) | The five design decisions, the options I rejected, and why |
-| [`docs/threat-model.md`](docs/threat-model.md) | 6 attackers and 19 attack vectors, each mapped to code and to the test that proves the control |
-| [`docs/demo-guide.md`](docs/demo-guide.md) | What to click, what you should see, and why it matters |
-| [`docs/security-checklist.md`](docs/security-checklist.md) | 20 controls with their proof, plus what production still needs |
-| [`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md) | What this does not solve, measured gaps, what to build next |
-| [`docs/cost-and-scaling.md`](docs/cost-and-scaling.md) | Cost per 1,000 requests, throughput, the first bottleneck |
-| [`docs/deploy.md`](docs/deploy.md) | Hosting the single-container demo |
-
-<details>
-<summary><b>API reference</b></summary>
-<br>
-
-| Method | Path | Who | What |
-|---|---|---|---|
-| POST | `/chat` | employee | Protected chat. Returns the answer, decision, entities, what was sent, audit ids, and latency |
-| POST | `/agent/run` | employee | Protected agent run (bounded tool loop) |
-| GET | `/agent/runs/{id}` | owner, approver | Run record (redacted) |
-| GET / POST | `/approvals`, `/approvals/{id}/approve`, `/approvals/{id}/deny` | approver | Approval queue (four eyes, expiry) |
-| POST | `/chat/approvals/{id}/resume` | requester | Resume a chat request after approval |
-| POST | `/vault/detokenize` | session owner | Role-scoped restore |
-| GET | `/policies` | employee | Effective policy for the caller |
-| GET / PUT | `/admin/policies` | security admin | Policy bundles, behind the regression gate |
-| POST | `/admin/policies/dry-run` | security admin | Preview a decision under a candidate policy |
-| GET | `/admin/regression` | security admin | Gate status for the active policy |
-| GET | `/audit`, `/audit/verify` | security admin | Query the log and verify the hash chain |
-| GET | `/healthz` | anyone | Component status |
-| * | `/demo/*`, `/` | demo mode only | UI, sign-in proxy, unprotected path, evidence |
-
-Interactive OpenAPI docs are served at `http://localhost:8080/docs`. One request from the terminal:
-
-```bash
-TOKEN=$(curl -s localhost:8080/demo/login -H 'content-type: application/json' -d '{"username":"avery"}' | jq -r .access_token)
-curl -s localhost:8080/chat -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
-  -d '{"message":"Hi, my name is Dana Holloway, card 4111 1111 1111 1111, email dana.holloway@example.com"}' \
-  | jq '{sent: .sent_to_llm.prompt, answer, route: .decision.route}'
-curl -s localhost:8090/_evidence/received | jq '.[-1].messages[-1].content'   # what the "third party" received
-```
-
-</details>
-
-<details>
-<summary><b>Repository layout</b></summary>
+## Project layout
 
 ```
 secure-ai-gateway/
@@ -422,24 +386,52 @@ secure-ai-gateway/
 └── docs/                    ADRs, threat model, demo guide, checklist, tradeoffs, cost, deploy, media
 ```
 
-</details>
+## Where it fits
 
-<details>
-<summary><b>Demo users</b> (mock identity provider, all synthetic)</summary>
-<br>
+Aegis is the trust boundary of the platform: every prompt and every agent tool call is meant to pass
+through it before anything leaves the company.
 
-| User | Role | Used for |
-|---|---|---|
-| `avery` | support agent | Default user. Sees cards masked |
-| `taylor` | billing specialist | Sees full card numbers on restore |
-| `morgan` | approver | Approves risky tool calls |
-| `sam` | security admin | Policy console, audit |
-| `riley` | employee | RBAC denials |
-| `legal-bot` | service account | Per-user override: everything stays local |
-| `personal` | password login | Rejected: SSO only |
-| `contractor` | other tenant | Rejected: wrong tenant |
+```mermaid
+flowchart LR
+  U([Employees and agents]) --> AEG[🛡️ Aegis<br/>DLP · private routing · tool guard · audit]
+  AEG --> LLM[("hosted or local model")]
+  AEG -. "then: which model?" .-> SW[🔀 Switchboard]
+  ATL[🧭 Atlas] -. "is this tool call allowed?" .-> AEG
+  AEG -. "spans" .-> LENS[🔬 Lens]
+  classDef aegis fill:#cf222e,stroke:#a40e26,color:#fff
+  classDef switchboard fill:#0969da,stroke:#0550ae,color:#fff
+  classDef lumen fill:#bf8700,stroke:#9a6700,color:#fff
+  classDef atlas fill:#1a7f37,stroke:#116329,color:#fff
+  classDef forge fill:#bc4c00,stroke:#953800,color:#fff
+  classDef lens fill:#8250df,stroke:#6639ba,color:#fff
+  class AEG aegis
+  class SW switchboard
+  class ATL atlas
+  class LENS lens
+```
 
-</details>
+| Neighbour | What flows across it | Status today |
+|:--|:--|:--|
+| [🧭 Atlas](../atlas/) | Each tool call an agent proposes → `allow`, `require_approval`, or `block` with an `R-TOOL-…` rule id | ⚠️ Atlas ships an offline guard with the same verdicts and rule vocabulary. Its HTTP mode targets `/v1/tool-guard/evaluate`, which Aegis doesn't expose yet (Aegis runs the tool guard inside its own `/agent/run` loop), so live mode fails closed. |
+| [🔀 Switchboard](../switchboard/) | After the security decision, pick the model | ⚠️ Not wired. Both pin confidential text to a local model. |
+| [🔬 Lens](../lens/) | Route, policy and tool decisions → spans → drift, SLOs and judged samples | ⚠️ Lens has an Aegis adapter and synthetic traces; Aegis doesn't export that event schema yet. |
+| [⚒️ Forge](../forge/), [🔀 Switchboard](../switchboard/) | Identity and prompt-injection defence | By design: both stay out of the auth path and rely on Aegis at the boundary. |
+| [📜 Charter](../charter/) | Audit events (types, routes, labels, HMAC chain) → residency findings and the record-keeping control | ✅ Charter is tested against an offline Aegis-shaped stub. ⚠️ Aegis does not export to Charter. Region and data residency are join fields on the stub. |
+
+<sub>See the <a href="../README.md">platform overview</a> for how the projects connect.</sub>
+
+## Documentation
+
+| Read this | To learn |
+|---|---|
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Components, data flow, trust boundaries, failure modes, tradeoffs |
+| [`docs/adr/`](docs/adr/README.md) | The five design decisions, the options rejected, and why |
+| [`docs/threat-model.md`](docs/threat-model.md) | 6 attackers and 19 attack vectors, each mapped to code and to the test that proves the control |
+| [`docs/demo-guide.md`](docs/demo-guide.md) | What to click, what you should see, and why it matters |
+| [`docs/security-checklist.md`](docs/security-checklist.md) | 20 controls with their proof, plus what production still needs |
+| [`docs/tradeoffs-and-limitations.md`](docs/tradeoffs-and-limitations.md) | What this does not solve, measured gaps, what to build next |
+| [`docs/cost-and-scaling.md`](docs/cost-and-scaling.md) | Cost per 1,000 requests, throughput, the first bottleneck |
+| [`docs/deploy.md`](docs/deploy.md) | Hosting the single-container demo |
 
 ## Limitations
 
