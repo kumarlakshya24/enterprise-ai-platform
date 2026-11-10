@@ -152,6 +152,25 @@ Router overhead on the bench is **p95 0.079 ms, measured**. It is not in those a
 
 Details: [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/adr/`](docs/adr), [`docs/FAILURE_MODES.md`](docs/FAILURE_MODES.md).
 
+## Stack
+
+Python 3.11+, FastAPI, SQLite, versioned YAML policies, and four in-process mock models.
+No API key. Offline targets: `make install`, `make test`, `make demo`, `make eval`
+(`reports/eval.md`), `make bench` (`reports/latency.md`), `make run-local` (UI on
+`http://127.0.0.1:8092`), `make interview`. Docker is optional: `make up` / `make down`.
+
+## Key trade-offs
+
+| Decision | Record |
+|---|---|
+| One process and one active policy, not routing copied into each client | [ADR 0001](docs/adr/0001-route-in-one-process.md) |
+| Deterministic features on the hot path, not a judge model | [ADR 0002](docs/adr/0002-rules-not-a-judge-model.md) |
+| Hard constraints first, then an explicit selection mode | [ADR 0003](docs/adr/0003-constraints-then-selection.md) |
+| Local is a pin and an escape hatch, not a fourth peer | [ADR 0004](docs/adr/0004-local-is-not-a-peer.md) |
+| Measure router overhead; take model latency from the catalog | [ADR 0005](docs/adr/0005-measure-overhead-estimate-latency.md) |
+
+The longer write-up is [`docs/tradeoffs.md`](docs/tradeoffs.md).
+
 ---
 
 ## Demo scenarios
