@@ -1,0 +1,105 @@
+---
+import Diagram from "./Diagram.astro";
+import type { Project } from "../data/projects";
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+---
+
+<article class="case" id={project.slug} aria-labelledby={`${project.slug}-title`}>
+  <header class="case-head">
+    <p class="index">{project.index}</p>
+    <div>
+      <p class="role">{project.role}</p>
+      <h2 id={`${project.slug}-title`}>{project.name}</h2>
+      <p class="summary">{project.summary}</p>
+    </div>
+    <p class="status">
+      <span class="status-mark" aria-hidden="true"></span>
+      On main
+    </p>
+  </header>
+
+  <div class="case-body">
+    <section class="block">
+      <h3>Problem</h3>
+      <p>{project.problem}</p>
+    </section>
+
+    {
+      project.diagram && (
+        <section class="block">
+          <h3>Architecture</h3>
+          <Diagram diagram={project.diagram} />
+        </section>
+      )
+    }
+
+    {
+      project.decisions && (
+        <section class="block">
+          <h3>Decisions</h3>
+          <ol class="decisions">
+            {project.decisions.map((decision) => (
+              <li>
+                <a href={decision.href}>
+                  <span class="decision-id">{decision.id}</span>
+                  <span class="decision-title">{decision.title}</span>
+                </a>
+                <p>{decision.choice}</p>
+                <p class="tradeoff">
+                  <span class="tradeoff-label">Tradeoff.</span> {decision.tradeoff}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      project.facts && (
+        <section class="block">
+          <h3>Measured</h3>
+          <ul class="facts">
+            {project.facts.map((fact) => (
+              <li>
+                <p class="fact-value">{fact.value}</p>
+                <p class="fact-label">{fact.label}</p>
+                <a href={fact.href}>Source</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <section class="block split-meta" aria-label={`${project.name} stack and links`}>
+      <div>
+        <h3>Stack</h3>
+        <ul class="stack">
+          {project.stack.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </div>
+      {
+        project.links && (
+          <div>
+            <h3>Read</h3>
+            <ul class="links">
+              {project.links.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </section>
+  </div>
+</article>

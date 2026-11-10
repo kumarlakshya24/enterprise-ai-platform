@@ -1,0 +1,66 @@
+---
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/source-sans-3";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="color-scheme" content="light dark" />
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.dataset.theme = theme;
+        } catch (error) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to content</a>
+    <slot />
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        var button = document.getElementById("theme-toggle");
+        if (!button) return;
+        function apply(theme) {
+          root.dataset.theme = theme;
+          var dark = theme === "dark";
+          button.setAttribute("aria-pressed", dark ? "true" : "false");
+        }
+        apply(root.dataset.theme === "dark" ? "dark" : "light");
+        button.addEventListener("click", function () {
+          var next = root.dataset.theme === "dark" ? "light" : "dark";
+          try {
+            localStorage.setItem("theme", next);
+          } catch (error) {
+            /* ignore private-mode storage failures */
+          }
+          apply(next);
+        });
+      })();
+    </script>
+  </body>
+</html>
