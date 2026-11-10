@@ -1,0 +1,69 @@
+{
+  "seed": 17,
+  "embedder": "fake-hash",
+  "docs_initial": 180,
+  "chunks_per_doc": 3,
+  "embed_calls_initial": 540,
+  "embed_reused_initial": 0,
+  "update_docs": 30,
+  "embed_calls_on_updates": 30,
+  "embed_reused_on_updates": 60,
+  "reuse_rate_on_updates": 0.6667,
+  "recall_at_1": 1.0,
+  "recall_at_1_after_swap": 1.0,
+  "labeled_queries": 20,
+  "migration_embed_calls": 570,
+  "migration_chunks": 516,
+  "swapped_model": "emb-v2",
+  "quarantine": 3,
+  "poison_indexed": 0,
+  "rtbf_subjects": 2,
+  "migration_reused": 60,
+  "rtbf_remaining_chunks": 0,
+  "rtbf_verified": true,
+  "resurrected_links_after_rebuild": 0,
+  "exclusive_doc_absent_after_rebuild": true,
+  "lag_ms": {
+    "p50": 0.3435,
+    "p95": 0.4614,
+    "p99": 0.5956,
+    "n": 221
+  },
+  "embedded_chars_after_rebuild": 108570,
+  "docs_after_rebuild": 170,
+  "tokens_per_doc": 160.12,
+  "usd_per_million_docs": {
+    "text-embedding-3-small": 3.2024,
+    "text-embedding-3-large": 20.8157,
+    "local-cpu": 0.0
+  },
+  "scaled_usd_per_million_docs": {
+    "short_memo": {
+      "text-embedding-3-small": 40.0,
+      "text-embedding-3-large": 260.0,
+      "local-cpu": 0.0
+    },
+    "ten_page_policy": {
+      "text-embedding-3-small": 160.0,
+      "text-embedding-3-large": 1040.0,
+      "local-cpu": 0.0
+    }
+  },
+  "cost_label": "illustrative list price, not an invoice",
+  "usd_per_million_docs_small": 3.2024,
+  "gates": {
+    "recall_at_1_before": true,
+    "recall_at_1_after_swap": true,
+    "update_reused_two_thirds": true,
+    "one_model_per_generation": true,
+    "migration_embeds_each_new_hash_once": true,
+    "shadow_keeps_surviving_chunks": true,
+    "poison_quarantined": true,
+    "rtbf_remaining_zero": true,
+    "rebuild_did_not_resurrect": true,
+    "mixed_doc_kept_the_other_person": true,
+    "lag_ordered": true,
+    "lag_p95_under_100ms": true
+  },
+  "gates_pass": true
+}
