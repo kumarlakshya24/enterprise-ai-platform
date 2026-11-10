@@ -1,0 +1,180 @@
+{
+  "counts": {
+    "met": 10,
+    "partial": 4,
+    "gap": 3,
+    "unmapped": 0
+  },
+  "controls": [
+    {
+      "id": "EU-5",
+      "framework": "eu_ai_act",
+      "ref": "Art. 5",
+      "title": "Prohibited practices",
+      "statement": "A system that scores people from observed behavior is not deployed. The policy denies it even if someone asks.",
+      "treatment": "Keep unacceptable models at status proposed or delete them. Do not flip them to active in the same change as a policy edit.",
+      "status": "met",
+      "because": "No active model is unacceptable. Proposed and blocked by R-PROHIBITED: social-ranker."
+    },
+    {
+      "id": "EU-9",
+      "framework": "eu_ai_act",
+      "ref": "Art. 9",
+      "title": "Risk management",
+      "statement": "Risks that are known are written as versioned forbids, and a regression gate locks the decisions those forbids make.",
+      "treatment": "Add a case to eval/cases.yaml in the same commit as the rule. A rule with no case is not a control.",
+      "status": "met",
+      "because": "Versioned policies pass the locked decision cases, including the residency forbid."
+    },
+    {
+      "id": "EU-10",
+      "framework": "eu_ai_act",
+      "ref": "Art. 10",
+      "title": "Data governance and residency",
+      "statement": "EU confidential and restricted payloads are not a training set and are not a prompt for a model outside eu-central-1.",
+      "treatment": "Investigate req-leak-01. Redaction of the card number did not keep the request in region. Fix the route, then keep R-RESIDENCY-EU.",
+      "status": "gap",
+      "because": "1 Aegis routing decision sent EU RESTRICTED data on route allow to us-east-1 (frontier-us-large, req-leak-01). Redaction of the card is not a residency control."
+    },
+    {
+      "id": "EU-11",
+      "framework": "eu_ai_act",
+      "ref": "Art. 11",
+      "title": "Technical documentation",
+      "statement": "Every model that is active has a card with an owner, a purpose, training notes, and the limits the team will admit.",
+      "treatment": "Do not mark a model active while card_complete is false. R-CARD-INCOMPLETE is the backstop, not the process.",
+      "status": "met",
+      "because": "Every active model card has use, limits, training notes, and an owner. R-CARD-INCOMPLETE is loaded."
+    },
+    {
+      "id": "EU-12",
+      "framework": "eu_ai_act",
+      "ref": "Art. 12",
+      "title": "Record-keeping",
+      "statement": "Routing, DLP, and tool decisions are on an append-only hash chain an auditor can recompute.",
+      "treatment": "If the chain breaks, stop quoting the log. Restore from the last good head. Do not edit a line in place.",
+      "status": "met",
+      "because": "HMAC chain verifies across 38 Aegis-shaped events (9 routing decisions)."
+    },
+    {
+      "id": "EU-13",
+      "framework": "eu_ai_act",
+      "ref": "Art. 13",
+      "title": "Transparency",
+      "statement": "Each active model says what it is for and what it must not be asked to do, in the card a deployer can open.",
+      "treatment": "Fill intended use and out of scope before status changes to active.",
+      "status": "met",
+      "because": "Every active model card states intended use and what it must not be used for."
+    },
+    {
+      "id": "EU-14",
+      "framework": "eu_ai_act",
+      "ref": "Art. 14",
+      "title": "Human oversight",
+      "statement": "A high-risk model that can affect a person's claim or credit has a named reviewer. Blocking the call is not the same as staffing the review.",
+      "treatment": "Take claims-triage-eu out of active, or assign a reviewer and set human_oversight. Leave R-OVERSIGHT in the bundle either way.",
+      "status": "gap",
+      "because": "Active high-risk models with no human oversight: claims-triage-eu. R-OVERSIGHT denies invocation. The deployment is still active."
+    },
+    {
+      "id": "EU-15",
+      "framework": "eu_ai_act",
+      "ref": "Art. 15",
+      "title": "Accuracy, robustness, cybersecurity",
+      "statement": "Accuracy and abuse are measured on a schedule. A paging quality SLO means the accuracy claim is not currently true.",
+      "treatment": "Treat the Lens quality page as an accuracy failure. Do not close this control by editing the target in the same week as the drop.",
+      "status": "gap",
+      "because": "Lens quality is paging (SLI 0.91 vs target 0.95, 6h burn 7.8\u00d7). Article 15 accuracy is not met. Safety is ticket (SLI 0.9974)."
+    },
+    {
+      "id": "EU-26",
+      "framework": "eu_ai_act",
+      "ref": "Art. 26",
+      "title": "Deployer duties",
+      "statement": "The deployer keeps the logs and does not run a high-risk system without a person who can stop it.",
+      "treatment": "Logging already verifies. Staff the claims reviewer or retire the model. This stays partial until that is done.",
+      "status": "partial",
+      "because": "Logging verifies. Oversight does not: claims-triage-eu is active high-risk with no reviewer."
+    },
+    {
+      "id": "NIST-GV-1.1",
+      "framework": "nist_ai_rmf",
+      "ref": "GOVERN 1.1",
+      "title": "Legal requirements are documented",
+      "statement": "The articles this program claims to meet are each named by at least one policy rule.",
+      "treatment": "When a new article is added to the catalog, link a rule id the same day or the control goes partial.",
+      "status": "met",
+      "because": "Each enforceable article in this catalog is named by a policy rule."
+    },
+    {
+      "id": "NIST-GV-6.1",
+      "framework": "nist_ai_rmf",
+      "ref": "GOVERN 6.1",
+      "title": "Third-party risk",
+      "statement": "A hosted model is not \"reviewed\" because it has a card. Someone has to sign the provider review.",
+      "treatment": "Finish the review for frontier-us-large or stop using it for anything but public text. The permit is already wider than the review.",
+      "status": "partial",
+      "because": "Active hosted models with no provider review: frontier-us-large."
+    },
+    {
+      "id": "NIST-MP-1.1",
+      "framework": "nist_ai_rmf",
+      "ref": "MAP 1.1",
+      "title": "Intended purpose",
+      "statement": "The context the model will be used in is written down before it is active, including the one purpose the permit checks.",
+      "treatment": "One purpose per card. A second purpose is a second card, not a sentence in the description.",
+      "status": "met",
+      "because": "Every active model has an intended use and a single approved purpose."
+    },
+    {
+      "id": "NIST-MS-1.1",
+      "framework": "nist_ai_rmf",
+      "ref": "MEASURE 1.1",
+      "title": "Metrics selected",
+      "statement": "Availability, latency, quality, and safety each have a numeric target. One blended score is not a substitute.",
+      "treatment": "Keep the four Lens objectives. Do not replace them with a single health percentage.",
+      "status": "met",
+      "because": "Lens targets are present: availability 0.995, latency 0.99, quality 0.95, safety 0.999."
+    },
+    {
+      "id": "NIST-MS-2.6",
+      "framework": "nist_ai_rmf",
+      "ref": "MEASURE 2.6",
+      "title": "Safety evaluation",
+      "statement": "Safety is an SLO with a thin budget, watched on the same snapshot as quality, not a slide from last quarter.",
+      "treatment": "The safety objective is on a ticket. Clear the ticket or accept the partial in the pack. Do not mark it met while the status is ticket.",
+      "status": "partial",
+      "because": "Safety SLO is on a ticket (SLI 0.9974 vs 0.999, 6h burn 3.2x)."
+    },
+    {
+      "id": "NIST-MS-2.7",
+      "framework": "nist_ai_rmf",
+      "ref": "MEASURE 2.7",
+      "title": "Security evaluation",
+      "statement": "The gateway's DLP and tool blocks are evidence that security checks ran. A green chain with no blocks would only be partial.",
+      "treatment": "Keep request_blocked and tool_call_blocked in the exported slice. A log of only successes hides the control.",
+      "status": "met",
+      "because": "The stub records DLP outcomes and at least one blocked request or tool call."
+    },
+    {
+      "id": "NIST-MG-2.2",
+      "framework": "nist_ai_rmf",
+      "ref": "MANAGE 2.2",
+      "title": "Treatments documented",
+      "statement": "Every control in this catalog has a treatment a person can carry out. The decision gate is what shows the treatment is still loaded.",
+      "treatment": "If a treatment is \"we will look at it\", replace it with a model id, a rule id, or a request id.",
+      "status": "met",
+      "because": "Every gap and partial in this pack has a treatment, and the decision gate passes."
+    },
+    {
+      "id": "NIST-MG-4.1",
+      "framework": "nist_ai_rmf",
+      "ref": "MANAGE 4.1",
+      "title": "Post-deployment monitoring",
+      "statement": "After a model is active, the four SLOs keep running. A quiet availability line does not cancel a paging quality line.",
+      "treatment": "Page on quality stays visible next to the healthy latency line. Do not collapse them into one incident.",
+      "status": "partial",
+      "because": "Monitoring is on. Not quiet: quality, safety."
+    }
+  ]
+}

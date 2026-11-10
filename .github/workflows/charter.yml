@@ -1,0 +1,53 @@
+name: charter
+
+on:
+  push:
+    paths: ["charter/**", ".github/workflows/charter.yml"]
+  pull_request:
+    paths: ["charter/**", ".github/workflows/charter.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: charter
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: charter/requirements-dev.txt
+      - name: Install
+        run: make install PY=python
+      - name: Lint
+        run: make lint PY=python
+      - name: Type check
+        run: make typecheck PY=python
+      - name: Tests
+        run: make test PY=python
+      - name: Eval (shipped gate passes, weakened bundle is caught)
+        run: make eval PY=python
+      - name: Shipped policies are allowed
+        run: make gate PY=python
+      - name: Residency file removed is blocked
+        run: |
+          set +e
+          make gate-weakened PY=python
+          code=$?
+          if [ "$code" -eq 0 ]; then
+            echo "the weakened bundle passed the gate; it must not"
+            exit 1
+          fi
+          echo "weakened bundle blocked (exit ${code})"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: charter-reports
+          path: charter/reports/
