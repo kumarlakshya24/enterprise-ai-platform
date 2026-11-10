@@ -1,0 +1,53 @@
+name: skyline
+
+on:
+  push:
+    paths: ["skyline/**", ".github/workflows/skyline.yml"]
+  pull_request:
+    paths: ["skyline/**", ".github/workflows/skyline.yml"]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: skyline
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: skyline/requirements-dev.txt
+      - name: Install
+        run: make install PY=python
+      - name: Lint
+        run: make lint PY=python
+      - name: Type check
+        run: make typecheck PY=python
+      - name: Tests
+        run: make test PY=python
+      - name: Eval (clean gate, fixture diff, FinOps)
+        run: make eval PY=python
+      - name: Clean synth is allowed
+        run: make gate PY=python
+      - name: Opened security group is blocked
+        run: |
+          set +e
+          make gate-seeded PY=python
+          code=$?
+          if [ "$code" -eq 0 ]; then
+            echo "the opened security group passed the gate; it must not"
+            exit 1
+          fi
+          echo "opened security group blocked (exit ${code})"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: skyline-reports
+          path: skyline/reports/
