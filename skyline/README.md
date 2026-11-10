@@ -1,31 +1,40 @@
 <div align="center">
 
-# Skyline
+# 🏙️ Skyline
 
-### A private place for Aegis, Lumen, and Switchboard to land, and a price per thousand requests that does not hide the platform
+A private place for Aegis, Lumen, and Switchboard to land, and a price per thousand requests that does not hide the platform.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/skyline.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![Synth](https://img.shields.io/badge/synth-fixture%20CDK-e2b06a)
 ![Tests](https://img.shields.io/badge/tests-24%20passing-2ea44f)
 ![Gate](https://img.shields.io/badge/invariants-20%2F20-2ea44f)
 ![Offline](https://img.shields.io/badge/AWS%20account-not%20needed-6e7781)
 
-[**Demo**](#demo) ·
-[**Why**](#why) ·
+[Overview](#overview) ·
 [Quickstart](#quickstart) ·
+[Usage](#usage) ·
 [Architecture](#architecture) ·
+[Design decisions](#design-decisions) ·
 [Results](#results) ·
-[Where it fits](#where-it-fits)
+[Project layout](#project-layout) ·
+[Where it fits](#where-it-fits) ·
+[Documentation](#documentation) ·
+[Limitations](#limitations)
 
-The three products already run on a laptop. Skyline is the account layout they would share:
-no public subnet, a KMS key per tenant, Bedrock only from Aegis, and a bill that shows what that privacy costs.
+<img src="docs/assets/skyline-demo.gif" alt="Skyline console: the six-account skyline, the cost per thousand requests as the volume changes, then a security group opened to the world failing the gate" width="100%">
+
+<sub>The six-account skyline, the cost per thousand requests as the volume changes, then a security group opened to the world failing the gate.</sub>
 
 </div>
 
 ---
 
-## In plain English
+## Overview
+
+The three products already run on a laptop. Skyline is the account layout they would share:
+no public subnet, a KMS key per tenant, Bedrock only from Aegis, and a bill that shows what that privacy costs.
 
 Aegis decides what may leave. Lumen answers from the documents. Switchboard picks the model.
 None of them decides which account the packet is in, which key wraps a tenant's documents, or
@@ -38,42 +47,7 @@ a tenant key, drops the guardrail, or lets Lumen call Bedrock. The same run pric
 
 No AWS account. No API key. The synthesizer does not import `aws-cdk-lib` and does not call AWS.
 
-```bash
-cd skyline
-make test       # invariants, guardrail stub, the unit cost
-make eval       # synth, both gates, FinOps; rewrites the results below
-make gate-seeded  # open 0.0.0.0/0; exits 1
-make up         # console at http://127.0.0.1:8099
-```
-
-## Demo
-
-Sixty seconds, from a clean synth.
-
-```bash
-make up
-# http://127.0.0.1:8099
-```
-
-1. The skyline is six accounts. Security is the only one with a Bedrock endpoint, and the path under it is corporate network → internal ALB → Aegis → guardrail → Switchboard → that endpoint.
-2. At 100,000 requests/day the fully loaded unit cost is about **$6.26** per thousand, against about **$9.20** for the same services on one NAT gateway with every request on a Sonnet-class model.
-3. Switch the volume to 1,000/day. Skyline becomes the more expensive unit, about **$22.28** against **$12.79**. The private endpoints are an hourly cost. They do not pay for themselves on bytes.
-4. Choose **Open the security group**. The gate goes red on `no-world-cidrs` and the diff shows `0.0.0.0/0`. **Clean** puts it back.
-5. The guardrail list blocks a card number and a prompt attack. The insult stays allowed, and it is labeled as a gap. The stub is not a classifier.
-
-<img src="docs/assets/skyline-demo.gif" alt="Skyline console: the six-account skyline, the cost per thousand requests as the volume changes, then a security group opened to the world failing the gate" width="100%">
-
-<video src="docs/assets/skyline-demo.mp4" poster="docs/assets/skyline-dashboard.png" controls playsinline width="960"></video>
-
-The clip is the same silent recording as [`skyline-demo.mp4`](docs/assets/skyline-demo.mp4): the accounts, the unit cost at three volumes, and the planted break.
-
-![Six accounts, the request path, and the unit cost at 100,000 requests a day](docs/assets/skyline-dashboard.png)
-
-![Per-line cost at 100,000 requests a day](docs/assets/skyline-finops.png)
-
-![The gate after the security group is opened to the world](docs/assets/skyline-gate.png)
-
-## Why
+### Why
 
 "Put it in a private subnet" is not a design until the template says which subnet, which route, and which principal. Skyline makes those three agree:
 
@@ -96,6 +70,39 @@ make up
 ```
 
 `SKYLINE_PROVIDER` must be `fixture` or unset. Any other value refuses to run, so a live account cannot be implied by an environment variable. See [`.env.example`](.env.example).
+
+The targets you will use most:
+
+```bash
+cd skyline
+make test       # invariants, guardrail stub, the unit cost
+make eval       # synth, both gates, FinOps; rewrites the results below
+make gate-seeded  # open 0.0.0.0/0; exits 1
+make up         # console at http://127.0.0.1:8099
+```
+
+## Usage
+
+Sixty seconds, from a clean synth.
+
+```bash
+make up
+# http://127.0.0.1:8099
+```
+
+1. The skyline is six accounts. Security is the only one with a Bedrock endpoint, and the path under it is corporate network → internal ALB → Aegis → guardrail → Switchboard → that endpoint.
+2. At 100,000 requests/day the fully loaded unit cost is about **$6.26** per thousand, against about **$9.20** for the same services on one NAT gateway with every request on a Sonnet-class model.
+3. Switch the volume to 1,000/day. Skyline becomes the more expensive unit, about **$22.28** against **$12.79**. The private endpoints are an hourly cost. They do not pay for themselves on bytes.
+4. Choose **Open the security group**. The gate goes red on `no-world-cidrs` and the diff shows `0.0.0.0/0`. **Clean** puts it back.
+5. The guardrail list blocks a card number and a prompt attack. The insult stays allowed, and it is labeled as a gap. The stub is not a classifier.
+
+[![Watch the Skyline demo video: six accounts, the request path, and the unit cost at 100,000 requests a day](docs/assets/skyline-dashboard.png)](docs/assets/skyline-demo.mp4)
+
+Click the image to open the silent video. It is the same recording as the clip at the top of this page ([`skyline-demo.mp4`](docs/assets/skyline-demo.mp4)): the accounts, the unit cost at three volumes, and the planted break.
+
+![Per-line cost at 100,000 requests a day](docs/assets/skyline-finops.png)
+
+![The gate after the security group is opened to the world](docs/assets/skyline-gate.png)
 
 ## Architecture
 
@@ -144,9 +151,11 @@ sequenceDiagram
 | [`skyline/dashboard/`](skyline/dashboard/) | The console. It calls the same functions as `make eval`. |
 | [`fixtures/assembly.json`](fixtures/assembly.json) | The pinned synth. `make diff` fails if it moves. |
 
-Decisions, in [docs/adr/](docs/adr/):
+## Design decisions
 
-| | |
+Each record names what was chosen, what was rejected, and what the choice costs.
+
+| ADR | Decision |
 |---|---|
 | [0001](docs/adr/0001-fixture-synth.md) | Fixture synth, not a live CDK deploy |
 | [0002](docs/adr/0002-per-tenant-cmk.md) | A CMK per tenant, with an encryption context |
@@ -232,6 +241,23 @@ Quantities read off the template, which is what the fixed cost multiplies:
 | Transit gateway attachments | 4 |
 <!-- EVAL:END -->
 
+## Project layout
+
+```
+skyline/
+├── ARCHITECTURE.md
+├── Makefile  pyproject.toml  requirements*.txt
+├── skyline/               the six stacks, synth, invariants, guardrail stub, FinOps, diffing
+│   └── dashboard/         the console
+├── eval/                  platform, workload, pricing, and guardrail cases (YAML)
+├── fixtures/              assembly.json, the pinned synth
+├── reports/               written by make eval
+├── tests/
+├── scripts/
+├── docs/adr/              four decision records
+└── docs/assets/           demo GIF, MP4, and screenshots
+```
+
 ## Where it fits
 
 Skyline does not call Aegis, Lumen, or Switchboard, and they do not call Skyline. It is the account
@@ -267,6 +293,16 @@ real model ids, the CloudWatch key policy AWS actually requires on a log group, 
 that owns the organization trail, and a corporate attachment on the transit gateway. The fixture does
 not pretend those calls succeeded.
 
+## Documentation
+
+| Doc | What it is |
+|---|---|
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | The six accounts, what was rejected, and what breaks at 10× |
+| [`docs/adr/`](docs/adr) | The four decision records listed above |
+| [`docs/WELL_ARCHITECTED.md`](docs/WELL_ARCHITECTED.md) | Notes against the Well-Architected pillars |
+| [`docs/FAILURE_MODES.md`](docs/FAILURE_MODES.md) | What a real deployment would still need |
+| [Design walkthrough](docs/INTERVIEW_WALKTHROUGH.md) | The same design, spoken. `make interview` prints it |
+
 ## Limitations
 
 * The templates are CloudFormation-shaped. They are not passed through `cfn-lint` or the CDK synthesizer. The gate is our rules, not the AWS schema.
@@ -275,7 +311,3 @@ not pretend those calls succeeded.
 * Latency for Bedrock, KMS, and the internet RTT the endpoint removes are projections. The measured numbers are synth time and the stub.
 * Flow logs are not encrypted. Task log groups are, with an ops key that is not a tenant key.
 * This is one region, three tenants, and two availability zones.
-
-## Interview
-
-[`docs/INTERVIEW_WALKTHROUGH.md`](docs/INTERVIEW_WALKTHROUGH.md). `make interview` prints it.

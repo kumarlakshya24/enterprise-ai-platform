@@ -2,22 +2,27 @@
 
 # ⚒️ Forge
 
-### A sandbox that refuses a dangerous agent tool call before a process even exists
+A sandbox that refuses a dangerous agent tool call before a process even exists.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/forge.yml)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![Tests](https://img.shields.io/badge/tests-54%20passing-2ea44f)
 ![Eval](https://img.shields.io/badge/eval-55%2F55-2ea44f)
 ![Deny p95](https://img.shields.io/badge/deny%20p95-0.21%20ms-0969da)
 ![Regression gate](https://img.shields.io/badge/regression%20gate-41%20cases%20locked-8250df)
-![Offline](https://img.shields.io/badge/network%2C%20Docker%2C%20API%20key-none-6e7781)
 
-[**Results**](#results-measured) ·
-[**60-second demo**](#60-second-demo) ·
-[Setup](#setup) ·
+[Overview](#overview) ·
+[Quickstart](#quickstart) ·
+[Usage](#usage) ·
 [Architecture](#architecture) ·
-[Where it fits](#-where-it-fits-in-the-platform) ·
-[Limits](#limits-said-plainly)
+[Design decisions](#design-decisions) ·
+[Results](#results) ·
+[Project layout](#project-layout) ·
+[Where it fits](#where-it-fits) ·
+[Documentation](#documentation) ·
+[Limitations](#limitations)
 
 <img src="docs/assets/demo.gif" alt="Forge demo: an allowed sum, a path denial, an import denial, and the regression gate" width="100%">
 
@@ -27,8 +32,7 @@
 
 ---
 
-## In plain English
-
+## Overview
 
 An agent that can run tools can also read the wrong file, import the wrong module, or loop until the machine stalls. That call needs a control in front of it.
 
@@ -42,36 +46,26 @@ The left pane of the demo is a decision preview. It does not execute a call. The
 
 Offline. No API key, no network, no Docker. Synthetic workspace files only.
 
----
+## Quickstart
 
-## Results (measured)
-
-| What | Result | Source |
-|------|--------|--------|
-| Demo | **12 / 12 pass**, including the wall-clock kill and the regression refusal | [`reports/demo.md`](reports/demo.md), `make demo` |
-| Interview beats | **16 / 16 pass** | [`reports/interview.md`](reports/interview.md), `make interview` |
-| Eval corpus | **55 / 55 (100%)**: 41 protection, 14 utility | [`reports/eval.md`](reports/eval.md) |
-| Regression gate | **41 protected cases locked, 0 regressions** on the default policy. Granting `pathlib` and raising the code cap fails the gate on `prot-import-pathlib` and `prot-code-size`. `import os` stays denied. | [`reports/regression.md`](reports/regression.md) |
-| Latency | Deny-before-spawn p50 **0.13 ms**, p95 **0.21 ms**. Allow, one subprocess, p50 **33.68 ms**, p95 **37.55 ms** | [`reports/latency.md`](reports/latency.md) |
-| Tests | **54** unit and integration tests | `make test` |
-| Security check | Passes (no private keys, no `shell=True`) | `make security-check` |
-
-The corpus is a development set. It locks the decisions we intend to keep. It is not a claim about unknown attacks.
-
----
-
-## 60-second demo
-
-<video src="docs/assets/demo.mp4" poster="docs/assets/ui-sum.png" controls playsinline width="960"></video>
-
-The clip at the top of this page and this video are the same UI recording (`docs/assets/demo.mp4`, about nine seconds).
+Python 3.11+.
 
 ```bash
 cd forge
 make install
-make demo          # PASS/FAIL in the terminal
-make up            # http://127.0.0.1:8095
+make test
+make demo
+make eval
+make up            # UI on http://127.0.0.1:8095
 ```
+
+`make up` serves the UI on `127.0.0.1:8095`. Optional: copy `.env.example` and set `FORGE_AUDIT_KEY`. If it is unset, Forge uses the documented demo key in `forge/config.py`. That key is a placeholder, not a credential.
+
+## Usage
+
+[![Watch the Forge demo video](docs/assets/ui-sum.png)](docs/assets/demo.mp4)
+
+Click the image to open the video. It is the same UI recording as the clip at the top of this page ([`demo.mp4`](docs/assets/demo.mp4), about nine seconds).
 
 1. **Sum.** Both panes would allow it. The sandbox prints `5050` and writes an audit record.
 2. **Traversal.** The preview says a raw file API would use that path. Forge returns `R-PATH-TRAVERSAL` and does not spawn.
@@ -84,24 +78,15 @@ make up            # http://127.0.0.1:8095
 
 The click-by-click script is [`docs/demo-script.md`](docs/demo-script.md).
 
----
+### What a call can do
 
-## Setup
+| Tool | Behavior |
+|------|----------|
+| `python` | Snippet in a child process. Allowlisted imports only. No `open`, `eval`, or dunder walks in the snippet. |
+| `read_file` / `write_file` / `list_dir` | Workspace-relative paths. `..`, absolute paths, and symlinks are refused. |
+| `shell` | No executor. Enabling it in YAML does not create one. |
 
-Python 3.11+.
-
-```bash
-cd forge
-make install
-make test
-make demo
-make eval
-make interview
-```
-
-`make up` serves the UI on `127.0.0.1:8095`. Optional: copy `.env.example` and set `FORGE_AUDIT_KEY`. If it is unset, Forge uses the documented demo key in `forge/config.py`. That key is a placeholder, not a credential.
-
----
+Hard denials live in `forge/guard/constants.py`. The YAML file can only shrink the allowlist. Network cannot be switched to allow: the schema rejects `network: allow`.
 
 ## Architecture
 
@@ -117,16 +102,10 @@ flowchart LR
   Hard["Hard denials in code<br/>os · socket · shell · network"] -.-> Guard
 ```
 
-The full design, trust boundaries, sandbox lifecycle, both sequences, STRIDE, and the decision table are in [`ARCHITECTURE.md`](ARCHITECTURE.md). Failure behavior is in [`FAILURE_MODES.md`](FAILURE_MODES.md). The interview script is [`docs/INTERVIEW_WALKTHROUGH.md`](docs/INTERVIEW_WALKTHROUGH.md).
-
-## Stack
-
 Python 3.11+, FastAPI, a short-lived `python -I` child, and an HMAC JSONL audit log.
-No Docker, no network, no API key. Offline targets: `make install`, `make test`, `make demo`,
-`make eval`, `make regression`, `make bench`, `make interview`, `make security-check`,
-and `make up` (UI on `http://127.0.0.1:8095`; `make serve` is the same target).
+No Docker, no network, no API key. The full design, trust boundaries, sandbox lifecycle, both sequences, STRIDE, and the decision table are in [`ARCHITECTURE.md`](ARCHITECTURE.md). Failure behavior is in [`FAILURE_MODES.md`](FAILURE_MODES.md).
 
-## Key trade-offs
+## Design decisions
 
 | Decision | Record |
 |---|---|
@@ -137,21 +116,39 @@ and `make up` (UI on `http://127.0.0.1:8095`; `make serve` is the same target).
 | A regression gate locks the protected case ids | [ADR 0005](docs/adr/0005-regression-gate.md) |
 | The left pane previews a decision. It does not execute the call | [ADR 0006](docs/adr/0006-preview-not-execution.md) |
 
----
+## Results
 
-## What a call can do
+| What | Result | Source |
+|------|--------|--------|
+| Demo | **12 / 12 pass**, including the wall-clock kill and the regression refusal | [`reports/demo.md`](reports/demo.md), `make demo` |
+| Interview beats | **16 / 16 pass** | [`reports/interview.md`](reports/interview.md), `make interview` |
+| Eval corpus | **55 / 55 (100%)**: 41 protection, 14 utility | [`reports/eval.md`](reports/eval.md) |
+| Regression gate | **41 protected cases locked, 0 regressions** on the default policy. Granting `pathlib` and raising the code cap fails the gate on `prot-import-pathlib` and `prot-code-size`. `import os` stays denied. | [`reports/regression.md`](reports/regression.md) |
+| Latency | Deny-before-spawn p50 **0.13 ms**, p95 **0.21 ms**. Allow, one subprocess, p50 **33.68 ms**, p95 **37.55 ms** | [`reports/latency.md`](reports/latency.md) |
+| Tests | **54** unit and integration tests | `make test` |
+| Security check | Passes (no private keys, no `shell=True`) | `make security-check` |
 
-| Tool | Behavior |
-|------|----------|
-| `python` | Snippet in a child process. Allowlisted imports only. No `open`, `eval`, or dunder walks in the snippet. |
-| `read_file` / `write_file` / `list_dir` | Workspace-relative paths. `..`, absolute paths, and symlinks are refused. |
-| `shell` | No executor. Enabling it in YAML does not create one. |
+The corpus is a development set. It locks the decisions we intend to keep. It is not a claim about unknown attacks.
 
-Hard denials live in `forge/guard/constants.py`. The YAML file can only shrink the allowlist. Network cannot be switched to allow: the schema rejects `network: allow`.
+## Project layout
 
----
+```
+forge/
+├── ARCHITECTURE.md
+├── FAILURE_MODES.md
+├── Makefile
+├── forge/                 package: guard, policy, sandbox, audit, API
+├── eval/cases/corpus.jsonl
+├── eval/regression/baseline.json
+├── tests/
+├── docs/adr/
+├── docs/INTERVIEW_WALKTHROUGH.md
+├── docs/demo-script.md
+├── docs/assets/           UI captures, demo.mp4, and demo.gif
+└── reports/               generated by make demo / eval / interview
+```
 
-## 🔗 Where it fits in the platform
+## Where it fits
 
 ```mermaid
 flowchart LR
@@ -177,30 +174,19 @@ caught by the other.
 | [🧭 Atlas](../atlas/) | Forge is the intended executor for agent tools that run code or touch files. | ⚠️ Not wired. Atlas's demo tools are ledger, email, pager and webhook calls, not code execution. |
 | [🛡️ Aegis](../secure-ai-gateway/) | Identity and prompt-injection defence happen at the Aegis boundary; Forge stays out of the auth path. | By design ([ARCHITECTURE.md, assumption A1](ARCHITECTURE.md)). |
 
-<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
+<sub>See the <a href="../README.md">platform overview</a> for how the projects connect.</sub>
 
----
+## Documentation
 
-## Layout
+| Doc | What it is |
+|---|---|
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Trust boundaries, sandbox lifecycle, STRIDE, decision table |
+| [`FAILURE_MODES.md`](FAILURE_MODES.md) | What still gets through a same-user process |
+| [`docs/adr/`](docs/adr) | The six records above |
+| [`docs/threat-model.md`](docs/threat-model.md) | Attackers and the control that answers each one |
+| [`docs/demo-script.md`](docs/demo-script.md) | Click-by-click demo |
+| [Design walkthrough](docs/INTERVIEW_WALKTHROUGH.md) | The same design, spoken. `make interview` prints it |
 
-```
-forge/
-├── ARCHITECTURE.md
-├── FAILURE_MODES.md
-├── Makefile
-├── forge/                 package: guard, policy, sandbox, audit, API
-├── eval/cases/corpus.jsonl
-├── eval/regression/baseline.json
-├── tests/
-├── docs/adr/
-├── docs/INTERVIEW_WALKTHROUGH.md
-├── docs/demo-script.md
-├── docs/assets/           UI captures, demo.mp4, and demo.gif
-└── reports/               generated by make demo / eval / interview
-```
-
----
-
-## Limits, said plainly
+## Limitations
 
 Forge is not a hypervisor and not a container. The child is a subprocess of the same user. The wall clock, the address-space limit, the audit hook, and the import gate are real controls against the mistakes and the snippets in this corpus. They are not a claim that a hostile native payload cannot escape a same-user process. That residual risk is the reason a production deployment would add a container or a separate sandbox user on top of this policy layer. See [`FAILURE_MODES.md`](FAILURE_MODES.md) and [ADR 0001](docs/adr/0001-subprocess-not-container.md).

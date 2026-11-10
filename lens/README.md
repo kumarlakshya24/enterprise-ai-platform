@@ -2,22 +2,27 @@
 
 # 🔬 Lens
 
-### Know when your AI got worse, before your users do, and stop the release that caused it
+Know when your AI got worse, before your users do, and stop the release that caused it.
 
 [![CI](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml/badge.svg)](https://github.com/kumarlakshya24/personal-projects/actions/workflows/lens.yml)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](pyproject.toml)
+![runs offline](https://img.shields.io/badge/runs-offline-6e7781)
 ![OpenTelemetry-style](https://img.shields.io/badge/traces-OpenTelemetry--style-425CC7?logo=opentelemetry&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-23%20passing-2ea44f)
 ![Judge kappa](https://img.shields.io/badge/judge%20%CE%BA-0.76%20vs%20hand%20labels-0969da)
 ![CI gate](https://img.shields.io/badge/seeded%20regression-blocked-cf222e)
-![Offline](https://img.shields.io/badge/API%20key-not%20needed-6e7781)
 
-[**Demo**](#demo) ·
-[**Why**](#why) ·
+[Overview](#overview) ·
 [Quickstart](#quickstart) ·
+[Usage](#usage) ·
 [Architecture](#architecture) ·
+[Design decisions](#design-decisions) ·
 [Results](#results) ·
-[Where it fits](#-where-it-fits-in-the-platform)
+[Project layout](#project-layout) ·
+[Where it fits](#where-it-fits) ·
+[Documentation](#documentation) ·
+[Limitations](#limitations)
 
 <img src="docs/assets/lens-demo.gif" alt="Lens demo: SLO cards, the quality drop, drift and alert transitions, a blocked tool span, and the seeded prompt failing the CI gate" width="100%">
 
@@ -27,34 +32,12 @@
 
 ---
 
-## In plain English
-
+## Overview
 
 Aegis decides what may leave the building. Lumen decides what the documents support. Neither one tells you
 that yesterday's prompt is worse than last week's. Lens does. It records OpenTelemetry-style traces for
 retrieval, model, and tool spans, samples production traffic, scores the sample, watches for drift, burns
 error budgets in public, and fails a CI job when a candidate drops quality on a frozen, hand-labeled set.
-
-Everything below runs offline. No API key, no network, synthetic traces only.
-
-```bash
-cd lens
-make test     # unit tests
-make eval     # judge, drift, SLOs, both gates; writes this README's results
-make gate     # clean candidate, exit 0
-make gate-seeded   # seeded prompt, exit 1
-make up       # dashboard at http://127.0.0.1:8088
-```
-
-## Demo
-
-![SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)
-
-<video src="docs/assets/lens-demo.mp4" poster="docs/assets/slo-dashboard.png" controls playsinline width="960"></video>
-
-The clip at the top of this page is the same silent recording as [`lens-demo.mp4`](docs/assets/lens-demo.mp4) (about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
-
-## Why
 
 Latency and HTTP 500s do not measure a wrong policy answer. A prompt change can pass unit tests and still
 move Lumen's pass rate from 97% to 55% on the slice of traffic that received it. You will not see that in
@@ -66,16 +49,23 @@ stratified sample. A cheap screen (PII, URL, route against label) runs on every 
 runs on the sample. The CI gate does not look at production at all: it replays a frozen gold set, because a
 bad hour in prod is not a property of the artifact you are about to ship.
 
+Everything below runs offline. No API key, no network, synthetic traces only.
+
 ## Quickstart
 
 Python 3.12. No Docker. The dashboard is a static page generated from the eval report; `make up` is only
 there so you can click around.
 
 ```bash
+cd lens
 python3 -m venv .venv && . .venv/bin/activate
 make install
-make eval
+make test
+make eval     # judge, drift, SLOs, both gates; writes this README's results
 make demo
+make gate     # clean candidate, exit 0
+make gate-seeded   # seeded prompt, exit 1
+make up       # dashboard at http://127.0.0.1:8088
 ```
 
 Optional provider judge, not used by `make eval`:
@@ -88,6 +78,18 @@ export LENS_LLM_MODEL=gpt-4o-mini
 ```
 
 Without those three variables the LLM judge refuses to run. It does not silently fall back.
+
+## Usage
+
+[![Watch the Lens demo video: SLO cards, quality chart, and drift](docs/assets/slo-dashboard.png)](docs/assets/lens-demo.mp4)
+
+Click the image to open the silent video. It is the same recording as the clip at the top of this page ([`lens-demo.mp4`](docs/assets/lens-demo.mp4), about 15 seconds): the SLO cards, the quality chart, drift and alerts, a blocked Aegis tool span, then the gate.
+
+![Drift and the alert log](docs/assets/drift-and-alerts.png)
+
+![A blocked tool call in the waterfall](docs/assets/trace-waterfall.png)
+
+![The seeded prompt fails the gate](docs/assets/gate-regression.png)
 
 ## Architecture
 
@@ -165,15 +167,10 @@ sequenceDiagram
 The request path is the flowchart above. The sample-and-gate sequence is the diagram under it.
 Both are Mermaid in this file. [`ARCHITECTURE.md`](ARCHITECTURE.md) has the longer drawings.
 
-## Stack
-
 Python 3.12, a static dashboard, and OpenTelemetry-style spans. No Docker. The default judge
-is the offline heuristic, so `make eval` needs no API key. Offline targets: `make install`,
-`make test`, `make eval`, `make demo`, `make gate` (clean candidate, exit 0),
-`make gate-seeded` (seeded bad prompt, exit 1 on purpose), `make dashboard`,
-`make interview`, and `make up` (dashboard at `http://127.0.0.1:8088`).
+is the offline heuristic, so `make eval` needs no API key.
 
-## Key trade-offs
+## Design decisions
 
 | Decision | Record |
 |---|---|
@@ -279,19 +276,30 @@ The SLO and PSI figures describe the synthetic log (seed 17, 22 Oct 2026 through
 in that log is generated. It is not a measurement of Aegis or Lumen. The cost table is a projection from
 `eval/pricing.yaml`, marked as such. The heuristic costs $0.
 
-![Drift and the alert log](docs/assets/drift-and-alerts.png)
+## Project layout
 
-![A blocked tool call in the waterfall](docs/assets/trace-waterfall.png)
+```
+lens/
+├── ARCHITECTURE.md
+├── Makefile  pyproject.toml  requirements*.txt  .env.example
+├── lens/
+│   ├── adapters/     Aegis and Lumen event shapes, no imports of either project
+│   ├── tracing/      span model and OTLP/JSON export
+│   ├── sampling/     tail plus stratified hash
+│   ├── judge/        offline rubric, kappa, optional provider judge
+│   ├── drift/        PSI and CUSUM
+│   ├── slo/          multi-window burn rates
+│   ├── gate/         candidate versus the locked baseline
+│   ├── synthetic/    seeded 14-day trace log
+│   ├── dashboard/    static HTML rendered from the report
+│   └── reporting.py  writes reports/latest and splices the markers above
+├── eval/             gold set, SLO targets, gate rules, stand-in prices
+├── reports/latest/   the JSON this page is rendered from
+├── docs/adr/         four decision records
+└── tests/
+```
 
-![The seeded prompt fails the gate](docs/assets/gate-regression.png)
-
-## Failure modes
-
-The short version: the rubric misses paraphrase and negation, a thin sample must not be allowed to page,
-route PSI can stay quiet while a leak is real, and the gate locks whatever you already ship, including
-known holes. The long version is [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md).
-
-## 🔗 Where it fits in the platform
+## Where it fits
 
 ```mermaid
 flowchart LR
@@ -318,13 +326,14 @@ did quality drift, is an error budget burning, and would this new prompt make th
 | [🛡️ Aegis](../secure-ai-gateway/) | Route, DLP policy and tool-guard decisions → spans; a blocked tool call shows up in the waterfall | ✅ Adapter plus seeded synthetic traces. ⚠️ Aegis doesn't export this event schema yet. |
 | [🔦 Lumen](../rag-knowledge-assistant/) | Retrieval, re-rank and answer events → spans → faithfulness, refusal and safety judgments | ✅ Adapter plus seeded synthetic traces. ⚠️ Lumen doesn't export this event schema yet. |
 | [🔀 Switchboard](../switchboard/), [🧭 Atlas](../atlas/) | Routing decisions and workflow steps are natural span sources | ⚠️ Not wired. |
+| [📜 Charter](../charter/) | SLO targets and status (`within_budget`, `ticket`, `page`) feed Charter's accuracy and monitoring controls | ✅ Charter reads a Lens-shaped snapshot whose targets match `eval/slo.yaml`. ⚠️ The snapshot is hand-shaped, not a live Lens export. |
 
 The adapters never import Aegis or Lumen; they map an event shape, so wiring a real exporter does not
 change Lens.
 
-<sub>Part of the <a href="../README.md">Enterprise AI Platform</a> portfolio: six projects that each run on their own and connect through small, documented contracts.</sub>
+<sub>See the <a href="../README.md">platform overview</a> for how the projects connect.</sub>
 
-## Docs
+## Documentation
 
 | Doc | What it is for |
 |---|---|
@@ -332,5 +341,14 @@ change Lens.
 | [docs/adr/](docs/adr/) | Sampling, the judge, split SLOs, the gate versus live drift. |
 | [docs/JUDGE_RUBRIC.md](docs/JUDGE_RUBRIC.md) | The labels the kappa is measured against. |
 | [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md) | What fails, and the mitigation that is actually in the code. |
-| [docs/INTERVIEW_WALKTHROUGH.md](docs/INTERVIEW_WALKTHROUGH.md) | The script. `make interview` prints it. |
+| [Design walkthrough](docs/INTERVIEW_WALKTHROUGH.md) | The same design, spoken. `make interview` prints it. |
 | [reports/latest/](reports/latest/) | The JSON the README is rendered from. |
+
+## Limitations
+
+The rubric misses paraphrase and negation, a thin sample must not be allowed to page,
+route PSI can stay quiet while a leak is real, and the gate locks whatever you already ship, including
+known holes. The long version is [docs/FAILURE_MODES.md](docs/FAILURE_MODES.md).
+
+The kappa is against hand labels, not against an LLM judge. The SLO and PSI figures describe the synthetic
+log. They are not a measurement of a live Aegis or Lumen deployment.

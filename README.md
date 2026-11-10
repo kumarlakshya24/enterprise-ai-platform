@@ -315,11 +315,11 @@ Every project is held to the same bar, so a reviewer can trust the numbers witho
 
 ## 🧭 Where to start
 
-| If you are… | Spend | Read |
+| If you want to… | Spend | Read |
 |:--|:--|:--|
-| **A recruiter** | 2 minutes | This page, then the GIF at the top of any project |
-| **A hiring manager** | 10 minutes | [Aegis](secure-ai-gateway/) and [Lumen](rag-knowledge-assistant/) READMEs: problem, demo, results, limitations. The [5-minute Lumen walkthrough](rag-knowledge-assistant/docs/assets/lumen-walkthrough.mp4) and the [narrated Aegis walkthrough](secure-ai-gateway/docs/media/aegis-walkthrough.mp4) |
-| **An engineer** | 30 minutes | Any project's `ARCHITECTURE.md` and `docs/adr/`, then run it: `cd <project> && make install && make test && make demo` |
+| **Skim the map** | 2 minutes | This page, then the GIF at the top of any project |
+| **Read two systems** | 10 minutes | [Aegis](secure-ai-gateway/) and [Lumen](rag-knowledge-assistant/) READMEs: problem, demo, results, limitations. The [5-minute Lumen walkthrough](rag-knowledge-assistant/docs/assets/lumen-walkthrough.mp4) and the [narrated Aegis walkthrough](secure-ai-gateway/docs/media/aegis-walkthrough.mp4) |
+| **Run one** | 30 minutes | Any project's `ARCHITECTURE.md` and its decision records, then `cd <project> && make install && make test && make demo` |
 
 <details>
 <summary><b>Run everything locally</b></summary>
