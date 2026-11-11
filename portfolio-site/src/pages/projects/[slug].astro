@@ -1,0 +1,48 @@
+---
+import Base from "../../layouts/Base.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import CaseStudy from "../../components/CaseStudy.astro";
+import { githubProfile, projectColor, shipped, site, type Project } from "../../data/projects";
+
+export function getStaticPaths() {
+  return shipped.map((project, i) => ({
+    params: { slug: project.slug },
+    props: {
+      project,
+      previous: shipped[(i + shipped.length - 1) % shipped.length],
+      next: shipped[(i + 1) % shipped.length],
+    },
+  }));
+}
+
+interface Props {
+  project: Project;
+  previous: Project;
+  next: Project;
+}
+
+const { project, previous, next } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<Base title={`${project.name} · ${site.name}`} description={project.summary}>
+  <SiteHeader />
+  <main id="content" class="project" style={`--p: ${projectColor[project.slug]}`}>
+    <a class="back" href={`${base}#projects`}>← All projects</a>
+    <CaseStudy project={project} />
+    <nav class="pager" aria-label="Other projects">
+      <a href={`${base}projects/${previous.slug}/`} style={`--p: ${projectColor[previous.slug]}`}>
+        <span class="pager-dir">← Previous</span>
+        <span class="pager-name"><span class="dot" aria-hidden="true"></span>{previous.name}</span>
+      </a>
+      <a href={`${base}projects/${next.slug}/`} style={`--p: ${projectColor[next.slug]}`}>
+        <span class="pager-dir">Next →</span>
+        <span class="pager-name"><span class="dot" aria-hidden="true"></span>{next.name}</span>
+      </a>
+    </nav>
+  </main>
+  <footer class="footer">
+    <p>{site.name} · <a href={githubProfile}>github.com/kumarlakshya24</a></p>
+    <p>Figures are copied from the project’s README or committed report.</p>
+  </footer>
+</Base>

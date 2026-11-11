@@ -49,7 +49,7 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 - The root README shows the platform as three small diagrams with no crossing lines (request path; knowledge and data; oversight and where it runs).
 - Root README counts: 10 projects, 477 tests.
 - Main has a root MIT `LICENSE`. The portfolio site is on Astro 7 with 0 `npm audit` findings (PR #21).
-- Still open: the Conduit and Skyline cards on the portfolio site (item 4).
+- The portfolio site is redesigned (dark first, accent picker, ten project cards, a page per project). It is not deployed and is waiting for my review.
 
 ## Work queue
 
@@ -73,7 +73,8 @@ Priorities, in order: (1) job-ready resumes, (2) a polished GitHub profile and r
 ### 4. Portfolio site follow-ups (PR #18 is merged)
 - [x] `npm ci && npm run build` passes.
 - [x] Astro upgraded from 5 to 7 (PR #21), which cleared 3 high and 1 critical `npm audit` finding.
-- [ ] Conduit and Skyline are still "in progress" stubs in `src/data/projects.ts`. Write full cards from their READMEs, ADRs and reports.
+- [x] Conduit and Skyline have full cards, written from their READMEs, ADRs and reports.
+- [x] Redesign: dark by default with a light theme, five accent colours, a card grid of all ten projects, and one page per project.
 - [ ] Do not deploy. Tell me when it is ready to review.
 
 ### 5. Resumes (my top priority, needs my input)

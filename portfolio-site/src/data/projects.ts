@@ -1274,21 +1274,210 @@ export const projects: Project[] = [
     slug: "conduit",
     index: "09",
     name: "Conduit",
-    role: "In progress",
-    summary: "Embedding CDC.",
-    status: "in-progress",
-    branch: "feat/conduit",
-    stack: [],
+    role: "Embedding data pipeline",
+    summary:
+      "Keeps a search index on one embedding model, swaps to the next model only when it has caught up, and can prove a person has been erased.",
+    status: "main",
+    problem:
+      "A model upgrade writes vectors from two spaces into one index, readers see a half-built generation, and deleting a document does not forget a person who is mentioned in ten others. Conduit is the data plane for that: a log, one model per index generation, a guarded swap, and erasure by subject.",
+    diagram: {
+      title: "Conduit log, generations, and erasure",
+      caption:
+        "Readers never see both models. The read alias is one row, and a swap changes that row. Drawn from conduit/ARCHITECTURE.md.",
+      blocks: [
+        { type: "node", title: "Synthetic CDC log", detail: "Append-only. Applied from a stored offset. A crash replays." },
+        { type: "down" },
+        {
+          type: "node",
+          title: "Redactor",
+          detail: "Aegis-shaped stand-in. Emails, phones, cards, and names become placeholders. A failure quarantines the event.",
+        },
+        { type: "down", label: "chunk on subject boundaries" },
+        { type: "node", title: "Embedder", detail: "Bound to the generation’s model version" },
+        {
+          type: "split",
+          arms: [
+            { label: "serving reads", title: "Blue generation", detail: "One model. Every vector in it." },
+            { label: "backfill, then dual-write", title: "Green generation", detail: "The next model, catching up" },
+          ],
+        },
+        { type: "down", label: "swap only when high-water marks meet" },
+        { type: "node", tone: "emphasis", title: "Read alias", detail: "Points at exactly one generation" },
+        {
+          type: "note",
+          text: "Forget writes a tombstone first, deletes the subject’s chunks from every generation, scrubs the log, and returns a proof only when every count is zero.",
+        },
+      ],
+    },
+    decisions: [
+      {
+        id: "ADR 0001",
+        title: "One model version per generation",
+        choice:
+          "A generation is bound to one model version at creation. Search embeds the query with the active generation’s model. The read alias is a single row, and a swap changes the row. It does not merge generations.",
+        tradeoff:
+          "Disk holds two copies during a migration. You cannot search “whichever model is better for this query” without a product decision about mixing scores. Rejected: one index with a model column and a filter, because the filter is easy to forget.",
+        href: blob("conduit/docs/adr/0001-one-model-per-generation.md"),
+      },
+      {
+        id: "ADR 0002",
+        title: "Dual-write, swap only when caught up",
+        choice:
+          "Backfill replays what the source has already applied. A live event goes to the shadow generation only when it is contiguous. Swap runs only when the target’s high-water mark has reached the source’s and the consumer is at the log head.",
+        tradeoff:
+          "Until the swap, search quality is the old model’s, even if the new one is better. Two writers would need a lease. Rejected: stop-the-world reindex, and swapping on a percentage.",
+        href: blob("conduit/docs/adr/0002-dual-write-then-swap.md"),
+      },
+      {
+        id: "ADR 0003",
+        title: "Tombstone, delete, scrub, then require zero",
+        choice:
+          "Forget inserts the tombstone before any delete, removes the subject’s chunks from every generation, scrubs the log, and counts what is left. The proof commits only if every count is zero. Otherwise the transaction rolls back.",
+        tradeoff:
+          "A sentence beside the person’s name, in the same paragraph, is erased with them. A vector has no span delete.",
+        href: blob("conduit/docs/adr/0003-tombstone-then-prove-zero.md"),
+      },
+      {
+        id: "ADR 0004",
+        title: "At-least-once apply, quarantine on a failed redaction",
+        choice:
+          "Apply and the offset update commit together, and applying the same document version again is a no-op. If the redactor throws, the event is quarantined, the offset advances, and the text is not embedded.",
+        tradeoff:
+          "Quarantined events are missing from the index until someone retries them. The in-process redactor only finds the patterns it was given, and a miss is embedded.",
+        href: blob("conduit/docs/adr/0004-log-offset-and-fail-closed-redaction.md"),
+      },
+    ],
+    facts: [
+      {
+        value: "Recall@1 20/20 before and after",
+        label:
+          "The same 20 queries, before the swap and after the read alias moves to the second model. 570 embed calls on the new model to land 516 chunks.",
+        href: blob("conduit/reports/eval.json"),
+      },
+      {
+        value: "0 links after a rebuild",
+        label:
+          "Right to be forgotten. No subject links remain, and a full rebuild from the scrubbed log restores none. The other person on a mixed ticket is still there.",
+        href: blob("conduit/reports/eval.json"),
+      },
+      {
+        value: "3 quarantined · 0 indexed",
+        label:
+          "Poison events. Apply latency p95 0.4614 ms (n=221) with the fake embedder, a measurement of this process and not of a hosted embedder. 17 tests.",
+        href: blob("conduit/reports/eval.json"),
+      },
+    ],
+    stack: ["Python 3.12", "FastAPI", "SQLite", "Fake embedders", "Aegis-shaped redactor"],
+    links: [
+      { label: "Repository", href: tree("conduit") },
+      { label: "Architecture", href: blob("conduit/ARCHITECTURE.md") },
+      { label: "ADRs", href: tree("conduit/docs/adr") },
+      { label: "Demo GIF", href: blob("conduit/docs/assets/demo.gif") },
+      { label: "Demo video", href: blob("conduit/docs/assets/demo.mp4") },
+    ],
   },
   {
     slug: "skyline",
     index: "10",
     name: "Skyline",
-    role: "In progress",
-    summary: "Platform CDK.",
-    status: "in-progress",
-    branch: "feat/skyline",
-    stack: [],
+    role: "Cloud landing zone",
+    summary:
+      "The private account layout Aegis, Lumen, and Switchboard would share, checked by named rules, with a price per thousand requests.",
+    status: "main",
+    problem:
+      "None of the three products decides which account a packet is in, which key wraps a tenant’s documents, or whether the model call can reach the internet. Left alone, that becomes a public load balancer and one shared key. Skyline is the platform definition, and it does not call AWS.",
+    diagram: {
+      title: "Skyline request path",
+      caption:
+        "Six accounts, no internet gateway. Bedrock is reachable only from the security account. Drawn from skyline/ARCHITECTURE.md.",
+      blocks: [
+        { type: "node", title: "Corporate network", detail: "10.8.0.0/16, over the transit gateway" },
+        { type: "down" },
+        { type: "node", title: "Internal load balancer", detail: "Security account. No public subnet." },
+        { type: "down" },
+        { type: "node", tone: "emphasis", title: "Aegis tasks", detail: "The only role allowed to call Bedrock" },
+        {
+          type: "split",
+          arms: [
+            { label: "user turn and output", title: "Guardrail", detail: "Offline stub of the declared guardrail" },
+            { label: "route only", title: "Switchboard", detail: "Denied bedrock:*" },
+            { label: "per-tenant buckets", title: "Lumen", detail: "One key per tenant. Denied bedrock:*" },
+          ],
+        },
+        { type: "down", label: "only if the route is not local" },
+        { type: "node", title: "Bedrock endpoint", detail: "Interface endpoint in the security VPC only" },
+        {
+          type: "note",
+          text: "The synth is CloudFormation-shaped JSON pinned to a committed fixture. A change that opens the world, shares a tenant key, or lets Lumen resolve Bedrock fails a named rule.",
+        },
+      ],
+    },
+    decisions: [
+      {
+        id: "ADR 0001",
+        title: "Fixture synth, not a live CDK deploy",
+        choice:
+          "Stacks are built as plain dictionaries and written as canonical JSON. The committed fixture is that string, and the diff fails when the synth is not those bytes. There is no code path that constructs an AWS client.",
+        tradeoff:
+          "The templates are not passed through cfn-lint or the CDK synthesizer. The gate is this project’s rules, not the AWS schema.",
+        href: blob("skyline/docs/adr/0001-fixture-synth.md"),
+      },
+      {
+        id: "ADR 0002",
+        title: "A key per tenant, with an encryption context",
+        choice:
+          "Each tenant gets its own key in the security account. Aegis and Lumen may use it only when the encryption context names that tenant. The tenant’s bucket uses that key, and the gate reads the key id on the bucket.",
+        tradeoff:
+          "More keys to pay for and manage. The alternative, one platform key with the tenant as a tag, leaves IAM as the only thing between two tenants.",
+        href: blob("skyline/docs/adr/0002-per-tenant-cmk.md"),
+      },
+      {
+        id: "ADR 0003",
+        title: "Bedrock only in the security VPC",
+        choice:
+          "No internet gateway and no default route anywhere. Only the security VPC gets the Bedrock endpoint, its policy names the Aegis task role, and Lumen and Switchboard are denied bedrock:*.",
+        tradeoff:
+          "Every VPC that runs a task needs its own interface endpoints to boot, which cost more per day than one NAT gateway.",
+        href: blob("skyline/docs/adr/0003-bedrock-endpoint-in-security.md"),
+      },
+      {
+        id: "ADR 0004",
+        title: "Price the private path",
+        choice:
+          "Quantities are counted from the synth and rates live in one pricing file. The guardrail scans the user turn and the model output, not the retrieved context.",
+        tradeoff:
+          "Prices are a frozen list, not a quote. At low volume the private path is the more expensive unit, and the report says so.",
+        href: blob("skyline/docs/adr/0004-price-the-private-path.md"),
+      },
+    ],
+    facts: [
+      {
+        value: "20/20 invariants",
+        label:
+          "6 accounts, 122 resources. Guardrail stub 10/10 enforced cases with 1 known unscored gap. 24 tests.",
+        href: blob("skyline/README.md"),
+      },
+      {
+        value: "$6.26 against $9.20 per 1,000",
+        label:
+          "Projected, fully loaded, at 100,000 requests a day, against the same services on one NAT with a Sonnet-class model on every request. Frozen price list, not an invoice.",
+        href: blob("skyline/README.md"),
+      },
+      {
+        value: "Cheaper above 4,094 requests a day",
+        label:
+          "At 1,000 a day Skyline is the more expensive unit, $22.28 against $12.79. Private endpoints are an hourly cost.",
+        href: blob("skyline/README.md"),
+      },
+    ],
+    stack: ["Python 3.12", "CloudFormation-shaped JSON", "Invariant rules", "FinOps model", "No AWS account"],
+    links: [
+      { label: "Repository", href: tree("skyline") },
+      { label: "Architecture", href: blob("skyline/ARCHITECTURE.md") },
+      { label: "ADRs", href: tree("skyline/docs/adr") },
+      { label: "Demo GIF", href: blob("skyline/docs/assets/skyline-demo.gif") },
+      { label: "Demo video", href: blob("skyline/docs/assets/skyline-demo.mp4") },
+    ],
   },
 ];
 
@@ -1372,5 +1561,43 @@ export const platform: Diagram = {
         },
       ],
     },
+    { type: "down", label: "underneath" },
+    {
+      type: "split",
+      arms: [
+        {
+          label: "what the index holds",
+          title: "Conduit",
+          detail: "One embedding model per generation. Swap, and erasure by subject.",
+        },
+        {
+          label: "where it would run",
+          title: "Skyline",
+          detail: "Six private accounts, a key per tenant, a price per 1,000 requests.",
+        },
+      ],
+    },
   ],
+};
+
+/** One colour per project, the same ones the repository diagrams use. */
+export const projectColor: Record<string, string> = {
+  aegis: "#e5484d",
+  switchboard: "#3b9eff",
+  lumen: "#e2a336",
+  forge: "#f76b15",
+  atlas: "#30a46c",
+  lens: "#9e8cfc",
+  charter: "#12a594",
+  arena: "#e93d82",
+  conduit: "#c08a5a",
+  skyline: "#8b98a9",
+};
+
+export const site = {
+  name: "Lakshya Kumar",
+  role: "Applied AI architect",
+  repo: REPO,
+  /** Sum of the per-project test counts in the repository README. */
+  tests: 477,
 };
