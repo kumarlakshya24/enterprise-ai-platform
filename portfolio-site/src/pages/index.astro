@@ -2,14 +2,15 @@
 import Base from "../layouts/Base.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import Diagram from "../components/Diagram.astro";
-import { githubProfile, platform, shipped, site } from "../data/projects";
+import PlatformMap from "../components/PlatformMap.astro";
+import RequestTrace from "../components/RequestTrace.astro";
+import { githubProfile, linkedin, shipped, site } from "../data/projects";
 
 const title = `${site.name} · ${site.role}`;
 const description =
   "Ten offline systems for using language models safely, cheaply, and with numbers you can check. Portfolio of Lakshya Kumar.";
 const stats = [
-  { value: String(shipped.length), label: "systems, each runs alone" },
+  { value: String(shipped.length), label: "projects, each runs alone" },
   { value: String(site.tests), label: "automated tests" },
   { value: "0", label: "API keys needed" },
 ];
@@ -19,29 +20,34 @@ const stats = [
   <SiteHeader />
 
   <main id="content">
-    <section class="hero" aria-labelledby="hero-title">
-      <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>{site.role}</p>
-      <h1 id="hero-title">
-        Systems that let a company use language models <em>without leaking data, overspending, or shipping a quiet regression.</em>
-      </h1>
-      <p class="lede">
-        Ten projects, each with an architecture document, decision records, tests, and an offline demo on synthetic data. Every number on this site is copied from a committed evaluation.
-      </p>
-      <div class="hero-actions">
-        <a class="button primary" href="#projects">See the projects</a>
-        <a class="button" href={site.repo}>Read the code</a>
+    <section class="hero hero-split" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="pulse" aria-hidden="true"></span>{site.role}</p>
+        <h1 id="hero-title">
+          I build the systems that let a company use language models <em>without leaking data, overspending, or shipping a quiet regression.</em>
+        </h1>
+        <p class="lede">
+          Ten projects that fit together as one platform. Each has an architecture document, decision records, tests, and an offline demo. Every number on this site comes from a committed evaluation.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="#projects">See the projects</a>
+          <a class="button" href={site.repo}>Read the code</a>
+        </div>
+        <dl class="stats">
+          {
+            stats.map((stat) => (
+              <div>
+                <dt>{stat.label}</dt>
+                <dd>{stat.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
       </div>
-      <dl class="stats">
-        {
-          stats.map((stat) => (
-            <div>
-              <dt>{stat.label}</dt>
-              <dd>{stat.value}</dd>
-            </div>
-          ))
-        }
-      </dl>
+      <PlatformMap />
     </section>
+
+    <RequestTrace />
 
     <section class="section" id="projects" aria-labelledby="projects-title">
       <div class="section-head">
@@ -53,14 +59,20 @@ const stats = [
       </ul>
     </section>
 
-    <section class="section" id="platform" aria-labelledby="platform-title">
+    <section class="section about" id="about" aria-labelledby="about-title">
       <div class="section-head">
-        <h2 id="platform-title">How they fit together</h2>
-        <p>
-          Aegis is the trust boundary. Switchboard picks a model after that decision. Lumen answers from documents, Atlas runs multi-step work, and Forge is where untrusted code would run. Lens, Charter, and Arena watch, govern, and compare. Conduit feeds the index and Skyline is where it would all land. Dashed boxes are contracts that are specified and not yet wired.
-        </p>
+        <h2 id="about-title">About</h2>
       </div>
-      <Diagram diagram={platform} />
+      <div class="about-body">
+        <p class="placeholder">
+          [Two or three sentences about you: what you do now, what you like building, and what you are looking for next.]
+        </p>
+        <ul class="about-links">
+          <li><span class="placeholder">[email]</span></li>
+          <li><a href={linkedin}>LinkedIn</a></li>
+          <li><a href={githubProfile}>GitHub</a></li>
+        </ul>
+      </div>
     </section>
   </main>
 

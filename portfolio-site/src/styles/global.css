@@ -11,7 +11,7 @@
   --surface-2: #18181c;
   --ink: #f2f2f5;
   --muted: #a1a1ad;
-  --faint: #6b6b78;
+  --faint: #8b8b98;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.16);
   --accent: #8f7dff;
@@ -33,7 +33,7 @@
   --surface-2: #f3f3f5;
   --ink: #101014;
   --muted: #55555f;
-  --faint: #8a8a96;
+  --faint: #666672;
   --line: rgba(16, 16, 20, 0.09);
   --line-strong: rgba(16, 16, 20, 0.2);
   --glow: 0.14;
@@ -921,5 +921,522 @@ main {
 
   * {
     transition: none !important;
+  }
+}
+
+/* ---------- hero with the platform map ---------- */
+
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+  max-width: none;
+}
+
+.hero-copy {
+  padding-top: 1rem;
+}
+
+.map {
+  margin: 0;
+  padding: 1.1rem 1.1rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.map-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.map-head p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.map-body {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.wire {
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+
+.wire.dashed {
+  stroke-dasharray: 6 6;
+}
+
+.packet {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent));
+  animation: packet 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes packet {
+  0% { transform: translateY(0); opacity: 0; }
+  8% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(500px); opacity: 0; }
+}
+
+.users rect {
+  fill: var(--surface-2);
+  stroke: var(--line-strong);
+}
+
+.users text {
+  fill: var(--muted);
+  font-size: 15px;
+  text-anchor: middle;
+}
+
+.node {
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+}
+
+.node text {
+  text-anchor: middle;
+}
+
+.node-name {
+  fill: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+
+.node-index,
+.node-sub {
+  fill: currentColor;
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.node .ring {
+  fill: color-mix(in srgb, currentColor 16%, var(--surface));
+  stroke: currentColor;
+  stroke-width: 2;
+  transition: stroke-width 0.2s ease, transform 0.2s ease;
+}
+
+.node.dashed .ring {
+  stroke-dasharray: 5 5;
+}
+
+.node .halo {
+  fill: currentColor;
+  opacity: 0;
+  filter: blur(10px);
+  transition: opacity 0.25s ease;
+}
+
+.node:hover .halo,
+.node:focus-visible .halo,
+.node.is-on .halo {
+  opacity: 0.35;
+}
+
+.node.is-on .ring {
+  stroke-width: 3.5;
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+.node:focus-visible .ring {
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.node.model {
+  color: var(--faint);
+  cursor: default;
+}
+
+.node.model .ring,
+.node.model circle {
+  fill: var(--surface-2);
+  stroke: var(--line-strong);
+  stroke-width: 2;
+}
+
+.node.model .node-name {
+  fill: var(--muted);
+  font-weight: 500;
+}
+
+/* Without JavaScript every panel but the first stays hidden, so the map
+   is still a set of links straight to each project page. */
+.map-panel {
+  min-height: 13.5rem;
+}
+
+.panel {
+  padding: 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--p) 45%, var(--line));
+  border-left: 3px solid var(--p);
+  border-radius: 12px;
+  background: var(--surface);
+  animation: panel-in 0.3s ease both;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.panel h3 {
+  margin: 0.15rem 0 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.panel-role {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.panel-summary {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+
+.panel-fact {
+  margin: 0.7rem 0 0;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.panel-fact .mono {
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--p) 16%, transparent);
+}
+
+.panel-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ---------- follow a request ---------- */
+
+.trace-shell {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.trace-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trace-picks {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.trace-pick {
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.trace-pick .mono {
+  color: var(--faint);
+  font-size: 0.8rem;
+}
+
+.trace-pick:hover {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.trace-stage {
+  position: relative;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.trace-run {
+  display: none;
+}
+
+.trace-input {
+  padding: 0.85rem 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+}
+
+.trace-asker {
+  margin: 0;
+  color: var(--faint);
+  font-size: 0.8rem;
+}
+
+.trace-text {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+}
+
+.trace-steps {
+  position: relative;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trace-steps::before {
+  content: "";
+  position: absolute;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  left: 0.42rem;
+  width: 2px;
+  background: var(--line);
+}
+
+.trace-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.9rem;
+  padding: 0.55rem 0;
+  animation: step-in 0.45s ease both;
+  animation-delay: calc(var(--i) * 0.55s + 0.1s);
+}
+
+@keyframes step-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.trace-dot {
+  position: relative;
+  z-index: 1;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.3rem;
+  border-radius: 50%;
+  background: var(--p);
+  box-shadow: 0 0 0 4px var(--surface), 0 0 14px color-mix(in srgb, var(--p) 70%, transparent);
+}
+
+.trace-step.contract .trace-dot {
+  background: var(--surface);
+  border: 2px dashed var(--p);
+  box-shadow: 0 0 0 4px var(--surface);
+}
+
+.trace-where {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  align-items: baseline;
+  margin: 0;
+  font-size: 0.84rem;
+}
+
+.trace-sys {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.trace-stage-name {
+  color: var(--faint);
+}
+
+.trace-tag {
+  padding: 0 0.45rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.trace-decision {
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+  font-size: 0.98rem;
+}
+
+.tone-pass .trace-decision { color: #3ecf8e; }
+.tone-stop .trace-decision { color: #ff6b6b; }
+.tone-hold .trace-decision { color: #f5b041; }
+:root[data-theme="light"] .tone-pass .trace-decision { color: #0a7a46; }
+:root[data-theme="light"] .tone-stop .trace-decision { color: #c22a2a; }
+:root[data-theme="light"] .tone-hold .trace-decision { color: #8a5600; }
+
+.trace-detail {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.trace-outcome {
+  margin: 0.9rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.95rem;
+  animation: step-in 0.45s ease both;
+  animation-delay: calc(var(--i) * 0.55s + 0.2s);
+}
+
+.trace-outcome a {
+  display: inline-block;
+  margin-left: 0.3rem;
+  font-size: 0.86rem;
+}
+
+.trace-replay {
+  margin-top: 1rem;
+}
+
+/* One rule pair per scenario: the checked radio shows its run and lights its label. */
+#trace-paste:checked ~ .trace-stage [data-run="paste"],
+#trace-confidential:checked ~ .trace-stage [data-run="confidential"],
+#trace-tool:checked ~ .trace-stage [data-run="tool"],
+#trace-salary:checked ~ .trace-stage [data-run="salary"] {
+  display: block;
+}
+
+#trace-paste:checked ~ .trace-picks [for="trace-paste"],
+#trace-confidential:checked ~ .trace-picks [for="trace-confidential"],
+#trace-tool:checked ~ .trace-picks [for="trace-tool"],
+#trace-salary:checked ~ .trace-picks [for="trace-salary"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--ink);
+}
+
+#trace-paste:focus-visible ~ .trace-picks [for="trace-paste"],
+#trace-confidential:focus-visible ~ .trace-picks [for="trace-confidential"],
+#trace-tool:focus-visible ~ .trace-picks [for="trace-tool"],
+#trace-salary:focus-visible ~ .trace-picks [for="trace-salary"] {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- about ---------- */
+
+.about-body {
+  max-width: 44rem;
+}
+
+.about-body p {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.placeholder {
+  color: var(--accent-ink);
+  border-bottom: 1px dashed currentColor;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.5rem;
+  margin: 1.2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- layout changes for the new sections ---------- */
+
+@media (max-width: 60rem) {
+  .hero-split,
+  .trace-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trace-picks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .nav-inner {
+    flex-wrap: wrap;
+  }
+
+  .nav-links {
+    display: flex;
+    order: 3;
+    width: 100%;
+    gap: 1.1rem;
+    font-size: 0.88rem;
+  }
+
+  .map {
+    padding: 0.9rem 0.6rem 1rem;
+  }
+
+  .trace-picks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trace-stage {
+    padding: 1rem 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packet {
+    display: none;
+  }
+
+  .node.is-on .ring,
+  .panel,
+  .trace-step,
+  .trace-outcome {
+    animation: none !important;
+  }
+
+  .trace-replay {
+    display: none;
   }
 }

@@ -2,6 +2,8 @@ const REPO = "https://github.com/kumarlakshya24/personal-projects";
 
 export const githubProfile = "https://github.com/kumarlakshya24";
 
+export const linkedin = "https://www.linkedin.com/in/lakshyakumar24/";
+
 const tree = (path: string) => `${REPO}/tree/main/${path}`;
 const blob = (path: string) => `${REPO}/blob/main/${path}`;
 

@@ -1,0 +1,100 @@
+---
+/**
+ * "Follow a request": pick a scenario and its steps play in order.
+ * Switching works with CSS alone (radio inputs). The small script only adds
+ * a Replay button. With reduced motion, every step shows at once.
+ */
+import { projects, projectColor } from "../data/projects";
+import { traceScenarios } from "../data/trace";
+
+const names: Record<string, string> = Object.fromEntries(projects.map((p) => [p.slug, p.name]));
+names.model = "Model";
+const color = (slug: string) => projectColor[slug] ?? "var(--faint)";
+---
+
+<section class="section trace" id="trace" aria-labelledby="trace-title">
+  <div class="section-head">
+    <h2 id="trace-title">Follow a request</h2>
+    <p>
+      Pick a request and watch each system decide what happens to it. These are replays of the projects' own offline demos, with synthetic people and data. Steps marked contract are documented interfaces that are not wired live yet.
+    </p>
+  </div>
+
+  <div class="trace-shell">
+    {
+      traceScenarios.map((s, i) => (
+        <input class="trace-radio" type="radio" name="trace" id={`trace-${s.id}`} value={s.id} checked={i === 0} />
+      ))
+    }
+    <div class="trace-picks" role="presentation">
+      {
+        traceScenarios.map((s, i) => (
+          <label for={`trace-${s.id}`} class="trace-pick">
+            <span class="mono">{String(i + 1).padStart(2, "0")}</span>
+            {s.label}
+          </label>
+        ))
+      }
+    </div>
+
+    <div class="trace-stage">
+      {
+        traceScenarios.map((s) => (
+          <article class="trace-run" data-run={s.id} aria-label={s.label}>
+            <div class="trace-input">
+              <p class="trace-asker">{s.asker}</p>
+              <p class="trace-text">{s.input}</p>
+            </div>
+            <ol class="trace-steps">
+              {s.steps.map((step, i) => (
+                <li
+                  class:list={["trace-step", step.tone && `tone-${step.tone}`, { contract: step.contract }]}
+                  style={`--p: ${color(step.slug)}; --i: ${i}`}
+                >
+                  <span class="trace-dot" aria-hidden="true" />
+                  <div>
+                    <p class="trace-where">
+                      <span class="trace-sys">{names[step.slug] ?? step.slug}</span>
+                      <span class="trace-stage-name">{step.stage}</span>
+                      {step.contract && <span class="trace-tag">contract</span>}
+                    </p>
+                    <p class="trace-decision mono">{step.decision}</p>
+                    {step.detail && <p class="trace-detail">{step.detail}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <p class="trace-outcome" style={`--i: ${s.steps.length}`}>
+              {s.outcome} <a href={s.source.href}>Source: {s.source.label}</a>
+            </p>
+          </article>
+        ))
+      }
+      <button type="button" class="button trace-replay" hidden>Replay</button>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function () {
+    var shell = document.querySelector(".trace-shell");
+    if (!shell) return;
+    var replay = shell.querySelector(".trace-replay");
+    if (!replay) return;
+    replay.hidden = false;
+    replay.addEventListener("click", function () {
+      shell.classList.remove("is-playing");
+      void shell.offsetWidth;
+      var runs = shell.querySelectorAll(".trace-run");
+      runs.forEach(function (run) {
+        run.style.animation = "none";
+        run.querySelectorAll(".trace-step, .trace-outcome").forEach(function (el) {
+          el.style.animation = "none";
+          void el.offsetWidth;
+          el.style.animation = "";
+        });
+        run.style.animation = "";
+      });
+    });
+  })();
+</script>
