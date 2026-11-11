@@ -50,7 +50,7 @@ This repository change does not deploy anything.
 
 When you want a preview:
 
-1. Import `kumarlakshya24/personal-projects` in Vercel.
+1. Import `kumarlakshya24/enterprise-ai-platform` in Vercel.
 2. Set the root directory to `portfolio-site`.
 3. Framework preset: Astro. Build command: `npm run build`. Output directory: `dist`.
 4. No environment variables.

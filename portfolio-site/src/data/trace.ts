@@ -8,7 +8,7 @@
  * named in `source` changes.
  */
 
-const REPO = "https://github.com/kumarlakshya24/personal-projects";
+const REPO = "https://github.com/kumarlakshya24/enterprise-ai-platform";
 const blob = (path: string) => `${REPO}/blob/main/${path}`;
 
 export type TraceStep = {

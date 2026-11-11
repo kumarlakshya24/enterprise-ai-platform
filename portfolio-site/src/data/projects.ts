@@ -1,4 +1,4 @@
-const REPO = "https://github.com/kumarlakshya24/personal-projects";
+const REPO = "https://github.com/kumarlakshya24/enterprise-ai-platform";
 
 export const githubProfile = "https://github.com/kumarlakshya24";
 
