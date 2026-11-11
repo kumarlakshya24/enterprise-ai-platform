@@ -1,5 +1,5 @@
 ---
-import { githubProfile, site } from "../data/projects";
+import { githubProfile, linkedin, site } from "../data/projects";
 
 const base = import.meta.env.BASE_URL;
 const accents = [
@@ -21,6 +21,7 @@ const accents = [
       <a href={`${base}#projects`}>Projects</a>
       <a href={`${base}#platform`}>Platform</a>
       <a href={githubProfile}>GitHub</a>
+      <a href={linkedin}>LinkedIn</a>
     </nav>
     <div class="controls">
       <div class="swatches" role="radiogroup" aria-label="Accent colour">

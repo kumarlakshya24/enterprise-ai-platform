@@ -44,16 +44,9 @@ The build does not call a network API and does not need environment variables.
 
 The page is dark until the visitor chooses light. Body text and links are sized and coloured for WCAG AA contrast in both themes. Diagrams are real text, not a bitmap. `prefers-reduced-motion` turns off smooth scrolling and hover transitions.
 
-## What a later Vercel preview needs
+## Hosting on GitHub Pages
 
-This repository change does not deploy anything.
+`.github/workflows/portfolio-site-pages.yml` builds this folder and publishes it to GitHub Pages on every push to `main` that touches `portfolio-site/`. It can also be run by hand from the Actions tab. The site is served at https://kumarlakshya24.github.io/enterprise-ai-platform/, so `astro.config.mjs` sets `site` and `base` to match. To use a custom domain later, add `public/CNAME` and change both.
 
-When you want a preview:
+Before the first run, the repository owner sets **Settings > Pages > Source** to **GitHub Actions**.
 
-1. Import `kumarlakshya24/personal-projects` in Vercel.
-2. Set the root directory to `portfolio-site`.
-3. Framework preset: Astro. Build command: `npm run build`. Output directory: `dist`.
-4. No environment variables.
-5. Leave production deploys off until you want a public URL. A preview deployment on the pull request is enough to click through.
-
-There is no `vercel.json`. The static export does not need one.
