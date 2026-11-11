@@ -1,8 +1,9 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  // The planned domain. Used for absolute share-image URLs; nothing is deployed.
-  site: "https://lakshyak.com",
+  // Served by GitHub Pages as a project site. Change both lines if a custom domain is added later.
+  site: "https://kumarlakshya24.github.io",
+  base: "/enterprise-ai-platform/",
   output: "static",
   compressHTML: true,
 });

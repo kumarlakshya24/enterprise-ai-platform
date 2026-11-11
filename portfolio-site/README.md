@@ -46,7 +46,7 @@ The page is dark until the visitor chooses light. Body text and links are sized 
 
 ## Hosting on GitHub Pages
 
-`.github/workflows/portfolio-site-pages.yml` builds this folder and publishes it to GitHub Pages on every push to `main` that touches `portfolio-site/`. It can also be run by hand from the Actions tab. `public/CNAME` holds the custom domain, `lakshyak.com`, and `astro.config.mjs` sets the same `site` so share images use absolute URLs.
+`.github/workflows/portfolio-site-pages.yml` builds this folder and publishes it to GitHub Pages on every push to `main` that touches `portfolio-site/`. It can also be run by hand from the Actions tab. The site is served at https://kumarlakshya24.github.io/enterprise-ai-platform/, so `astro.config.mjs` sets `site` and `base` to match. To use a custom domain later, add `public/CNAME` and change both.
 
-Before the first run, the repository owner sets **Settings > Pages > Source** to **GitHub Actions** and enters `lakshyak.com` as the custom domain. DNS for the domain points at GitHub Pages as described in GitHub's custom domain guide.
+Before the first run, the repository owner sets **Settings > Pages > Source** to **GitHub Actions**.
 
